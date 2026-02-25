@@ -1,0 +1,28 @@
+{
+    "config": {
+        "githubBranch": "main",
+        "githubSlug": "Nick2bad4u/eslint-plugin-file-progress-2",
+        "githubUsername": "Nick2bad4u",
+        "githubWorkflow": "ci.yml",
+        "homepage": "https://nick2bad4u.github.io/eslint-plugin-file-progress-2/",
+        "nodeicoQueryString": {
+            "compact": true,
+            "downloads": true,
+            "stars": true
+        },
+        "npmPackageName": "eslint-plugin-file-progress-2"
+    },
+    "list": [
+        "npmversion",
+        "npmdownloads",
+        "---",
+        "githubworkflow",
+        "coveralls",
+        "codeclimate",
+        "---",
+        "githubstar",
+        "githubfollow",
+        "---",
+        "nodeico"
+    ]
+}
