@@ -18,7 +18,7 @@ const tsRecommendedTypeCheckedConfigs = (
 }));
 
 test("plugin exports recommended configs", () => {
-    assert.equal(plugin.meta.name, "eslint-plugin-file-progress");
+    assert.equal(plugin.meta.name, "eslint-plugin-file-progress-2");
     assert.ok(plugin.rules.activate);
     assert.ok(plugin.configs.recommended);
     assert.ok(plugin.configs["recommended-ci"]);
@@ -68,6 +68,8 @@ test("formatters produce readable output text", () => {
 });
 
 test("toRelativeFilePath handles absolute paths", () => {
+    assert.match(internals.toRelativeFilePath("/repo/src/file.ts", "/repo"), /^src[\\/]file\.ts$/);
+
     assert.match(
         internals.toRelativeFilePath("C:/repo/src/file.ts", "C:/repo"),
         /^src[\\/]file\.ts$/,
@@ -80,12 +82,13 @@ test("rule works with ESLint 10 RuleContext properties", () => {
     ruleTester.run("file-progress/activate", progressRule, {
         valid: [
             {
-                code: 'const foo = "bar";',
                 filename: "src/file-a.js",
+                code: 'const foo = "bar";',
             },
             {
-                code: 'const foo = "bar";',
                 filename: "src/file-b.js",
+                code: 'const foo = "bar";',
+                name: "hidden progress setting",
                 settings: {
                     progress: {
                         hide: true,
@@ -93,8 +96,9 @@ test("rule works with ESLint 10 RuleContext properties", () => {
                 },
             },
             {
-                code: 'const foo = "bar";',
                 filename: "src/file-c.js",
+                code: 'const foo = "bar";',
+                name: "hide filename with custom success message",
                 settings: {
                     progress: {
                         hideFileName: true,
@@ -103,8 +107,8 @@ test("rule works with ESLint 10 RuleContext properties", () => {
                 },
             },
             {
-                code: 'const foo = "bar";',
                 filename: "src/file-d.ts",
+                code: 'const foo = "bar";',
             },
         ],
         invalid: [],

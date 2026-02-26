@@ -1,12 +1,15 @@
 {
-    "name": "eslint-plugin-file-progress",
+    "name": "eslint-plugin-file-progress-2",
     "description": "ESLint plugin to print file progress",
-    "version": "3.0.2",
+    "version": "3.1.0",
     "license": "MIT",
-    "author": "sibiraj-s",
-    "repository": "github:sibiraj-s/eslint-plugin-file-progress",
-    "bugs": "https://github.com/sibiraj-s/eslint-plugin-file-progress/issues",
-    "homepage": "https://github.com/sibiraj-s/eslint-plugin-file-progress#readme",
+    "author": "Nick2bad4u",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Nick2bad4u/eslint-plugin-file-progress-2.git"
+    },
+    "bugs": "https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/issues",
+    "homepage": "https://github.com/Nick2bad4u/eslint-plugin-file-progress-2#readme",
     "type": "module",
     "main": "./dist/index.js",
     "exports": {
@@ -22,6 +25,7 @@
         "eslintplugin",
         "eslint-plugin",
         "eslint-plugin-file-progress",
+        "eslint-plugin-file-progress-2",
         "eslint-progress",
         "progress"
     ],
@@ -32,26 +36,39 @@
     "files": [
         "dist/"
     ],
+    "contributors": [
+        {
+            "name": "sibiraj-s",
+            "url": "https://github.com/sibiraj-s"
+        },
+        {
+            "name": "Nick2bad4u",
+            "url": "https://github.com/Nick2bad4u"
+        }
+    ],
+    "readme": "README.md",
+    "prettier": "./.prettierrc.json",
+    "displayName": "eslint-plugin-file-progress-2",
     "scripts": {
-        "clean": "rimraf dist",
+        "clean": "rimraf dist .cache/tsbuildinfo/tsconfig.build.tsbuildinfo",
         "build": "npm run clean && tsc -p tsconfig.build.json",
+        "prelint": "npm run build",
         "typecheck": "tsc -p tsconfig.json",
         "lint": "eslint .",
-        "test": "tsx --test test/**/*.test.ts",
+        "test": "tsx --test test/progress.test.ts",
         "publint": "publint",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "check": "npm run lint && npm run typecheck && npm run test && npm run build && npm run format:check",
+        "check": "npm run lint && npm run typecheck && npm run test && npm run format:check",
         "release:verify": "npm run check && npm run publint",
         "release:publish": "npm run build && changeset publish",
-        "prepack": "npm run build",
-        "prepare": "is-ci || husky"
+        "prepack": "npm run build"
     },
     "engines": {
-        "node": "^18.18.0 || ^20.9.0 || >=21.1.0"
+        "node": ">=22.0.0"
     },
     "peerDependencies": {
-        "eslint": "^9.0.0 || ^10.0.0"
+        "eslint": "^9.0.0 || ^10.0.2"
     },
     "dependencies": {
         "nanospinner": "^1.2.2",

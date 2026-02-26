@@ -4,6 +4,8 @@ import { fileURLToPath } from "node:url";
 import tseslintPlugin from "@typescript-eslint/eslint-plugin";
 import pegasus from "eslint-config-pegasus";
 import eslintPlugin from "eslint-plugin-eslint-plugin";
+// @ts-expect-error -- Dogfooded from dist folder so typecheck freaks out sometimes
+import progressPlugin from "./dist/index.js";
 
 const tsFiles = ["src/**/*.ts", "test/**/*.ts"];
 const tsconfigRootDir = path.dirname(fileURLToPath(import.meta.url));
@@ -19,7 +21,16 @@ export default [
     {
         ignores: ["dist/**"],
     },
-    eslintPlugin.configs.recommended,
+    {
+        name: "file-progress/dogfood",
+        plugins: {
+            "file-progress": progressPlugin,
+        },
+        rules: {
+            "file-progress/activate": "warn",
+        },
+    },
+    eslintPlugin.configs["all-type-checked"],
     pegasus.configs.default,
     pegasus.configs.node,
     ...typeScriptPluginConfigs,
@@ -35,12 +46,29 @@ export default [
     {
         files: ["test/**/*.ts"],
         rules: {
+            ...tseslintPlugin.configs.recommendedTypeChecked,
+            ...tseslintPlugin.configs.recommended.rules,
+            ...tseslintPlugin.configs.strictTypeChecked,
+            ...tseslintPlugin.configs.strict.rules,
+            ...tseslintPlugin.configs.stylisticTypeChecked,
+            ...tseslintPlugin.configs.stylistic.rules,
             "@typescript-eslint/no-floating-promises": "off",
             "@typescript-eslint/no-magic-numbers": "off",
             "@typescript-eslint/no-unsafe-argument": "off",
             "@typescript-eslint/no-unsafe-assignment": "off",
             "@typescript-eslint/no-unsafe-member-access": "off",
             "@typescript-eslint/no-unsafe-return": "off",
+        },
+    },
+    {
+        files: ["src/**/*.ts"],
+        rules: {
+            ...tseslintPlugin.configs.recommendedTypeChecked,
+            ...tseslintPlugin.configs.recommended.rules,
+            ...tseslintPlugin.configs.strictTypeChecked,
+            ...tseslintPlugin.configs.strict.rules,
+            ...tseslintPlugin.configs.stylisticTypeChecked,
+            ...tseslintPlugin.configs.stylistic.rules,
         },
     },
 ];
