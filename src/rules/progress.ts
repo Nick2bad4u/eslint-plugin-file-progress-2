@@ -11,6 +11,15 @@ export interface NormalizedProgressSettings {
     successMessage: string;
 }
 
+export interface ProgressInternals {
+    defaultSettings: Readonly<NormalizedProgressSettings>;
+    normalizeSettings: (raw: unknown) => NormalizedProgressSettings;
+    toRelativeFilePath: (filename: string, cwd: string) => string;
+    formatFileProgress: (relativeFilePath: string) => string;
+    formatGenericProgress: () => string;
+    formatSuccessMessage: (settings: NormalizedProgressSettings) => string;
+}
+
 const spinner: Spinner = createSpinner("", {
     frames: ["|", "/", "-", "\\"],
     color: "cyan",
@@ -135,7 +144,7 @@ const progressRule: Rule.RuleModule = {
     create,
 };
 
-export const internals = {
+export const internals: ProgressInternals = {
     defaultSettings,
     normalizeSettings,
     toRelativeFilePath,
