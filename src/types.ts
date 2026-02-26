@@ -8,7 +8,7 @@ export interface ProgressSettings {
 
 export interface FileProgressPlugin {
     meta: {
-        name: "eslint-plugin-file-progress";
+        name: "eslint-plugin-file-progress-2";
         version: string;
     };
     configs: {

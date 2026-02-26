@@ -5,7 +5,7 @@ const env = process.env as NodeJS.ProcessEnv & { CI?: string };
 
 const plugin: FileProgressPlugin = {
     meta: {
-        name: "eslint-plugin-file-progress",
+        name: "eslint-plugin-file-progress-2",
         version: "3.0.2",
     },
     configs: {} as FileProgressPlugin["configs"],

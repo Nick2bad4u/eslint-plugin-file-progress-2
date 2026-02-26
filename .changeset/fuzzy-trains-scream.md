@@ -1,5 +1,5 @@
 ---
-"eslint-plugin-file-progress": minor
+"eslint-plugin-file-progress-2": minor
 ---
 
 Modernize the plugin with full TypeScript source/build pipeline, improve ESLint v10 support, and strengthen lint/test/release workflows.

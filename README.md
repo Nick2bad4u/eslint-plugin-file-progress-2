@@ -1,26 +1,28 @@
-# eslint-plugin-file-progress
+# eslint-plugin-file-progress-2
 
-[![Version](https://badgen.net/npm/v/eslint-plugin-file-progress)](https://www.npmjs.com/package/eslint-plugin-file-progress)
-[![Version](https://badgen.net/npm/license/eslint-plugin-file-progress?color=red)](https://github.com/sibiraj-s/eslint-plugin-file-progress/blob/master/LICENSE)
-[![Tests](https://github.com/sibiraj-s/eslint-plugin-file-progress/workflows/Tests/badge.svg)](https://github.com/sibiraj-s/eslint-plugin-file-progress/actions)
+[![Version](https://badgen.net/npm/v/eslint-plugin-file-progress-2)](https://www.npmjs.com/package/eslint-plugin-file-progress-2)
+[![License](https://badgen.net/npm/license/eslint-plugin-file-progress-2?color=red)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/blob/master/LICENSE)
+[![Tests](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/workflows/Tests/badge.svg)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions)
 
 > ESLint plugin to print file progress
+
+> Fork note: Originally created by [@sibiraj-s](https://github.com/sibiraj-s) in [`eslint-plugin-file-progress`](https://github.com/sibiraj-s/eslint-plugin-file-progress). Huge thanks for the original plugin.
 
 ## Getting Started
 
 ### Installation
 
 ```bash
-npm i -D eslint-plugin-file-progress
+npm i -D eslint-plugin-file-progress-2
 # or
-yarn add --dev eslint-plugin-file-progress
+yarn add --dev eslint-plugin-file-progress-2
 ```
 
 ### Usage
 
 ```js
 // eslint.config.js
-import progress from "eslint-plugin-file-progress";
+import progress from "eslint-plugin-file-progress-2";
 
 export default [
     {
@@ -46,7 +48,7 @@ Or use the recommended config
 
 ```js
 // eslint.config.js
-import progress from "eslint-plugin-file-progress";
+import progress from "eslint-plugin-file-progress-2";
 
 export default [progress.configs.recommended];
 ```
@@ -55,7 +57,7 @@ or if you want to hide the progress message in CI
 
 ```js
 // eslint.config.js
-import progress from "eslint-plugin-file-progress";
+import progress from "eslint-plugin-file-progress-2";
 
 export default [progress.configs["recommended-ci"]];
 ```

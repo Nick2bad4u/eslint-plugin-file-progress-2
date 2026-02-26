@@ -18,7 +18,7 @@ const tsRecommendedTypeCheckedConfigs = (
 }));
 
 test("plugin exports recommended configs", () => {
-    assert.equal(plugin.meta.name, "eslint-plugin-file-progress");
+    assert.equal(plugin.meta.name, "eslint-plugin-file-progress-2");
     assert.ok(plugin.rules.activate);
     assert.ok(plugin.configs.recommended);
     assert.ok(plugin.configs["recommended-ci"]);
@@ -68,6 +68,8 @@ test("formatters produce readable output text", () => {
 });
 
 test("toRelativeFilePath handles absolute paths", () => {
+    assert.match(internals.toRelativeFilePath("/repo/src/file.ts", "/repo"), /^src[\\/]file\.ts$/);
+
     assert.match(
         internals.toRelativeFilePath("C:/repo/src/file.ts", "C:/repo"),
         /^src[\\/]file\.ts$/,

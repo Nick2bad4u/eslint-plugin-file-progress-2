@@ -66,14 +66,20 @@ const toRelativeFilePath = (filename: string, cwd: string): string => {
         return filename || "<input>";
     }
 
-    if (!path.isAbsolute(filename)) {
+    const isWindowsAbsolutePath = path.win32.isAbsolute(filename);
+    const isNativeAbsolutePath = path.isAbsolute(filename);
+
+    if (!isNativeAbsolutePath && !isWindowsAbsolutePath) {
         return filename;
     }
 
-    const relativePath = path.relative(cwd || process.cwd(), filename);
+    const effectiveCwd = cwd || process.cwd();
+    const relativePath = isWindowsAbsolutePath
+        ? path.win32.relative(effectiveCwd, filename)
+        : path.relative(effectiveCwd, filename);
 
     if (relativePath.length === 0) {
-        return path.basename(filename);
+        return isWindowsAbsolutePath ? path.win32.basename(filename) : path.basename(filename);
     }
 
     return relativePath;
@@ -134,7 +140,7 @@ const progressRule: Rule.RuleModule = {
         type: "suggestion",
         docs: {
             description: "Display lint progress in CLI output.",
-            url: "https://github.com/sibiraj-s/eslint-plugin-file-progress#readme",
+            url: "https://github.com/Nick2bad4u/eslint-plugin-file-progress-2#readme",
         },
         messages: {
             status: "Display lint progress in CLI output.",
