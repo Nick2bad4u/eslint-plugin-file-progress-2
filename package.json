@@ -33,6 +33,19 @@
     "files": [
         "dist/"
     ],
+    "contributors": [
+        {
+            "name": "sibiraj-s",
+            "url": "https://github.com/sibiraj-s"
+        },
+        {
+            "name": "Nick2bad4u",
+            "url": "https://github.com/Nick2bad4u"
+        }
+    ],
+    "readme": "README.md",
+    "prettier": "./.prettierrc.json",
+    "displayName": "eslint-plugin-file-progress-2",
     "scripts": {
         "clean": "rimraf dist .cache/tsbuildinfo/tsconfig.build.tsbuildinfo",
         "build": "npm run clean && tsc -p tsconfig.build.json",

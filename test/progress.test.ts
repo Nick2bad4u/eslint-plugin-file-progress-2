@@ -82,12 +82,13 @@ test("rule works with ESLint 10 RuleContext properties", () => {
     ruleTester.run("file-progress/activate", progressRule, {
         valid: [
             {
-                code: 'const foo = "bar";',
                 filename: "src/file-a.js",
+                code: 'const foo = "bar";',
             },
             {
-                code: 'const foo = "bar";',
                 filename: "src/file-b.js",
+                code: 'const foo = "bar";',
+                name: "hidden progress setting",
                 settings: {
                     progress: {
                         hide: true,
@@ -95,8 +96,9 @@ test("rule works with ESLint 10 RuleContext properties", () => {
                 },
             },
             {
-                code: 'const foo = "bar";',
                 filename: "src/file-c.js",
+                code: 'const foo = "bar";',
+                name: "hide filename with custom success message",
                 settings: {
                     progress: {
                         hideFileName: true,
@@ -105,8 +107,8 @@ test("rule works with ESLint 10 RuleContext properties", () => {
                 },
             },
             {
-                code: 'const foo = "bar";',
                 filename: "src/file-d.ts",
+                code: 'const foo = "bar";',
             },
         ],
         invalid: [],

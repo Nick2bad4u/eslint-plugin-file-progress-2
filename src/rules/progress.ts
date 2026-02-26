@@ -139,13 +139,14 @@ const progressRule: Rule.RuleModule = {
     meta: {
         type: "suggestion",
         docs: {
-            description: "Display lint progress in CLI output.",
+            description: "enforce displaying lint progress in CLI output.",
+            recommended: true,
             url: "https://github.com/Nick2bad4u/eslint-plugin-file-progress-2#readme",
         },
+        schema: [],
         messages: {
             status: "Display lint progress in CLI output.",
         },
-        schema: [],
     },
     create,
 };
