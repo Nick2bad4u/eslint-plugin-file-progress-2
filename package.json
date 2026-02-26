@@ -59,8 +59,7 @@
         "check": "npm run lint && npm run typecheck && npm run test && npm run format:check",
         "release:verify": "npm run check && npm run publint",
         "release:publish": "npm run build && changeset publish",
-        "prepack": "npm run build",
-        "prepare": "is-ci || husky"
+        "prepack": "npm run build"
     },
     "engines": {
         "node": "^18.18.0 || ^20.9.0 || >=21.1.0"
