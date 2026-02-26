@@ -4,7 +4,10 @@
     "version": "3.1.0",
     "license": "MIT",
     "author": "Nick2bad4u",
-    "repository": "github:Nick2bad4u/eslint-plugin-file-progress-2",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Nick2bad4u/eslint-plugin-file-progress-2.git"
+    },
     "bugs": "https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/issues",
     "homepage": "https://github.com/Nick2bad4u/eslint-plugin-file-progress-2#readme",
     "type": "module",
@@ -52,7 +55,7 @@
         "prelint": "npm run build",
         "typecheck": "tsc -p tsconfig.json",
         "lint": "eslint .",
-        "test": "tsx --test test/**/*.test.ts",
+        "test": "tsx --test test/progress.test.ts",
         "publint": "publint",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
@@ -62,7 +65,7 @@
         "prepack": "npm run build"
     },
     "engines": {
-        "node": "^18.18.0 || ^20.9.0 || >=21.1.0"
+        "node": ">=22.0.0"
     },
     "peerDependencies": {
         "eslint": "^9.0.0 || ^10.0.2"

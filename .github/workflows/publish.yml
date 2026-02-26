@@ -10,6 +10,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 env:
     NODE_VERSION: 22
     HUSKY: 0
+    NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
 jobs:
     release:
@@ -35,6 +36,11 @@ jobs:
 
             - name: Run release verification
               run: npm run release:verify
+
+            - name: Verify npm authentication
+              run: npm whoami
+              env:
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
             - name: Create Release Pull Request or Publish to npm
               id: changesets
