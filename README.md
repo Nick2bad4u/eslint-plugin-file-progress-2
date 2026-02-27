@@ -11,6 +11,15 @@
 
 ## Getting Started
 
+### Demo
+
+Who likes a silent console ¯\\\_(ツ)\_/¯
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Nick2bad4u/eslint-plugin-file-progress-2/refs/heads/master/assets/progress.gif" alt="Progress Demo" width="100%">
+    <img src="https://raw.githubusercontent.com/Nick2bad4u/eslint-plugin-file-progress-2/refs/heads/master/assets/summary-msg.png" alt="Detailed summary Demo" width="100%">
+</div>
+
 ### Installation
 
 ```bash
@@ -87,12 +96,6 @@ The `recommended-ci` preset is similar to the recommended one, but it automatica
 The `recommended-detailed` preset enables the detailed success summary automatically.
 
 For CI's where CI is not set to `true`, you can use the `settings.progress.hide` option to hide the progress message.
-
-### Demo
-
-Who likes a silent console ¯\\\_(ツ)\_/¯
-
-![Progress](assets/progress.gif)
 
 ### Only on CLI
 
