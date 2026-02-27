@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 3.3.0
+
+### Minor Changes
+
+- 2774d79: Add additional progress output customization and richer end-of-run summaries.
+
+    ### Highlights
+    - add `prefixMark` to customize the prefix symbol independently from success/failure marks
+    - improve final summary formatting (`plugin: status`) with configurable marks
+    - add detailed summary throughput metric (`files/s`)
+    - simplify detailed summary problem wording and improve path readability
+    - add `recommended-detailed` preset to enable detailed end-of-run stats by default
+
 ## 3.1.0
 
 ### Minor Changes
