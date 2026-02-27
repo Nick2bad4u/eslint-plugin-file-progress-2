@@ -275,7 +275,7 @@ const formatFailureMessage = (
         `${pc.dim("  Files linted:")} ${pc.yellow(String(stats.filesLinted))}`,
         `${pc.dim("  Throughput:")} ${pc.yellow(formatThroughput(stats.durationMs, stats.filesLinted))}`,
         `${pc.dim("  Exit code:")} ${pc.red(String(stats.exitCode))}`,
-        `${pc.dim("  Problems:")} ${pc.yellow("1+")}`,
+        `${pc.dim("  Problems:")} ${pc.yellow("detected")}`,
     ].join("\n");
 };
 

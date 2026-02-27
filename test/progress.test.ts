@@ -230,7 +230,7 @@ test("formatters produce readable output text", () => {
                 exitCode: 2,
             },
         ),
-        /Lint failed\.[\s\S]*Throughput:[\s\S]*Exit code:[\s\S]*2[\s\S]*Problems:[\s\S]*1\+/,
+        /Lint failed\.[\s\S]*Throughput:[\s\S]*Exit code:[\s\S]*2[\s\S]*Problems:[\s\S]*detected/,
     );
 });
 

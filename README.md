@@ -62,7 +62,7 @@ export default [
 For slower lint runs, `spinnerStyle: "dots"` or `spinnerStyle: "arc"` generally feels smoother than `line`.
 Directory segments are color-cycled to make deep paths easier to scan, while the filename stays emphasized.
 
-When `detailedSuccess: true` is enabled, the summary includes duration, files linted, throughput, exit code, and a `Problems` line (`0` on successful runs).
+When `detailedSuccess: true` is enabled, the summary includes duration, files linted, throughput, exit code, and a `Problems` line (`0` on successful runs, `detected` on failures).
 
 Or use the recommended config
 
