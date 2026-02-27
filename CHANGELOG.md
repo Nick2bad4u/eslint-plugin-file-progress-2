@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 3.4.1
+
+### Patch Changes
+
+- 6d3135a: # Highlights
+    - Update README with correct GIF image
+    - Add `.changeset` to `.prettierignore` to prevent Prettier from reformatting changeset markdown files
+
 ## 3.4.0
 
 ### Minor Changes
