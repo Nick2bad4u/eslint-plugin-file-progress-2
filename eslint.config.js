@@ -29,6 +29,17 @@ export default [
         rules: {
             "file-progress/activate": "warn",
         },
+        settings: {
+            progress: {
+                hide: false, // hide progress output (useful in CI)
+                hideFileName: false, // show generic "Linting..." instead of file names
+                successMessage: "Lint done...",
+                detailedSuccess: true, // show multi-line final summary (duration, file count, exit code)
+                spinnerStyle: "bounce", // line | dots | arc | bounce | clock
+                successMark: "✔", // custom mark used for success completion
+                failureMark: "✖", // custom mark used for failure completion
+            },
+        },
     },
     eslintPlugin.configs["all-type-checked"],
     pegasus.configs.default,

@@ -38,11 +38,21 @@ export default [
                 hide: false, // hide progress output (useful in CI)
                 hideFileName: false, // show generic "Linting..." instead of file names
                 successMessage: "Lint done...",
+                detailedSuccess: false, // show multi-line final summary (duration, file count, exit code)
+                spinnerStyle: "dots", // line | dots | arc | bounce | clock
+                prefixMark: "•", // marker after plugin name prefix in progress lines
+                successMark: "✔", // custom mark used for success completion
+                failureMark: "✖", // custom mark used for failure completion
             },
         },
     },
 ];
 ```
+
+For slower lint runs, `spinnerStyle: "dots"` or `spinnerStyle: "arc"` generally feels smoother than `line`.
+Directory segments are color-cycled to make deep paths easier to scan, while the filename stays emphasized.
+
+When `detailedSuccess: true` is enabled, the summary includes duration, files linted, throughput, exit code, and a `Problems` line (`0` on successful runs).
 
 Or use the recommended config
 
