@@ -25,6 +25,7 @@ test("plugin exports recommended configs", () => {
     assert.ok(plugin.rules.activate);
     assert.ok(plugin.configs.recommended);
     assert.ok(plugin.configs["recommended-ci"]);
+    assert.ok(plugin.configs["recommended-detailed"]);
     assert.deepEqual(plugin.configs.recommended.rules, {
         "file-progress/activate": "warn",
     });
@@ -33,7 +34,14 @@ test("plugin exports recommended configs", () => {
         plugin.configs["recommended-ci"].settings as { progress?: { hide?: boolean } } | undefined
     )?.progress?.hide;
 
+    const detailedSetting = (
+        plugin.configs["recommended-detailed"].settings as
+            | { progress?: { detailedSuccess?: boolean } }
+            | undefined
+    )?.progress?.detailedSuccess;
+
     assert.equal(typeof ciHideSetting, "boolean");
+    assert.equal(detailedSetting, true);
 });
 
 test("normalizeSettings handles invalid values safely", () => {

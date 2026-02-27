@@ -38,6 +38,20 @@ const configs: FileProgressPlugin["configs"] = {
             },
         },
     },
+    "recommended-detailed": {
+        name: "file-progress/recommended-detailed",
+        plugins: {
+            "file-progress": plugin,
+        },
+        rules: {
+            "file-progress/activate": "warn",
+        },
+        settings: {
+            progress: {
+                detailedSuccess: true,
+            },
+        },
+    },
 };
 
 Object.assign(plugin.configs, configs);

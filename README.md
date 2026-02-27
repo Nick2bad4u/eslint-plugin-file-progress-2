@@ -1,8 +1,9 @@
 # eslint-plugin-file-progress-2
 
-[![Version](https://badgen.net/npm/v/eslint-plugin-file-progress-2)](https://www.npmjs.com/package/eslint-plugin-file-progress-2)
-[![License](https://badgen.net/npm/license/eslint-plugin-file-progress-2?color=red)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/blob/master/LICENSE)
-[![Tests](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/workflows/Tests/badge.svg)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions)
+[![Version](https://badgen.net/npm/v/eslint-plugin-file-progress-2/latest)](https://www.npmjs.com/package/eslint-plugin-file-progress-2)
+[![License](https://badgen.net/npm/license/eslint-plugin-file-progress-2?color=orange)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/blob/master/LICENSE)
+[![Release](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions/workflows/publish.yml/badge.svg)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions/workflows/publish.yml)
+[![Tests](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/workflows/Tests/badge.svg)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions/workflows/test.yml)
 
 > ESLint plugin to print file progress
 
@@ -72,7 +73,18 @@ import progress from "eslint-plugin-file-progress-2";
 export default [progress.configs["recommended-ci"]];
 ```
 
-This configuration is similar to the recommended one, but it automatically detects CI environments by checking if the `CI` environment variable is set to `true`, and hides the progress message accordingly.
+or if you want detailed end-of-run stats enabled by default
+
+```js
+// eslint.config.js
+import progress from "eslint-plugin-file-progress-2";
+
+export default [progress.configs["recommended-detailed"]];
+```
+
+The `recommended-ci` preset is similar to the recommended one, but it automatically detects CI environments by checking if the `CI` environment variable is set to `true`, and hides the progress message accordingly.
+
+The `recommended-detailed` preset enables the detailed success summary automatically.
 
 For CI's where CI is not set to `true`, you can use the `settings.progress.hide` option to hide the progress message.
 
@@ -103,18 +115,6 @@ Or, in your package.json's command:
 
 Use `file-progress/activate: 0` to disable the plugin. See https://eslint.org/docs/latest/user-guide/command-line-interface#specifying-rules-and-plugins for more details on how to use CLI
 
-## Development
+## Contributing
 
-This project is authored in TypeScript (`src/**`) and publishes compiled artifacts from `dist/**`.
-Linting uses `@typescript-eslint/eslint-plugin` with the flat `recommended-type-checked` config.
-
-```bash
-npm run lint
-npm run typecheck
-npm run test
-npm run build
-npm run format
-npm run check
-npm run publint
-npm run release:verify
-```
+Contributor and release documentation is available in [DEVELOPMENT.md](./DEVELOPMENT.md).

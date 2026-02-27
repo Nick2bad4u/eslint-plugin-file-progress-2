@@ -21,6 +21,7 @@ export interface FileProgressPlugin {
     configs: {
         recommended: Linter.Config;
         "recommended-ci": Linter.Config;
+        "recommended-detailed": Linter.Config;
     };
     rules: {
         activate: Rule.RuleModule;
