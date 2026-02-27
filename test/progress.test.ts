@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { rm, writeFile } from "node:fs/promises";
 import test from "node:test";
+import { stripVTControlCharacters } from "node:util";
 
 import tseslintPlugin from "@typescript-eslint/eslint-plugin";
 import { ESLint, RuleTester, type Linter } from "eslint";
@@ -17,11 +18,14 @@ const tsRecommendedTypeCheckedConfigs = (
     files: tsFiles,
 }));
 
+const stripAnsi = (value: string): string => stripVTControlCharacters(value);
+
 test("plugin exports recommended configs", () => {
     assert.equal(plugin.meta.name, "eslint-plugin-file-progress-2");
     assert.ok(plugin.rules.activate);
     assert.ok(plugin.configs.recommended);
     assert.ok(plugin.configs["recommended-ci"]);
+    assert.ok(plugin.configs["recommended-detailed"]);
     assert.deepEqual(plugin.configs.recommended.rules, {
         "file-progress/activate": "warn",
     });
@@ -30,7 +34,14 @@ test("plugin exports recommended configs", () => {
         plugin.configs["recommended-ci"].settings as { progress?: { hide?: boolean } } | undefined
     )?.progress?.hide;
 
+    const detailedSetting = (
+        plugin.configs["recommended-detailed"].settings as
+            | { progress?: { detailedSuccess?: boolean } }
+            | undefined
+    )?.progress?.detailedSuccess;
+
     assert.equal(typeof ciHideSetting, "boolean");
+    assert.equal(detailedSetting, true);
 });
 
 test("normalizeSettings handles invalid values safely", () => {
@@ -38,6 +49,11 @@ test("normalizeSettings handles invalid values safely", () => {
         hide: false,
         hideFileName: false,
         successMessage: "Lint complete.",
+        detailedSuccess: false,
+        spinnerStyle: "dots",
+        prefixMark: "•",
+        successMark: "✔",
+        failureMark: "✖",
     });
 
     assert.deepEqual(
@@ -50,20 +66,171 @@ test("normalizeSettings handles invalid values safely", () => {
             hide: true,
             hideFileName: false,
             successMessage: "Done",
+            detailedSuccess: false,
+            spinnerStyle: "dots",
+            prefixMark: "•",
+            successMark: "✔",
+            failureMark: "✖",
+        },
+    );
+
+    assert.deepEqual(
+        internals.normalizeSettings({
+            detailedSuccess: true,
+        }),
+        {
+            hide: false,
+            hideFileName: false,
+            successMessage: "Lint complete.",
+            detailedSuccess: true,
+            spinnerStyle: "dots",
+            prefixMark: "•",
+            successMark: "✔",
+            failureMark: "✖",
+        },
+    );
+
+    assert.deepEqual(
+        internals.normalizeSettings({
+            spinnerStyle: "arc",
+        }),
+        {
+            hide: false,
+            hideFileName: false,
+            successMessage: "Lint complete.",
+            detailedSuccess: false,
+            spinnerStyle: "arc",
+            prefixMark: "•",
+            successMark: "✔",
+            failureMark: "✖",
+        },
+    );
+
+    assert.deepEqual(
+        internals.normalizeSettings({
+            spinnerStyle: "not-a-style",
+        }),
+        {
+            hide: false,
+            hideFileName: false,
+            successMessage: "Lint complete.",
+            detailedSuccess: false,
+            spinnerStyle: "dots",
+            prefixMark: "•",
+            successMark: "✔",
+            failureMark: "✖",
+        },
+    );
+
+    assert.deepEqual(
+        internals.normalizeSettings({
+            prefixMark: "»",
+            successMark: "✅",
+            failureMark: "❌",
+        }),
+        {
+            hide: false,
+            hideFileName: false,
+            successMessage: "Lint complete.",
+            detailedSuccess: false,
+            spinnerStyle: "dots",
+            prefixMark: "»",
+            successMark: "✅",
+            failureMark: "❌",
         },
     );
 });
 
 test("formatters produce readable output text", () => {
-    assert.match(internals.formatFileProgress("src/index.js"), /src[\\/]index\.js/);
+    assert.match(
+        stripAnsi(internals.formatFileProgress("shared/test/utils/typeGuards.debug.test.ts")),
+        /shared[\\/]test[\\/]utils[\\/]typeGuards\.debug\.test\.ts/,
+    );
     assert.match(internals.formatGenericProgress(), /linting project files/);
     assert.match(
-        internals.formatSuccessMessage({
-            hide: false,
-            hideFileName: false,
-            successMessage: "All good",
-        }),
-        /All good/,
+        stripAnsi(
+            internals.formatSuccessMessage(
+                {
+                    hide: false,
+                    hideFileName: false,
+                    successMessage: "All good",
+                    detailedSuccess: false,
+                    spinnerStyle: "dots",
+                    prefixMark: "•",
+                    successMark: "✔",
+                    failureMark: "✖",
+                },
+                {
+                    durationMs: 900,
+                    filesLinted: 3,
+                    exitCode: 0,
+                },
+            ),
+        ),
+        /eslint-plugin-file-progress-2:[\s\S]*All good/,
+    );
+
+    assert.match(
+        internals.formatSuccessMessage(
+            {
+                hide: false,
+                hideFileName: false,
+                successMessage: "All good",
+                detailedSuccess: true,
+                spinnerStyle: "dots",
+                prefixMark: "•",
+                successMark: "✔",
+                failureMark: "✖",
+            },
+            {
+                durationMs: 1534,
+                filesLinted: 5,
+                exitCode: 0,
+            },
+        ),
+        /Duration:[\s\S]*Files linted:[\s\S]*Throughput:[\s\S]*Exit code:/,
+    );
+
+    assert.match(
+        internals.formatSuccessMessage(
+            {
+                hide: false,
+                hideFileName: false,
+                successMessage: "All good",
+                detailedSuccess: true,
+                spinnerStyle: "dots",
+                prefixMark: "•",
+                successMark: "✅",
+                failureMark: "❌",
+            },
+            {
+                durationMs: 224,
+                filesLinted: 5,
+                exitCode: 0,
+            },
+        ),
+        /Problems:[\s\S]*0/,
+    );
+
+    assert.match(
+        internals.formatFailureMessage(
+            {
+                hide: false,
+                hideFileName: false,
+                successMessage: "All good",
+                detailedSuccess: true,
+                spinnerStyle: "dots",
+                prefixMark: "•",
+                successMark: "✅",
+                failureMark: "❌",
+            },
+            {
+                durationMs: 224,
+                filesLinted: 5,
+                exitCode: 2,
+            },
+        ),
+        /Lint failed\.[\s\S]*Throughput:[\s\S]*Exit code:[\s\S]*2[\s\S]*Problems:[\s\S]*1\+/,
     );
 });
 

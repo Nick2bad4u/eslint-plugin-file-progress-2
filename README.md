@@ -1,14 +1,24 @@
 # eslint-plugin-file-progress-2
 
-[![Version](https://badgen.net/npm/v/eslint-plugin-file-progress-2)](https://www.npmjs.com/package/eslint-plugin-file-progress-2)
-[![License](https://badgen.net/npm/license/eslint-plugin-file-progress-2?color=red)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/blob/master/LICENSE)
-[![Tests](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/workflows/Tests/badge.svg)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions)
+[![Version](https://badgen.net/npm/v/eslint-plugin-file-progress-2/latest)](https://www.npmjs.com/package/eslint-plugin-file-progress-2)
+[![License](https://badgen.net/npm/license/eslint-plugin-file-progress-2?color=orange)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/blob/master/LICENSE)
+[![Release](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions/workflows/publish.yml/badge.svg)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions/workflows/publish.yml)
+[![Tests](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/workflows/Tests/badge.svg)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions/workflows/test.yml)
 
 > ESLint plugin to print file progress
 
 > Fork note: Originally created by [@sibiraj-s](https://github.com/sibiraj-s) in [`eslint-plugin-file-progress`](https://github.com/sibiraj-s/eslint-plugin-file-progress). Huge thanks for the original plugin.
 
 ## Getting Started
+
+### Demo
+
+Who likes a silent console ¯\\\_(ツ)\_/¯
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Nick2bad4u/eslint-plugin-file-progress-2/refs/heads/master/assets/progress.gif" alt="Progress Demo" width="100%">
+    <img src="https://raw.githubusercontent.com/Nick2bad4u/eslint-plugin-file-progress-2/refs/heads/master/assets/summary-msg.png" alt="Detailed summary Demo" width="100%">
+</div>
 
 ### Installation
 
@@ -38,11 +48,21 @@ export default [
                 hide: false, // hide progress output (useful in CI)
                 hideFileName: false, // show generic "Linting..." instead of file names
                 successMessage: "Lint done...",
+                detailedSuccess: false, // show multi-line final summary (duration, file count, exit code)
+                spinnerStyle: "dots", // line | dots | arc | bounce | clock
+                prefixMark: "•", // marker after plugin name prefix in progress lines
+                successMark: "✔", // custom mark used for success completion
+                failureMark: "✖", // custom mark used for failure completion
             },
         },
     },
 ];
 ```
+
+For slower lint runs, `spinnerStyle: "dots"` or `spinnerStyle: "arc"` generally feels smoother than `line`.
+Directory segments are color-cycled to make deep paths easier to scan, while the filename stays emphasized.
+
+When `detailedSuccess: true` is enabled, the summary includes duration, files linted, throughput, exit code, and a `Problems` line (`0` on successful runs).
 
 Or use the recommended config
 
@@ -62,15 +82,20 @@ import progress from "eslint-plugin-file-progress-2";
 export default [progress.configs["recommended-ci"]];
 ```
 
-This configuration is similar to the recommended one, but it automatically detects CI environments by checking if the `CI` environment variable is set to `true`, and hides the progress message accordingly.
+or if you want detailed end-of-run stats enabled by default
+
+```js
+// eslint.config.js
+import progress from "eslint-plugin-file-progress-2";
+
+export default [progress.configs["recommended-detailed"]];
+```
+
+The `recommended-ci` preset is similar to the recommended one, but it automatically detects CI environments by checking if the `CI` environment variable is set to `true`, and hides the progress message accordingly.
+
+The `recommended-detailed` preset enables the detailed success summary automatically.
 
 For CI's where CI is not set to `true`, you can use the `settings.progress.hide` option to hide the progress message.
-
-### Demo
-
-Who likes a silent console ¯\\\_(ツ)\_/¯
-
-![Progress](assets/progress.gif)
 
 ### Only on CLI
 
@@ -93,18 +118,6 @@ Or, in your package.json's command:
 
 Use `file-progress/activate: 0` to disable the plugin. See https://eslint.org/docs/latest/user-guide/command-line-interface#specifying-rules-and-plugins for more details on how to use CLI
 
-## Development
+## Contributing
 
-This project is authored in TypeScript (`src/**`) and publishes compiled artifacts from `dist/**`.
-Linting uses `@typescript-eslint/eslint-plugin` with the flat `recommended-type-checked` config.
-
-```bash
-npm run lint
-npm run typecheck
-npm run test
-npm run build
-npm run format
-npm run check
-npm run publint
-npm run release:verify
-```
+Contributor and release documentation is available in [DEVELOPMENT.md](./DEVELOPMENT.md).
