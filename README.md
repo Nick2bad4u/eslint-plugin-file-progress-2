@@ -47,6 +47,7 @@ export default [
             progress: {
                 hide: false, // hide progress output (useful in CI)
                 hideFileName: false, // show generic "Linting..." instead of file names
+                fileNameOnNewLine: false, // place filename on a second line under the linting prefix
                 successMessage: "Lint done...",
                 detailedSuccess: false, // show multi-line final summary (duration, file count, exit code)
                 spinnerStyle: "dots", // line | dots | arc | bounce | clock

@@ -48,6 +48,7 @@ test("normalizeSettings handles invalid values safely", () => {
     assert.deepEqual(internals.normalizeSettings(undefined), {
         hide: false,
         hideFileName: false,
+        fileNameOnNewLine: false,
         successMessage: "Lint complete.",
         detailedSuccess: false,
         spinnerStyle: "dots",
@@ -65,6 +66,7 @@ test("normalizeSettings handles invalid values safely", () => {
         {
             hide: true,
             hideFileName: false,
+            fileNameOnNewLine: false,
             successMessage: "Done",
             detailedSuccess: false,
             spinnerStyle: "dots",
@@ -81,6 +83,7 @@ test("normalizeSettings handles invalid values safely", () => {
         {
             hide: false,
             hideFileName: false,
+            fileNameOnNewLine: false,
             successMessage: "Lint complete.",
             detailedSuccess: true,
             spinnerStyle: "dots",
@@ -97,6 +100,7 @@ test("normalizeSettings handles invalid values safely", () => {
         {
             hide: false,
             hideFileName: false,
+            fileNameOnNewLine: false,
             successMessage: "Lint complete.",
             detailedSuccess: false,
             spinnerStyle: "arc",
@@ -113,6 +117,7 @@ test("normalizeSettings handles invalid values safely", () => {
         {
             hide: false,
             hideFileName: false,
+            fileNameOnNewLine: false,
             successMessage: "Lint complete.",
             detailedSuccess: false,
             spinnerStyle: "dots",
@@ -131,12 +136,30 @@ test("normalizeSettings handles invalid values safely", () => {
         {
             hide: false,
             hideFileName: false,
+            fileNameOnNewLine: false,
             successMessage: "Lint complete.",
             detailedSuccess: false,
             spinnerStyle: "dots",
             prefixMark: "»",
             successMark: "✅",
             failureMark: "❌",
+        },
+    );
+
+    assert.deepEqual(
+        internals.normalizeSettings({
+            fileNameOnNewLine: true,
+        }),
+        {
+            hide: false,
+            hideFileName: false,
+            fileNameOnNewLine: true,
+            successMessage: "Lint complete.",
+            detailedSuccess: false,
+            spinnerStyle: "dots",
+            prefixMark: "•",
+            successMark: "✔",
+            failureMark: "✖",
         },
     );
 });
@@ -153,6 +176,7 @@ test("formatters produce readable output text", () => {
                 {
                     hide: false,
                     hideFileName: false,
+                    fileNameOnNewLine: false,
                     successMessage: "All good",
                     detailedSuccess: false,
                     spinnerStyle: "dots",
@@ -175,6 +199,7 @@ test("formatters produce readable output text", () => {
             {
                 hide: false,
                 hideFileName: false,
+                fileNameOnNewLine: false,
                 successMessage: "All good",
                 detailedSuccess: true,
                 spinnerStyle: "dots",
@@ -196,6 +221,7 @@ test("formatters produce readable output text", () => {
             {
                 hide: false,
                 hideFileName: false,
+                fileNameOnNewLine: false,
                 successMessage: "All good",
                 detailedSuccess: true,
                 spinnerStyle: "dots",
@@ -217,6 +243,7 @@ test("formatters produce readable output text", () => {
             {
                 hide: false,
                 hideFileName: false,
+                fileNameOnNewLine: false,
                 successMessage: "All good",
                 detailedSuccess: true,
                 spinnerStyle: "dots",
@@ -231,6 +258,23 @@ test("formatters produce readable output text", () => {
             },
         ),
         /Lint failed\.[\s\S]*Throughput:[\s\S]*Exit code:[\s\S]*2[\s\S]*Problems:[\s\S]*detected/,
+    );
+
+    assert.match(
+        stripAnsi(
+            internals.formatFileProgress("src/rules/progress.ts", {
+                hide: false,
+                hideFileName: false,
+                fileNameOnNewLine: true,
+                successMessage: "Lint complete.",
+                detailedSuccess: false,
+                spinnerStyle: "dots",
+                prefixMark: "•",
+                successMark: "✔",
+                failureMark: "✖",
+            }),
+        ),
+        /linting\s*\n\s*↳\s*src[\\/]rules[\\/]progress\.ts/,
     );
 });
 
@@ -274,7 +318,17 @@ test("rule works with ESLint 10 RuleContext properties", () => {
                 },
             },
             {
-                filename: "src/file-d.ts",
+                filename: "src/file-d.js",
+                code: 'const foo = "bar";',
+                name: "show filename on a second line",
+                settings: {
+                    progress: {
+                        fileNameOnNewLine: true,
+                    },
+                },
+            },
+            {
+                filename: "src/file-e.ts",
                 code: 'const foo = "bar";',
             },
         ],

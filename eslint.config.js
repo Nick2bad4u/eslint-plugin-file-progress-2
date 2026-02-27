@@ -34,6 +34,7 @@ export default [
                 hide: false, // hide progress output (useful in CI)
                 hideFileName: false, // show generic "Linting..." instead of file names
                 successMessage: "Lint done...",
+                fileNameOnNewLine: true, // place filename on a second line under the linting prefix
                 detailedSuccess: true, // show multi-line final summary (duration, file count, exit code)
                 spinnerStyle: "bounce", // line | dots | arc | bounce | clock
                 successMark: "✔", // custom mark used for success completion

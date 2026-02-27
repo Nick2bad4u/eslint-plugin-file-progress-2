@@ -8,6 +8,7 @@ import type { ProgressSettings, SpinnerStyle } from "../types.js";
 export interface NormalizedProgressSettings {
     hide: boolean;
     hideFileName: boolean;
+    fileNameOnNewLine: boolean;
     successMessage: string;
     detailedSuccess: boolean;
     spinnerStyle: SpinnerStyle;
@@ -61,6 +62,7 @@ const spinnerPresets: Record<SpinnerStyle, { frames: string[]; interval: number 
 const defaultSettings: Readonly<NormalizedProgressSettings> = Object.freeze({
     hide: false,
     hideFileName: false,
+    fileNameOnNewLine: false,
     successMessage: "Lint complete.",
     detailedSuccess: false,
     spinnerStyle: "dots",
@@ -132,6 +134,7 @@ const normalizeSettings = (raw: unknown): NormalizedProgressSettings => {
 
     const hide = typedRaw.hide === true;
     const hideFileName = typedRaw.hideFileName === true;
+    const fileNameOnNewLine = typedRaw.fileNameOnNewLine === true;
     const detailedSuccess = typedRaw.detailedSuccess === true;
     const spinnerStyle = resolveSpinnerStyle(typedRaw.spinnerStyle);
     const prefixMark = resolveMark(typedRaw.prefixMark, defaultSettings.prefixMark);
@@ -145,6 +148,7 @@ const normalizeSettings = (raw: unknown): NormalizedProgressSettings => {
     return {
         hide,
         hideFileName,
+        fileNameOnNewLine,
         successMessage,
         detailedSuccess,
         spinnerStyle,
@@ -213,8 +217,15 @@ const formatPathSegments = (relativeFilePath: string): string => {
 const formatFileProgress = (
     relativeFilePath: string,
     settings: NormalizedProgressSettings = defaultSettings,
-): string =>
-    `${formatPluginPrefix(settings)} ${pc.dim("linting")} ${formatPathSegments(relativeFilePath)}`;
+): string => {
+    const lintingPrefix = `${formatPluginPrefix(settings)} ${pc.dim("linting")}`;
+
+    if (!settings.fileNameOnNewLine) {
+        return `${lintingPrefix} ${formatPathSegments(relativeFilePath)}`;
+    }
+
+    return `${lintingPrefix}\n${pc.dim("  ↳")} ${formatPathSegments(relativeFilePath)}`;
+};
 
 const formatGenericProgress = (settings: NormalizedProgressSettings = defaultSettings): string =>
     `${formatPluginPrefix(settings)} ${pc.dim("linting project files...")}`;
