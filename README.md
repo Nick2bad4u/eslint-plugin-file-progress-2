@@ -16,7 +16,7 @@
 Who likes a silent console ¯\\\_(ツ)\_/¯
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/Nick2bad4u/eslint-plugin-file-progress-2/refs/heads/master/assets/progress.gif" alt="Progress Demo" width="100%">
+  <img src="https://raw.githubusercontent.com/Nick2bad4u/eslint-plugin-file-progress-2/refs/heads/master/assets/progress-2.gif" alt="Progress Demo" width="100%">
     <img src="https://raw.githubusercontent.com/Nick2bad4u/eslint-plugin-file-progress-2/refs/heads/master/assets/summary-msg.png" alt="Detailed summary Demo" width="100%">
 </div>
 
