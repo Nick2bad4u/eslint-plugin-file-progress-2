@@ -5,6 +5,8 @@ export type SpinnerStyle = "line" | "dots" | "arc" | "bounce" | "clock";
 export interface ProgressSettings {
     hide?: boolean;
     hideFileName?: boolean;
+    hidePrefix?: boolean;
+    hideDirectoryNames?: boolean;
     fileNameOnNewLine?: boolean;
     successMessage?: string;
     detailedSuccess?: boolean;

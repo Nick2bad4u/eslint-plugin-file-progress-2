@@ -8,6 +8,8 @@ import type { ProgressSettings, SpinnerStyle } from "../types.js";
 export interface NormalizedProgressSettings {
     hide: boolean;
     hideFileName: boolean;
+    hidePrefix: boolean;
+    hideDirectoryNames: boolean;
     fileNameOnNewLine: boolean;
     successMessage: string;
     detailedSuccess: boolean;
@@ -62,6 +64,8 @@ const spinnerPresets: Record<SpinnerStyle, { frames: string[]; interval: number 
 const defaultSettings: Readonly<NormalizedProgressSettings> = Object.freeze({
     hide: false,
     hideFileName: false,
+    hidePrefix: false,
+    hideDirectoryNames: false,
     fileNameOnNewLine: false,
     successMessage: "Lint complete.",
     detailedSuccess: false,
@@ -74,8 +78,13 @@ const defaultSettings: Readonly<NormalizedProgressSettings> = Object.freeze({
 const formatPluginPrefix = (settings: NormalizedProgressSettings): string =>
     `${pc.bold(pc.cyan("eslint-plugin-file-progress-2"))} ${pc.dim(settings.prefixMark)}`;
 
-const formatSummaryLabel = (): string =>
-    `${pc.bold(pc.cyan("eslint-plugin-file-progress-2"))}${pc.dim(":")}`;
+const formatSummaryLabel = (settings: NormalizedProgressSettings): string => {
+    if (settings.hidePrefix) {
+        return "";
+    }
+
+    return `${pc.bold(pc.cyan("eslint-plugin-file-progress-2"))}${pc.dim(":")}`;
+};
 
 let isExitHandlerBound = false;
 let initialReportDone = false;
@@ -134,6 +143,8 @@ const normalizeSettings = (raw: unknown): NormalizedProgressSettings => {
 
     const hide = typedRaw.hide === true;
     const hideFileName = typedRaw.hideFileName === true;
+    const hidePrefix = typedRaw.hidePrefix === true;
+    const hideDirectoryNames = typedRaw.hideDirectoryNames === true;
     const fileNameOnNewLine = typedRaw.fileNameOnNewLine === true;
     const detailedSuccess = typedRaw.detailedSuccess === true;
     const spinnerStyle = resolveSpinnerStyle(typedRaw.spinnerStyle);
@@ -148,6 +159,8 @@ const normalizeSettings = (raw: unknown): NormalizedProgressSettings => {
     return {
         hide,
         hideFileName,
+        hidePrefix,
+        hideDirectoryNames,
         fileNameOnNewLine,
         successMessage,
         detailedSuccess,
@@ -182,7 +195,15 @@ const toRelativeFilePath = (filename: string, cwd: string): string => {
     return relativePath;
 };
 
-const formatPathSegments = (relativeFilePath: string): string => {
+const formatFileSegment = (fileSegment: string): string => {
+    const extensionIndex = fileSegment.lastIndexOf(".");
+
+    return extensionIndex > 0
+        ? `${pc.bold(pc.green(fileSegment.slice(0, extensionIndex)))}${pc.green(fileSegment.slice(extensionIndex))}`
+        : pc.bold(pc.green(fileSegment));
+};
+
+const formatPathSegments = (relativeFilePath: string, hideDirectoryNames = false): string => {
     const directoryColorizers = [pc.magenta, pc.blue, pc.yellow, pc.green, pc.cyan] as const;
     const separator = relativeFilePath.includes("\\") ? "\\" : "/";
     const segments = relativeFilePath.split(/[/\\]+/).filter((segment) => segment.length > 0);
@@ -192,6 +213,12 @@ const formatPathSegments = (relativeFilePath: string): string => {
     }
 
     const fileSegment = segments.at(-1) ?? "";
+    const formattedFile = formatFileSegment(fileSegment);
+
+    if (hideDirectoryNames) {
+        return formattedFile;
+    }
+
     const directorySegments = segments.slice(0, -1);
 
     const formattedDirectories = directorySegments
@@ -200,12 +227,6 @@ const formatPathSegments = (relativeFilePath: string): string => {
             return pc.bold(colorizer(segment));
         })
         .join(pc.dim(separator));
-
-    const extensionIndex = fileSegment.lastIndexOf(".");
-    const formattedFile =
-        extensionIndex > 0
-            ? `${pc.bold(pc.green(fileSegment.slice(0, extensionIndex)))}${pc.green(fileSegment.slice(extensionIndex))}`
-            : pc.bold(pc.green(fileSegment));
 
     if (directorySegments.length === 0) {
         return formattedFile;
@@ -218,17 +239,28 @@ const formatFileProgress = (
     relativeFilePath: string,
     settings: NormalizedProgressSettings = defaultSettings,
 ): string => {
+    const formattedPath = formatPathSegments(relativeFilePath, settings.hideDirectoryNames);
+
+    if (settings.hidePrefix) {
+        return formattedPath;
+    }
+
     const lintingPrefix = `${formatPluginPrefix(settings)} ${pc.dim("linting")}`;
 
     if (!settings.fileNameOnNewLine) {
-        return `${lintingPrefix} ${formatPathSegments(relativeFilePath)}`;
+        return `${lintingPrefix} ${formattedPath}`;
     }
 
-    return `${lintingPrefix}\n${pc.dim("  ↳")} ${formatPathSegments(relativeFilePath)}`;
+    return `${lintingPrefix}\n${pc.dim("  ↳")} ${formattedPath}`;
 };
 
-const formatGenericProgress = (settings: NormalizedProgressSettings = defaultSettings): string =>
-    `${formatPluginPrefix(settings)} ${pc.dim("linting project files...")}`;
+const formatGenericProgress = (settings: NormalizedProgressSettings = defaultSettings): string => {
+    if (settings.hidePrefix) {
+        return pc.dim("linting project files...");
+    }
+
+    return `${formatPluginPrefix(settings)} ${pc.dim("linting project files...")}`;
+};
 
 const formatDuration = (durationMs: number): string => {
     if (durationMs < 1_000) {
@@ -254,7 +286,9 @@ const formatSuccessMessage = (
     settings: NormalizedProgressSettings,
     stats: LintSummaryStats,
 ): string => {
-    const title = `${formatSummaryLabel()} ${pc.bold(pc.green(settings.successMark))} ${pc.green(settings.successMessage)}`;
+    const summaryLabel = formatSummaryLabel(settings);
+    const resultText = `${pc.bold(pc.green(settings.successMark))} ${pc.green(settings.successMessage)}`;
+    const title = summaryLabel.length > 0 ? `${summaryLabel} ${resultText}` : resultText;
 
     if (!settings.detailedSuccess) {
         return title;
@@ -274,7 +308,9 @@ const formatFailureMessage = (
     settings: NormalizedProgressSettings,
     stats: LintSummaryStats,
 ): string => {
-    const title = `${formatSummaryLabel()} ${pc.bold(pc.red(settings.failureMark))} ${pc.red("Lint failed.")}`;
+    const summaryLabel = formatSummaryLabel(settings);
+    const resultText = `${pc.bold(pc.red(settings.failureMark))} ${pc.red("Lint failed.")}`;
+    const title = summaryLabel.length > 0 ? `${summaryLabel} ${resultText}` : resultText;
 
     if (!settings.detailedSuccess) {
         return title;
@@ -307,12 +343,12 @@ const bindExitHandler = (): void => {
 
             if (exitCode === 0) {
                 spinner.success({
-                    mark: lastVisibleSettings.prefixMark,
+                    mark: lastVisibleSettings.hidePrefix ? "" : lastVisibleSettings.prefixMark,
                     text: formatSuccessMessage(lastVisibleSettings, summaryStats),
                 });
             } else {
                 spinner.error({
-                    mark: lastVisibleSettings.prefixMark,
+                    mark: lastVisibleSettings.hidePrefix ? "" : lastVisibleSettings.prefixMark,
                     text: formatFailureMessage(lastVisibleSettings, summaryStats),
                 });
             }
