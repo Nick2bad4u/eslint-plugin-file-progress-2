@@ -1,28 +1,21 @@
 # This is a Dependabot configuration file for automating dependency updates.
 # The configuration is set to version 2 of the Dependabot schema.
-# It defines update settings for three package ecosystems:
-# GitHub Actions, Bundler, and npm.
-# Each ecosystem has its own update configuration, including:
-# - The directory to scan for dependencies (root directory in this case).
-# - The schedule for checking updates (daily).
-# - Allowing both direct and indirect updates for all packages.
-# - Grouping updates by ecosystem with specific patterns for version updates.
 # yaml-language-server: $schema=https://www.schemastore.org/dependabot-2.0.json
-
 version: 2
 enable-beta-ecosystems: true
 
 multi-ecosystem-groups:
     dependabot-all:
         schedule:
-            interval: "weekly"
+            interval: "monthly"
             time: "05:30"
             timezone: "America/Detroit"
         assignees:
             - "Nick2bad4u"
+        target-branch: "main"
         commit-message:
-            prefix: "[dependabot][all][skip-ci]"
-            prefix-development: "[dependabot][dev][all][skip-ci]"
+            prefix: "[dependabot][all]"
+            prefix-development: "[dependabot][dev][all]"
             include: "scope"
         labels:
             - "dependabot"
@@ -33,7 +26,6 @@ updates:
       cooldown:
           default-days: 3
           include: ["*"]
-      open-pull-requests-limit: 1
       directory: /
       allow:
           # Allow both direct and indirect updates for all packages
@@ -41,6 +33,7 @@ updates:
       labels:
           - "github-actions"
       multi-ecosystem-group: dependabot-all
+      rebase-strategy: auto
       patterns:
           - "*"
 
@@ -48,7 +41,6 @@ updates:
       cooldown:
           default-days: 3
           include: ["*"]
-      open-pull-requests-limit: 1
       directory: /
       rebase-strategy: auto
       versioning-strategy: increase
@@ -56,11 +48,7 @@ updates:
           # Allow both direct and indirect updates for all packages
           - dependency-type: "all"
       ignore:
-          - dependency-name: "electron-builder"
-            versions: ["< 26.0.18"]
-          - dependency-name: "electron-builder-squirrel-windows"
-            versions: ["< 26.0.18"]
-            # Ignore local workspace dependencies completely
+          # Ignore local workspace dependencies completely
           - dependency-name: "@shared/*"
           - dependency-name: "file:*"
           # Dependabot has been returning `unknown_error` for these three
