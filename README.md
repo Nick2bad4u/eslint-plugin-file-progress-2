@@ -39,6 +39,15 @@ import progress from "eslint-plugin-file-progress-2";
 export default [progress.configs.recommended];
 ```
 
+#### Use the recommended config in CommonJS
+
+```js
+// eslint.config.cjs
+const progress = require("eslint-plugin-file-progress-2");
+
+module.exports = [progress.configs.recommended];
+```
+
 #### Use the recommended CI config if you want the plugin to automatically hide progress in CI environments
 
 ```js
