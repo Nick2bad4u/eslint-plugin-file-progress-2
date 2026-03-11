@@ -100,7 +100,7 @@
         "@typescript-eslint/eslint-plugin": "^8.57.0",
         "@typescript-eslint/parser": "^8.57.0",
         "all-contributors-cli": "^6.26.1",
-        "esbuild": "^0.25.10",
+        "esbuild": "^0.27.3",
         "eslint": "^10.0.3",
         "eslint-config-pegasus": "^6.0.2",
         "eslint-plugin-eslint-plugin": "^7.3.2",
