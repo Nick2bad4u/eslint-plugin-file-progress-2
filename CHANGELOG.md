@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 3.4.4
+
+### Patch Changes
+
+- 342cbd5: Updates Deps and Typescript to v6
+
 ## 3.4.3
 
 ### Patch Changes
