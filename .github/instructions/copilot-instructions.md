@@ -8,7 +8,7 @@ applyTo: "**"
 
 ## Build and Test
 
-- Install dependencies: `npm install` (or `npm ci` in CI).
+- Install dependencies: `npm install` (or `npm ci --force` in CI).
 - Main validation command: `npm run check`.
     - Runs: `lint`, `typecheck`, `test`, `format:check`.
 - Release readiness: `npm run release:verify` (runs `check` + `publint`).
