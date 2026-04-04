@@ -1,6 +1,7 @@
 node_modules
 coverage
 dist
+docs/docusaurus/build
+docs/docusaurus/site-docs/developer/api
 *.log
 package-lock.json
-.changeset/

@@ -2,7 +2,7 @@
 
 [![Version](https://badgen.net/npm/v/eslint-plugin-file-progress-2/latest)](https://www.npmjs.com/package/eslint-plugin-file-progress-2)
 [![License](https://badgen.net/npm/license/eslint-plugin-file-progress-2?color=orange)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/blob/master/LICENSE)
-[![Release](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions/workflows/publish.yml/badge.svg)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions/workflows/publish.yml)
+[![Release](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions/workflows/release.yml/badge.svg)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions/workflows/release.yml)
 [![Tests](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/workflows/Tests/badge.svg)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions/workflows/test.yml)
 
 > ESLint plugin to print file progress
@@ -138,3 +138,4 @@ npx eslint . --plugin file-progress --rule 'file-progress/activate: warn'
 ## Contributing
 
 - Contributor and release documentation is available in [DEVELOPMENT.md](./DEVELOPMENT.md).
+- The Docusaurus/TypeDoc site source lives under [`docs/docusaurus`](./docs/docusaurus) and rule docs live under [`docs/rules`](./docs/rules).

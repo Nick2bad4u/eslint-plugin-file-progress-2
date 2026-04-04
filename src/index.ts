@@ -1,3 +1,4 @@
+import packageJson from "../package.json" with { type: "json" };
 import progressRule from "./rules/progress.js";
 import type { FileProgressPlugin } from "./types.js";
 
@@ -6,7 +7,7 @@ const env = process.env as NodeJS.ProcessEnv & { CI?: string };
 const plugin: FileProgressPlugin = {
     meta: {
         name: "eslint-plugin-file-progress-2",
-        version: "3.2.0",
+        version: packageJson.version,
     },
     configs: {} as FileProgressPlugin["configs"],
     rules: {

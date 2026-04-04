@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">eslint-plugin-file-progress-2 logo</title>
+  <desc id="desc">A rounded-square app icon with progress bars and a completion ring.</desc>
+  <defs>
+    <linearGradient id="bg" x1="64" y1="64" x2="448" y2="448" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1e1b4b" />
+      <stop offset="0.55" stop-color="#312e81" />
+      <stop offset="1" stop-color="#0f766e" />
+    </linearGradient>
+    <linearGradient id="accent" x1="94" y1="120" x2="420" y2="352" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8b5cf6" />
+      <stop offset="0.5" stop-color="#6366f1" />
+      <stop offset="1" stop-color="#22d3ee" />
+    </linearGradient>
+    <linearGradient id="accentSoft" x1="118" y1="148" x2="370" y2="340" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#c4b5fd" />
+      <stop offset="1" stop-color="#a5f3fc" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#020617" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <rect x="24" y="24" width="464" height="464" rx="104" fill="url(#bg)" />
+  <rect x="42" y="42" width="428" height="428" rx="86" fill="none" opacity="0.22" stroke="#e2e8f0" stroke-width="2" />
+
+  <g filter="url(#shadow)">
+    <rect x="88" y="126" width="188" height="40" rx="20" fill="#ffffff16" stroke="#ffffff26" stroke-width="2" />
+    <rect x="88" y="126" width="126" height="40" rx="20" fill="url(#accent)" />
+
+    <rect x="88" y="196" width="220" height="40" rx="20" fill="#ffffff16" stroke="#ffffff26" stroke-width="2" />
+    <rect x="88" y="196" width="176" height="40" rx="20" fill="url(#accent)" />
+
+    <rect x="88" y="266" width="164" height="40" rx="20" fill="#ffffff16" stroke="#ffffff26" stroke-width="2" />
+    <rect x="88" y="266" width="98" height="40" rx="20" fill="url(#accentSoft)" />
+
+    <path d="M350 138a118 118 0 1 1 0 236" fill="none" stroke="#ffffff14" stroke-linecap="round" stroke-width="30" />
+    <path d="M350 138a118 118 0 1 1 0 236" fill="none" stroke="url(#accent)" stroke-dasharray="558 190" stroke-linecap="round" stroke-width="30" transform="rotate(-90 350 256)" />
+
+    <circle cx="350" cy="256" r="74" fill="#08111f55" stroke="#ffffff1c" stroke-width="2" />
+    <path d="M315 258l24 24 50-58" fill="none" stroke="#f8fafc" stroke-linecap="round" stroke-linejoin="round" stroke-width="20" />
+  </g>
+</svg>

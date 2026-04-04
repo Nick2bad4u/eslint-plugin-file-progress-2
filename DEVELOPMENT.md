@@ -19,6 +19,8 @@ npm run format
 npm run check
 npm run publint
 npm run release:verify
+npm run docs:typecheck
+npm run docs:build
 ```
 
 ## Project Notes
@@ -26,33 +28,64 @@ npm run release:verify
 - Source is authored in TypeScript under `src/**`.
 - Build output is emitted to `dist/**`.
 - ESLint config dogfoods the built local plugin from `dist`.
+- The documentation site source lives under `docs/docusaurus/**`.
+- Rule reference pages live under `docs/rules/**` and are mounted at `/docs/rules/*` in Docusaurus.
 
-## Versioning and Releases (Changesets)
+## Versioning and Releases
 
-This repository uses Changesets for versioning and npm publishing.
+Releases are manual and run from the GitHub Actions **Release** workflow.
 
-### 1) Add a changeset
+### 1) Prepare the branch
 
-For any user-facing change, add a changeset file:
-
-```bash
-npm run changeset
-```
-
-### 2) Commit and push
-
-Commit code + changeset and push your branch.
-
-### 3) Release workflow behavior
-
-On `master`, the Release workflow (`changesets/action`) will:
-
-- open/update a version PR when pending changesets exist
-- publish to npm after the version PR is merged
-
-### Useful changeset commands
+Before starting a release, make sure `master` contains the changes you want to
+publish and that the validation suite passes locally:
 
 ```bash
-npm run changeset:status
-npm run changeset:version
+npm run release:check
 ```
+
+### 2) Run the manual release workflow
+
+Open **Actions → Release → Run workflow** and choose one of the following:
+
+- `patch`, `minor`, or `major` for a normal semver bump
+- an explicit `x.y.z` version if you need to override the bump type
+
+The workflow will:
+
+- validate the package
+- bump `package.json` / `package-lock.json`
+- create and push a `chore: release vX.Y.Z` commit
+- create and push the matching git tag
+- publish the package to npm
+- create the matching GitHub release
+
+### 3) Release notes
+
+Release notes are generated from git history during the workflow. You can also
+preview them locally with:
+
+```bash
+npm run changelog:release-notes -- --output temp/release-notes.md
+```
+
+## Documentation Site
+
+Install the Docusaurus workspace dependencies when you want to work on the docs site:
+
+```bash
+npm run docs:install
+```
+
+Common docs commands:
+
+```bash
+npm run docs:typecheck
+npm run docs:api
+npm run docs:build
+npm run docs:start
+```
+
+- `docs:api` regenerates the TypeDoc-powered API pages into `docs/docusaurus/site-docs/developer/api`.
+- `docs:build` regenerates the API docs and then builds the Docusaurus site.
+- `docs:start` launches the local Docusaurus dev server.

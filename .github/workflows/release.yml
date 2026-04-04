@@ -1,0 +1,280 @@
+# Release the npm package manually and create the matching GitHub release.
+# yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
+name: Release
+
+run-name: ${{ format('Manual release ({0}) by @{1}', inputs.version || inputs.release_type, github.actor) }}
+
+on:
+    workflow_dispatch:
+        inputs:
+            release_type:
+                description: "Release bump type"
+                required: true
+                default: "patch"
+                type: choice
+                options:
+                    - "patch"
+                    - "minor"
+                    - "major"
+            version:
+                description: "Explicit release version in x.y.z format (overrides release_type)"
+                required: false
+                type: string
+            ref:
+                description: "Branch to release from"
+                required: false
+                default: "master"
+                type: string
+
+permissions:
+    contents: read
+
+concurrency:
+    group: "${{ github.workflow }}-${{ github.repository }}"
+    cancel-in-progress: false
+
+defaults:
+    run:
+        shell: bash
+
+jobs:
+    publish:
+        name: Publish npm package and GitHub release
+        runs-on: ubuntu-latest
+        timeout-minutes: 60
+        permissions:
+            contents: write
+            id-token: write
+        outputs:
+            github_release_url: ${{ steps.version.outputs.github_release_url }}
+            npm_release_url: ${{ steps.version.outputs.npm_release_url }}
+            package_name: ${{ steps.version.outputs.package_name }}
+            tag: ${{ steps.version.outputs.tag }}
+            version: ${{ steps.version.outputs.version }}
+        env:
+            CI: "true"
+            DEFAULT_RELEASE_BRANCH: "master"
+            NODE_VERSION: "22"
+            NPM_REGISTRY_URL: "https://registry.npmjs.org"
+            RELEASE_NOTES_PATH: "temp/release-notes.md"
+
+        steps:
+            - name: Harden the runner (Audit all outbound calls)
+              uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+              with:
+                  egress-policy: audit
+
+            - name: Resolve target ref
+              id: target_ref
+              env:
+                  WORKFLOW_DISPATCH_REF: ${{ inputs.ref }}
+              run: |
+                  set -euo pipefail
+                  branch="${WORKFLOW_DISPATCH_REF:-}"
+                  if [ -z "$branch" ]; then
+                    branch="${DEFAULT_RELEASE_BRANCH}"
+                  fi
+                  branch="${branch#refs/heads/}"
+                  if [[ "$branch" == refs/tags/* ]]; then
+                    echo "workflow_dispatch ref must be a branch, not a tag: $branch" >&2
+                    exit 1
+                  fi
+
+                  echo "ref=$branch" >> "$GITHUB_OUTPUT"
+                  echo "branch=$branch" >> "$GITHUB_OUTPUT"
+
+            - name: Checkout repository
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  fetch-depth: 0
+                  fetch-tags: true
+                  ref: ${{ steps.target_ref.outputs.ref }}
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Setup Node.js
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  registry-url: ${{ env.NPM_REGISTRY_URL }}
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci --force
+
+            - name: Configure Git for release automation
+              run: |
+                  set -euo pipefail
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                  git fetch --tags --force
+
+            - name: Validate release input
+              env:
+                  EXPLICIT_VERSION: ${{ inputs.version }}
+                  RELEASE_TYPE: ${{ inputs.release_type }}
+              run: |
+                  set -euo pipefail
+                  explicit_version="${EXPLICIT_VERSION:-}"
+                  if [ -n "$explicit_version" ]; then
+                    if [[ ! "$explicit_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                      echo "Invalid version input '$explicit_version'. Use x.y.z format." >&2
+                      exit 1
+                    fi
+                    exit 0
+                  fi
+
+                  release_type="${RELEASE_TYPE:-patch}"
+                  case "$release_type" in
+                    patch|minor|major)
+                      exit 0
+                      ;;
+                    *)
+                      echo "Invalid release_type '$release_type'. Allowed: patch, minor, major." >&2
+                      exit 1
+                      ;;
+                  esac
+
+            - name: Verify package
+              run: npm run release:check
+
+            - name: Ensure verification did not modify tracked files
+              run: |
+                  set -euo pipefail
+                  if ! git diff --quiet || ! git diff --cached --quiet; then
+                    echo "release:check modified tracked files. Fix the repository state before releasing." >&2
+                    git status --short
+                    exit 1
+                  fi
+
+            - name: Determine release version
+              id: version
+              env:
+                  EXPLICIT_VERSION: ${{ inputs.version }}
+                  RELEASE_TYPE: ${{ inputs.release_type }}
+              run: |
+                  set -euo pipefail
+
+                  explicit_version="${EXPLICIT_VERSION:-}"
+                  if [ -n "$explicit_version" ]; then
+                    npm version "$explicit_version" --no-git-tag-version
+                    version="$explicit_version"
+                  else
+                    release_type="${RELEASE_TYPE:-patch}"
+                    npm version "$release_type" --no-git-tag-version
+                    version=$(node -p "require('./package.json').version")
+                  fi
+
+                  package_name=$(node -p "require('./package.json').name")
+                  tag="v${version}"
+                  npm_release_url="https://www.npmjs.com/package/${package_name}/v/${version}"
+                  github_release_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${tag}"
+
+                  echo "version=$version" >> "$GITHUB_OUTPUT"
+                  echo "tag=$tag" >> "$GITHUB_OUTPUT"
+                  echo "package_name=$package_name" >> "$GITHUB_OUTPUT"
+                  echo "npm_release_url=$npm_release_url" >> "$GITHUB_OUTPUT"
+                  echo "github_release_url=$github_release_url" >> "$GITHUB_OUTPUT"
+
+            - name: Check whether version is already published
+              id: npm_check
+              env:
+                  PACKAGE_NAME: ${{ steps.version.outputs.package_name }}
+                  VERSION: ${{ steps.version.outputs.version }}
+              run: |
+                  set -euo pipefail
+                  if npm view "${PACKAGE_NAME}@${VERSION}" version >/dev/null 2>&1; then
+                    echo "already_published=true" >> "$GITHUB_OUTPUT"
+                    echo "Version ${VERSION} is already published to npm."
+                  else
+                    echo "already_published=false" >> "$GITHUB_OUTPUT"
+                    echo "Version ${VERSION} is available for publishing."
+                  fi
+
+            - name: Prevent duplicate release version
+              if: steps.npm_check.outputs.already_published == 'true'
+              env:
+                  VERSION: ${{ steps.version.outputs.version }}
+              run: |
+                  echo "Version ${VERSION} is already published. Choose a new release type/version." >&2
+                  exit 1
+
+            - name: Commit and push release version + tag
+              env:
+                  BRANCH: ${{ steps.target_ref.outputs.branch }}
+                  TAG: ${{ steps.version.outputs.tag }}
+              run: |
+                  set -euo pipefail
+
+                  if git rev-parse "$TAG" >/dev/null 2>&1; then
+                    echo "Tag $TAG already exists locally." >&2
+                    exit 1
+                  fi
+
+                  git add package.json package-lock.json
+                  if git diff --cached --quiet; then
+                    echo "No staged changes found for release commit." >&2
+                    exit 1
+                  fi
+
+                  git commit -m "chore: release ${TAG}"
+                  git tag -a "$TAG" -m "$TAG"
+                  git push origin "HEAD:${BRANCH}"
+                  git push origin "$TAG"
+
+            - name: Generate release notes
+              env:
+                  TAG: ${{ steps.version.outputs.tag }}
+              run: |
+                  set -euo pipefail
+                  mkdir -p temp
+                  npm run --silent changelog:release-notes -- --output "${RELEASE_NOTES_PATH}" --tag "$TAG"
+                  if [ ! -s "${RELEASE_NOTES_PATH}" ]; then
+                    echo "No release notes were generated." > "${RELEASE_NOTES_PATH}"
+                  fi
+
+            - name: Publish to npm
+              run: npm publish --access public --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Check whether GitHub release already exists
+              id: gh_release_check
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  TAG: ${{ steps.version.outputs.tag }}
+              run: |
+                  set -euo pipefail
+                  if gh release view "$TAG" >/dev/null 2>&1; then
+                    echo "exists=true" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "exists=false" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Create GitHub release
+              if: steps.gh_release_check.outputs.exists != 'true'
+              uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
+              with:
+                  body_path: ${{ env.RELEASE_NOTES_PATH }}
+                  draft: false
+                  generate_release_notes: false
+                  name: ${{ steps.version.outputs.tag }}
+                  prerelease: false
+                  tag_name: ${{ steps.version.outputs.tag }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Release summary
+              if: ${{ !cancelled() }}
+              run: |
+                  {
+                    echo "## 🚀 Release Summary"
+                    echo ""
+                    echo "- Actor: @${{ github.actor }}"
+                    echo "- Ref: \`${{ steps.target_ref.outputs.ref }}\`"
+                    echo "- Source branch: \`${{ steps.target_ref.outputs.branch }}\`"
+                    echo "- Package: \`${{ steps.version.outputs.package_name }}\`"
+                    echo "- Version: \`${{ steps.version.outputs.version }}\`"
+                    echo "- Tag: \`${{ steps.version.outputs.tag }}\`"
+                    echo "- npm package: [${{ steps.version.outputs.package_name }}@${{ steps.version.outputs.version }}](${{ steps.version.outputs.npm_release_url }})"
+                    echo "- GitHub release: [${{ steps.version.outputs.tag }}](${{ steps.version.outputs.github_release_url }})"
+                  } >> "$GITHUB_STEP_SUMMARY"

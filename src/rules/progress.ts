@@ -399,8 +399,10 @@ const progressRule: Rule.RuleModule = {
         docs: {
             description: "enforce displaying lint progress in CLI output.",
             recommended: true,
+            frozen: false,
             url: "https://github.com/Nick2bad4u/eslint-plugin-file-progress-2#readme",
         },
+        deprecated: false,
         schema: [],
         messages: {
             status: "Display lint progress in CLI output.",

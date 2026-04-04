@@ -106,6 +106,8 @@ out
 # Nuxt.js build / generate output
 .nuxt
 dist
+docs/docusaurus/build
+docs/docusaurus/site-docs/developer/api
 
 # Gatsby files
 .cache/
@@ -861,3 +863,5 @@ eslint.config.bundled_**
 
 # Docusaurus API reference files (if auto-generated)
 **/site-docs/developer/api/
+docs/docusaurus/static/stylelint-inspector/
+docs/docusaurus/static/eslint-inspector/

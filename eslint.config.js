@@ -19,7 +19,7 @@ const typeScriptPluginConfigs = /** @type {import('eslint').Linter.Config[]} */ 
 
 export default [
     {
-        ignores: ["dist/**"],
+        ignores: ["dist/**", "docs/docusaurus/**", "docs/rules/**"],
     },
     {
         name: "file-progress/dogfood",

@@ -38,5 +38,6 @@ applyTo: "**"
     - `prelint` runs `build` first, so use `npm run lint`/`npm run check` instead of calling `eslint` directly in a clean repo.
 - Package publishing includes only `dist/**` (`package.json` `files` field).
     - Do not manually edit `dist`; always regenerate with `npm run build`.
-- For release PRs/publishes, include a valid `.changeset/*.md` entry.
+- Releases are manual and run from `.github/workflows/release.yml`.
+    - Use `npm run release:check` locally before triggering the workflow.
 - Keep cross-platform behavior in mind (Windows vs Linux paths), especially in path-handling tests/utilities.
