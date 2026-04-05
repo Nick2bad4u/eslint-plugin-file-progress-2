@@ -3,6 +3,7 @@ import type { FileProgressRuleModule } from "../types.js";
 import { createProgressRule } from "../_internal/progress-runtime.js";
 
 const summaryOnlyRule: FileProgressRuleModule = createProgressRule({
+    defaultOptions: {},
     description:
         "Display only the final lint completion summary in CLI output.",
     liveMode: "summary-only",

@@ -4,37 +4,25 @@ Display live lint progress in the CLI without printing per-file names.
 
 ## Targeted pattern scope
 
-This rule targets the same CLI progress workflow as `activate`, but it uses a lower-noise live output mode.
+This rule targets the same CLI progress workflow as `activate`, but it uses a lower-noise live mode.
 
-It keeps these behaviors:
-
-- a live spinner or progress indicator while ESLint runs
-- a final completion summary at process exit
-
-It intentionally avoids one behavior:
-
-- printing the current file path during the run
+It keeps the spinner and final summary while suppressing per-file path repainting.
 
 ## What this rule reports
 
 This rule does not report source-code violations.
 
-Enabling it turns on compact live progress for the current ESLint run.
+Enabling it changes CLI output behavior for the current run.
 
 ## Why this rule exists
 
-Per-file updates are useful, but they are not always the best output mode.
+Per-file updates are sometimes more noise than signal.
 
-- Narrow terminals can become harder to read when paths constantly repaint.
-- Captured logs may benefit from a stable “still running” signal.
-- Some teams want visible activity without file-by-file churn.
-
-This rule exists as a built-in ergonomic mode for that quieter style.
+This rule exists for workflows that still want visible activity but do not need to see the current path.
 
 ## ❌ Incorrect
 
 ```ts
-// eslint.config.ts
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
@@ -43,7 +31,7 @@ export default [
       "file-progress": progress,
     },
     rules: {
-      // This prints every file path while linting.
+      // This still repaints the current file path.
       "file-progress/activate": "warn",
     },
   },
@@ -53,7 +41,6 @@ export default [
 ## ✅ Correct
 
 ```ts
-// eslint.config.ts
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
@@ -62,8 +49,13 @@ export default [
       "file-progress": progress,
     },
     rules: {
-      // This keeps progress visible without file-name churn.
-      "file-progress/compact": "warn",
+      "file-progress/compact": [
+        "warn",
+        {
+          minFilesBeforeShow: 5,
+          ttyOnly: true,
+        },
+      ],
     },
   },
 ];
@@ -71,17 +63,20 @@ export default [
 
 ## Behavior and migration notes
 
-- This rule is effectively a packaged version of the main progress rule with file names suppressed.
-- It is a better fit than `activate` when file-level detail is unnecessary.
-- It is still noisier than `summary-only`, because it still shows a live indicator.
-- Do not combine it with `activate` or `summary-only` in the same config.
+This rule accepts the same option object as [`activate`](./activate.md).
+
+Mode-specific notes:
+
+- `compact` always hides file names during live output.
+- `pathFormat` has no visible effect while live output is active, because there is no path to format.
+- `showSummaryWhenHidden` still matters when `hide`, `ttyOnly`, or `minFilesBeforeShow` suppress the live indicator.
+- `settings.progress` is still read as a deprecated fallback, but rule options win when both are present.
 
 ## Additional examples
 
-### ❌ Incorrect — compact mode when file-level progress is required
+### ✅ Correct — send compact progress to stdout
 
 ```ts
-// eslint.config.ts
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
@@ -90,25 +85,12 @@ export default [
       "file-progress": progress,
     },
     rules: {
-      "file-progress/compact": "warn",
-    },
-  },
-];
-```
-
-### ✅ Correct — use activate when file-level visibility matters
-
-```ts
-// eslint.config.ts
-import progress from "eslint-plugin-file-progress-2";
-
-export default [
-  {
-    plugins: {
-      "file-progress": progress,
-    },
-    rules: {
-      "file-progress/activate": "warn",
+      "file-progress/compact": [
+        "warn",
+        {
+          outputStream: "stdout",
+        },
+      ],
     },
   },
 ];
@@ -125,7 +107,13 @@ export default [
       "file-progress": progress,
     },
     rules: {
-      "file-progress/compact": "warn",
+      "file-progress/compact": [
+        "warn",
+        {
+          spinnerStyle: "arc",
+          ttyOnly: true,
+        },
+      ],
     },
   },
 ];
@@ -135,12 +123,12 @@ export default [
 
 Do not use this rule if:
 
-- you explicitly want to see the current file path during long runs
-- you want no live updates at all
+- you need to see the current file path during long runs
+- you want no live output at all
 
 ## Package documentation
 
-This rule is part of the `eslint-plugin-file-progress-2` package and provides a quieter live-progress mode for CLI linting.
+This rule is part of the `eslint-plugin-file-progress-2` package.
 
 > **Rule catalog ID:** R002
 
@@ -150,3 +138,4 @@ This rule is part of the `eslint-plugin-file-progress-2` package and provides a 
 - [Getting Started](./getting-started.md)
 - [activate](./activate.md)
 - [summary-only](./summary-only.md)
+- [Preset reference](./presets/index.md)

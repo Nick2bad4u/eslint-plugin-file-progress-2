@@ -3,6 +3,9 @@ import type { FileProgressRuleModule } from "../types.js";
 import { createProgressRule } from "../_internal/progress-runtime.js";
 
 const compactRule: FileProgressRuleModule = createProgressRule({
+    defaultOptions: {
+        hideFileName: true,
+    },
     description:
         "Display compact lint progress in CLI output without showing file names.",
     liveMode: "generic",

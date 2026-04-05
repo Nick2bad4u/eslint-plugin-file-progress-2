@@ -1,21 +1,11 @@
-export interface PresetsRuleModule {
-    readonly meta?:
-        | {
-              readonly docs?:
-                  | {
-                        readonly typefestConfigs?:
-                            | readonly string[]
-                            | string
-                            | undefined;
-                        readonly url?: string | undefined;
-                    }
-                  | undefined;
-              readonly fixable?: string | undefined;
-              readonly hasSuggestions?: boolean | undefined;
-          }
-        | undefined;
+export interface PresetPluginShape {
+    readonly configs: Readonly<Record<string, unknown>>;
 }
 
-export function generatePresetsRulesMatrixSectionFromRules(
-    rules: Readonly<Record<string, PresetsRuleModule>>
+export function generatePresetMatrixSectionFromPlugin(
+    plugin: PresetPluginShape
 ): string;
+
+export function syncPresetsRulesMatrix(input: {
+    readonly writeChanges: boolean;
+}): Promise<Readonly<{ changed: boolean }>>;

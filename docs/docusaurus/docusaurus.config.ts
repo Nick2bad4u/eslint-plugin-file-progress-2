@@ -282,6 +282,14 @@ const config: Config = {
                             label: "• file-progress/activate",
                             to: "/docs/rules/activate",
                         },
+                        {
+                            label: "• file-progress/compact",
+                            to: "/docs/rules/compact",
+                        },
+                        {
+                            label: "• file-progress/summary-only",
+                            to: "/docs/rules/summary-only",
+                        },
                     ],
                     label: "📜 Rules",
                     position: "left",
@@ -305,6 +313,22 @@ const config: Config = {
                         {
                             label: "🔵 Recommended Detailed",
                             to: "/docs/rules/presets/recommended-detailed",
+                        },
+                        {
+                            label: "🟣 Recommended Compact",
+                            to: "/docs/rules/presets/recommended-compact",
+                        },
+                        {
+                            label: "⚪ Recommended Summary Only",
+                            to: "/docs/rules/presets/recommended-summary-only",
+                        },
+                        {
+                            label: "🟢 Recommended TTY",
+                            to: "/docs/rules/presets/recommended-tty",
+                        },
+                        {
+                            label: "🟤 Recommended CI Detailed",
+                            to: "/docs/rules/presets/recommended-ci-detailed",
                         },
                     ],
                     label: "🛠️ Presets",

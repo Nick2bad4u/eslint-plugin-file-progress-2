@@ -4,34 +4,25 @@ Display live per-file lint progress in CLI output.
 
 ## Targeted pattern scope
 
-This rule is intended for ESLint CLI runs where developers want visible, ongoing progress while files are being linted.
+This rule is for CLI-oriented ESLint runs where visible progress matters.
 
-It activates three runtime behaviors:
-
-- start a spinner when linting begins
-- update the current file path as the run progresses
-- print a final success or failure summary when ESLint exits
+It enables the plugin's full live mode, including spinner updates and per-file path repainting.
 
 ## What this rule reports
 
 This rule does not report source-code violations.
 
-Instead, enabling it turns on the plugin's full live progress mode for the current ESLint run.
+Enabling it changes ESLint's terminal output behavior for the current run.
 
 ## Why this rule exists
 
-Long ESLint runs can feel silent and uncertain.
+Long ESLint runs can feel silent and untrustworthy when the terminal shows no activity while ESLint is still working.
 
-- Developers may assume the run is stalled when nothing is printed for a while.
-- Seeing the current file path makes long runs easier to trust.
-- A final completion line provides a clearer end state than a raw process exit.
-
-This rule exists to improve CLI feedback without changing lint semantics.
+This rule exists to make those runs easier to monitor without changing lint semantics.
 
 ## ❌ Incorrect
 
 ```ts
-// eslint.config.ts
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
@@ -40,7 +31,7 @@ export default [
       "file-progress": progress,
     },
     rules: {
-      // No progress output will be shown during the run.
+      // No live progress will be shown.
       "file-progress/activate": "off",
     },
   },
@@ -50,7 +41,6 @@ export default [
 ## ✅ Correct
 
 ```ts
-// eslint.config.ts
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
@@ -59,8 +49,14 @@ export default [
       "file-progress": progress,
     },
     rules: {
-      // Show per-file progress while ESLint is running.
-      "file-progress/activate": "warn",
+      "file-progress/activate": [
+        "warn",
+        {
+          outputStream: "stderr",
+          throttleMs: 100,
+          ttyOnly: true,
+        },
+      ],
     },
   },
 ];
@@ -68,18 +64,66 @@ export default [
 
 ## Behavior and migration notes
 
-- This rule reads behavior controls from `settings.progress`.
-- Use `hideFileName`, `hidePrefix`, `hideDirectoryNames`, and `detailedSuccess` when you want to refine the output style.
-- If you want a quieter live mode, use `compact`.
-- If you want only the final completion summary, use `summary-only`.
-- Do not enable multiple `file-progress/*` runtime rules at the same time; choose one output mode per config.
+This rule accepts the following option object:
+
+```ts
+interface ProgressRuleOptions {
+  detailedSuccess?: boolean;
+  failureMark?: string;
+  fileNameOnNewLine?: boolean;
+  hide?: boolean;
+  hideFileName?: boolean;
+  hidePrefix?: boolean;
+  minFilesBeforeShow?: number;
+  outputStream?: "stderr" | "stdout";
+  pathFormat?: "relative" | "basename";
+  prefixMark?: string;
+  showSummaryWhenHidden?: boolean;
+  spinnerStyle?: "arc" | "bounce" | "clock" | "dots" | "line";
+  successMark?: string;
+  successMessage?: string;
+  throttleMs?: number;
+  ttyOnly?: boolean;
+}
+```
+
+Default values:
+
+```ts
+{
+  detailedSuccess: false,
+  failureMark: "✖",
+  fileNameOnNewLine: false,
+  hide: false,
+  hideFileName: false,
+  hidePrefix: false,
+  minFilesBeforeShow: 0,
+  outputStream: "stderr",
+  pathFormat: "relative",
+  prefixMark: "•",
+  showSummaryWhenHidden: false,
+  spinnerStyle: "dots",
+  successMark: "✔",
+  successMessage: "Lint complete.",
+  throttleMs: 0,
+  ttyOnly: false,
+}
+```
+
+Important behavior details:
+
+- `ttyOnly` suppresses output when the selected stream is not interactive.
+- `throttleMs` limits how often file-path updates repaint.
+- `minFilesBeforeShow` delays progress output until ESLint has seen the configured number of files.
+- `showSummaryWhenHidden` still prints the final summary when live output is hidden.
+- `pathFormat: "basename"` replaces the older `hideDirectoryNames` style.
+- `settings.progress` is still read as a deprecated fallback, but rule options win when both are present.
 
 ## Additional examples
 
-### ❌ Incorrect — full per-file output when lower-noise progress is preferred
+### ✅ Correct — basename-only paths
 
 ```ts
-// eslint.config.ts
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
@@ -88,16 +132,20 @@ export default [
       "file-progress": progress,
     },
     rules: {
-      "file-progress/activate": "warn",
+      "file-progress/activate": [
+        "warn",
+        {
+          pathFormat: "basename",
+        },
+      ],
     },
   },
 ];
 ```
 
-### ✅ Correct — use compact mode when file names are unnecessary
+### ✅ Correct — keep the final summary when live output is hidden
 
 ```ts
-// eslint.config.ts
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
@@ -106,7 +154,13 @@ export default [
       "file-progress": progress,
     },
     rules: {
-      "file-progress/compact": "warn",
+      "file-progress/activate": [
+        "warn",
+        {
+          hide: true,
+          showSummaryWhenHidden: true,
+        },
+      ],
     },
   },
 ];
@@ -123,14 +177,15 @@ export default [
       "file-progress": progress,
     },
     rules: {
-      "file-progress/activate": "warn",
-    },
-    settings: {
-      progress: {
-        detailedSuccess: true,
-        fileNameOnNewLine: true,
-        spinnerStyle: "dots",
-      },
+      "file-progress/activate": [
+        "warn",
+        {
+          detailedSuccess: true,
+          outputStream: "stderr",
+          throttleMs: 100,
+          ttyOnly: true,
+        },
+      ],
     },
   },
 ];
@@ -140,13 +195,13 @@ export default [
 
 Do not use this rule if:
 
-- your workflow should stay silent until the run ends
-- editor integrations reuse the same config and you do not want live progress there
-- a generic progress indicator is sufficient and file-path updates are unnecessary
+- you want the quietest possible output mode
+- a single final summary line is enough for the workflow
+- editor integrations share the same config and should never show live progress
 
 ## Package documentation
 
-This rule is part of the `eslint-plugin-file-progress-2` package and is intended for CLI-first lint workflows.
+This rule is part of the `eslint-plugin-file-progress-2` package.
 
 > **Rule catalog ID:** R001
 
@@ -154,6 +209,6 @@ This rule is part of the `eslint-plugin-file-progress-2` package and is intended
 
 - [Overview](./overview.md)
 - [Getting Started](./getting-started.md)
-- [Preset Reference](./presets/index.md)
 - [compact](./compact.md)
 - [summary-only](./summary-only.md)
+- [Preset reference](./presets/index.md)

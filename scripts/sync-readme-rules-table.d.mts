@@ -1,27 +1,10 @@
-export interface ReadmeRuleModule {
-    readonly meta?:
-        | {
-              readonly docs?:
-                  | {
-                        readonly typefestConfigs?:
-                            | readonly string[]
-                            | string
-                            | undefined;
-                        readonly url?: string | undefined;
-                    }
-                  | undefined;
-              readonly fixable?: string | undefined;
-              readonly hasSuggestions?: boolean | undefined;
-          }
-        | undefined;
+export interface ReadmePluginShape {
+    readonly configs: Readonly<Record<string, unknown>>;
+    readonly rules: Readonly<Record<string, unknown>>;
 }
 
-export function extractReadmeRulesSection(markdown: string): string;
-
-export function normalizeRulesSectionMarkdown(markdown: string): string;
-
-export function generateReadmeRulesSectionFromRules(
-    rules: Readonly<Record<string, ReadmeRuleModule>>
+export function generateReadmeRulesSectionFromPlugin(
+    plugin: ReadmePluginShape
 ): string;
 
 export function syncReadmeRulesTable(input: {

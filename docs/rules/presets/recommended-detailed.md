@@ -1,6 +1,6 @@
-# `recommended-detailed`
+# recommended-detailed
 
-Use this preset when you want the final success summary to include extra run details by default.
+Use this preset when you want the final success summary to include duration, file count, throughput, exit code, and problem status by default.
 
 ```ts
 import progress from "eslint-plugin-file-progress-2";
@@ -10,20 +10,12 @@ export default [progress.configs["recommended-detailed"]];
 
 ## What it changes
 
-It enables the same rule as `recommended`, but also sets:
+It enables `file-progress/activate` with:
 
 ```ts
-settings: {
-  progress: {
-    detailedSuccess: true,
-  },
+{
+  detailedSuccess: true,
 }
 ```
 
-This is useful when you want the completion message to include:
-
-- elapsed time
-- number of files linted
-- throughput
-- exit code
-- problems summary
+Use this preset when you want a richer completion summary but still want normal per-file live progress.

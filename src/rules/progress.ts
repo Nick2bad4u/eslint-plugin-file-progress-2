@@ -3,6 +3,7 @@ import type { FileProgressRuleModule } from "../types.js";
 import { createProgressRule } from "../_internal/progress-runtime.js";
 
 const progressRule: FileProgressRuleModule = createProgressRule({
+    defaultOptions: {},
     description: "Display lint progress in CLI output.",
     liveMode: "file",
     recommended: true,

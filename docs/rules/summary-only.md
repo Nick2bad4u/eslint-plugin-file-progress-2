@@ -4,34 +4,23 @@ Display only the final lint completion summary in the CLI.
 
 ## Targeted pattern scope
 
-This rule targets CLI lint workflows where the desired plugin output is limited to the end-of-run summary.
-
-It keeps one behavior:
-
-- printing the final success or failure summary when ESLint exits
-
-It intentionally suppresses one behavior:
-
-- live spinner or per-file progress updates while the run is in progress
+This rule targets CLI workflows where live progress should stay silent and only the final completion signal should be printed.
 
 ## What this rule reports
 
 This rule does not report source-code violations.
 
-Enabling it turns on summary-only output for the current ESLint run.
+Enabling it changes CLI output behavior for the current run.
 
 ## Why this rule exists
 
-Some workflows want the plugin’s completion summary, but not any live terminal updates.
+Some workflows want deterministic output during the run but still want a clear completion line at the end.
 
-- CI logs can be easier to scan when only the completion summary is printed.
-- Some local scripts prefer deterministic output over ongoing animation.
-- Summary-only mode preserves the completion signal without repainting the terminal during the run.
+This rule exists for that summary-first mode.
 
 ## ❌ Incorrect
 
 ```ts
-// eslint.config.ts
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
@@ -50,7 +39,6 @@ export default [
 ## ✅ Correct
 
 ```ts
-// eslint.config.ts
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
@@ -59,8 +47,13 @@ export default [
       "file-progress": progress,
     },
     rules: {
-      // This prints only the final completion output.
-      "file-progress/summary-only": "warn",
+      "file-progress/summary-only": [
+        "warn",
+        {
+          detailedSuccess: true,
+          outputStream: "stderr",
+        },
+      ],
     },
   },
 ];
@@ -68,17 +61,20 @@ export default [
 
 ## Behavior and migration notes
 
-- This rule suppresses live spinner updates entirely.
-- It is the quietest built-in output mode provided by the plugin.
-- If you still want a visible “working” signal while ESLint runs, use `compact` instead.
-- Do not combine it with `activate` or `compact`; choose one output mode.
+This rule accepts the same option object as [`activate`](./activate.md).
+
+Mode-specific notes:
+
+- `summary-only` never shows live progress.
+- `detailedSuccess` is especially useful here because the summary line is the entire user experience.
+- `minFilesBeforeShow` and `ttyOnly` can still suppress the summary unless `showSummaryWhenHidden` is enabled.
+- `settings.progress` is still read as a deprecated fallback, but rule options win when both are present.
 
 ## Additional examples
 
-### ❌ Incorrect — summary-only when visible live activity is required
+### ✅ Correct — keep the summary even when the rule would otherwise hide output
 
 ```ts
-// eslint.config.ts
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
@@ -87,25 +83,13 @@ export default [
       "file-progress": progress,
     },
     rules: {
-      "file-progress/summary-only": "warn",
-    },
-  },
-];
-```
-
-### ✅ Correct — compact mode when you still want live feedback
-
-```ts
-// eslint.config.ts
-import progress from "eslint-plugin-file-progress-2";
-
-export default [
-  {
-    plugins: {
-      "file-progress": progress,
-    },
-    rules: {
-      "file-progress/compact": "warn",
+      "file-progress/summary-only": [
+        "warn",
+        {
+          hide: true,
+          showSummaryWhenHidden: true,
+        },
+      ],
     },
   },
 ];
@@ -122,7 +106,13 @@ export default [
       "file-progress": progress,
     },
     rules: {
-      "file-progress/summary-only": "warn",
+      "file-progress/summary-only": [
+        "warn",
+        {
+          detailedSuccess: true,
+          hidePrefix: true,
+        },
+      ],
     },
   },
 ];
@@ -132,12 +122,12 @@ export default [
 
 Do not use this rule if:
 
-- you want a visible signal that linting is still progressing
-- the current file path is important feedback for the workflow
+- you want visible proof that ESLint is still moving through files
+- the current file path is useful operational feedback
 
 ## Package documentation
 
-This rule is part of the `eslint-plugin-file-progress-2` package and provides a final-summary-only mode for CLI linting.
+This rule is part of the `eslint-plugin-file-progress-2` package.
 
 > **Rule catalog ID:** R003
 
@@ -147,3 +137,4 @@ This rule is part of the `eslint-plugin-file-progress-2` package and provides a 
 - [Getting Started](./getting-started.md)
 - [activate](./activate.md)
 - [compact](./compact.md)
+- [Preset reference](./presets/index.md)

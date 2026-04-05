@@ -1,6 +1,6 @@
-# `recommended`
+# recommended
 
-Use this preset when you want standard progress output during local ESLint CLI runs.
+Use this preset when you want standard per-file progress during local ESLint CLI runs.
 
 ```ts
 import progress from "eslint-plugin-file-progress-2";
@@ -12,6 +12,6 @@ export default [progress.configs.recommended];
 
 - registers the `file-progress` plugin
 - enables `file-progress/activate` at `warn`
-- keeps all advanced settings at their defaults
+- leaves all rule options at their defaults
 
-This is the best starting point for most local development environments.
+This is the best starting point for most local terminal workflows.
