@@ -67,7 +67,7 @@
         "build": "tsc -b tsconfig.build.json --force && npm run build:types:cjs && npm run build:cjs",
         "build:cjs": "esbuild dist/plugin.js --bundle --format=cjs --platform=node --packages=external --sourcemap --outfile=dist/plugin.cjs --footer:js=\"module.exports = module.exports.default;\"",
         "build:clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
-        "build:eslint-inspector": "npx -y @eslint/config-inspector@1.4.2 build --outDir \"docs/docusaurus/static/eslint-inspector\" --base \"/eslint-plugin-typefest/eslint-inspector/\"",
+        "build:eslint-inspector": "npx -y @eslint/config-inspector@1.4.2 build --outDir \"docs/docusaurus/static/eslint-inspector\" --base \"/eslint-plugin-file-progress-2/eslint-inspector/\"",
         "build:eslint-inspector:local": "npx @eslint/config-inspector",
         "build:stylelint-inspector": "npx -y stylelint-config-inspector@latest build --outDir \"docs/docusaurus/static/stylelint-inspector\" --base \"/eslint-plugin-file-progress-2/stylelint-inspector/\"",
         "build:stylelint-inspector:local": "npx stylelint-config-inspector@latest",
@@ -208,7 +208,9 @@
     },
     "dependencies": {
         "nanospinner": "^1.2.2",
-        "picocolors": "^1.1.1"
+        "picocolors": "^1.1.1",
+        "ts-extras": "^0.19.0",
+        "type-fest": "^5.5.0"
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "^0.18.2",

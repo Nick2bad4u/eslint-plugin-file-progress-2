@@ -1,8 +1,10 @@
 import type { Rule } from "eslint";
+import type { UnknownRecord } from "type-fest";
 
 import { createSpinner, type Spinner } from "nanospinner";
 import path from "node:path";
 import pc from "picocolors";
+import { arrayAt, arrayJoin, isEmpty, keyIn, stringSplit } from "ts-extras";
 
 import type { ProgressSettings, SpinnerStyle } from "../types.js";
 
@@ -48,10 +50,7 @@ interface LintSummaryStats {
     filesLinted: number;
 }
 
-const spinnerPresets: Record<
-    SpinnerStyle,
-    { frames: string[]; interval: number }
-> = {
+const spinnerPresets = {
     arc: {
         frames: [
             "◜",
@@ -113,7 +112,10 @@ const spinnerPresets: Record<
         ],
         interval: 90,
     },
-};
+} satisfies Record<SpinnerStyle, { frames: string[]; interval: number }>;
+
+const isSpinnerStyle = (value: string): value is SpinnerStyle =>
+    keyIn(spinnerPresets, value);
 
 const defaultSettings: Readonly<NormalizedProgressSettings> = Object.freeze({
     detailedSuccess: false,
@@ -151,8 +153,39 @@ let spinner: Spinner = createSpinner("", {
     color: "cyan",
 });
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
+type ProgressSettingKey = keyof ProgressSettings;
+
+const isRecord = (value: unknown): value is UnknownRecord =>
     typeof value === "object" && value !== null;
+
+const getBooleanSetting = (
+    rawSettings: UnknownRecord,
+    settingKey: ProgressSettingKey
+): boolean =>
+    keyIn(rawSettings, settingKey) && rawSettings[settingKey] === true;
+
+const getStringSetting = (
+    rawSettings: UnknownRecord,
+    settingKey: ProgressSettingKey
+): string | undefined => {
+    if (!keyIn(rawSettings, settingKey)) {
+        return undefined;
+    }
+
+    const settingValue = rawSettings[settingKey];
+
+    return typeof settingValue === "string" ? settingValue : undefined;
+};
+
+const getProgressSetting = (
+    settings: Rule.RuleContext["settings"]
+): unknown => {
+    if (!isRecord(settings) || !keyIn(settings, "progress")) {
+        return undefined;
+    }
+
+    return settings["progress"];
+};
 
 const resolveMark = (rawMark: unknown, fallbackMark: string): string => {
     if (typeof rawMark !== "string") {
@@ -169,9 +202,7 @@ const resolveSpinnerStyle = (rawStyle: unknown): SpinnerStyle => {
         return defaultSettings.spinnerStyle;
     }
 
-    return rawStyle in spinnerPresets
-        ? (rawStyle as SpinnerStyle)
-        : defaultSettings.spinnerStyle;
+    return isSpinnerStyle(rawStyle) ? rawStyle : defaultSettings.spinnerStyle;
 };
 
 const ensureSpinnerStyle = (spinnerStyle: SpinnerStyle): void => {
@@ -195,31 +226,32 @@ const normalizeSettings = (raw: unknown): NormalizedProgressSettings => {
         return { ...defaultSettings };
     }
 
-    const typedRaw = raw as ProgressSettings;
-
-    const hide = typedRaw.hide === true;
-    const hideFileName = typedRaw.hideFileName === true;
-    const hidePrefix = typedRaw.hidePrefix === true;
-    const hideDirectoryNames = typedRaw.hideDirectoryNames === true;
-    const fileNameOnNewLine = typedRaw.fileNameOnNewLine === true;
-    const detailedSuccess = typedRaw.detailedSuccess === true;
-    const spinnerStyle = resolveSpinnerStyle(typedRaw.spinnerStyle);
+    const hide = getBooleanSetting(raw, "hide");
+    const hideFileName = getBooleanSetting(raw, "hideFileName");
+    const hidePrefix = getBooleanSetting(raw, "hidePrefix");
+    const hideDirectoryNames = getBooleanSetting(raw, "hideDirectoryNames");
+    const fileNameOnNewLine = getBooleanSetting(raw, "fileNameOnNewLine");
+    const detailedSuccess = getBooleanSetting(raw, "detailedSuccess");
+    const spinnerStyle = resolveSpinnerStyle(
+        getStringSetting(raw, "spinnerStyle")
+    );
     const prefixMark = resolveMark(
-        typedRaw.prefixMark,
+        getStringSetting(raw, "prefixMark"),
         defaultSettings.prefixMark
     );
     const successMark = resolveMark(
-        typedRaw.successMark,
+        getStringSetting(raw, "successMark"),
         defaultSettings.successMark
     );
     const failureMark = resolveMark(
-        typedRaw.failureMark,
+        getStringSetting(raw, "failureMark"),
         defaultSettings.failureMark
     );
+    const rawSuccessMessage = getStringSetting(raw, "successMessage");
     const successMessage =
-        typeof typedRaw.successMessage === "string" &&
-        typedRaw.successMessage.trim().length > 0
-            ? typedRaw.successMessage.trim()
+        typeof rawSuccessMessage === "string" &&
+        rawSuccessMessage.trim().length > 0
+            ? rawSuccessMessage.trim()
             : defaultSettings.successMessage;
 
     return {
@@ -282,16 +314,17 @@ const formatPathSegments = (
         pc.green,
         pc.cyan,
     ] as const;
+    const normalizedRelativeFilePath = relativeFilePath.replaceAll("\\", "/");
     const separator = relativeFilePath.includes("\\") ? "\\" : "/";
-    const segments = relativeFilePath
-        .split(/[/\\]+/)
-        .filter((segment) => segment.length > 0);
+    const segments = stringSplit(normalizedRelativeFilePath, "/").filter(
+        (segment: string) => segment.length > 0
+    );
 
-    if (segments.length === 0) {
+    if (isEmpty(segments)) {
         return pc.bold(pc.green(relativeFilePath));
     }
 
-    const fileSegment = segments.at(-1) ?? "";
+    const fileSegment = arrayAt(segments, -1) ?? "";
     const formattedFile = formatFileSegment(fileSegment);
 
     if (hideDirectoryNames) {
@@ -300,20 +333,20 @@ const formatPathSegments = (
 
     const directorySegments = segments.slice(0, -1);
 
-    const formattedDirectories = directorySegments
-        .map((segment, index) => {
+    const formattedDirectories = directorySegments.map(
+        (segment: string, index: number) => {
             const colorizer =
                 directoryColorizers[index % directoryColorizers.length] ??
                 pc.cyan;
             return pc.bold(colorizer(segment));
-        })
-        .join(pc.dim(separator));
+        }
+    );
 
-    if (directorySegments.length === 0) {
+    if (isEmpty(directorySegments)) {
         return formattedFile;
     }
 
-    return `${formattedDirectories}${pc.dim(separator)}${formattedFile}`;
+    return `${arrayJoin(formattedDirectories, pc.dim(separator))}${pc.dim(separator)}${formattedFile}`;
 };
 
 const formatFileProgress = (
@@ -381,14 +414,17 @@ const formatSuccessMessage = (
         return title;
     }
 
-    return [
-        title,
-        `${pc.dim("  Duration:")} ${pc.yellow(formatDuration(stats.durationMs))}`,
-        `${pc.dim("  Files linted:")} ${pc.yellow(String(stats.filesLinted))}`,
-        `${pc.dim("  Throughput:")} ${pc.yellow(formatThroughput(stats.durationMs, stats.filesLinted))}`,
-        `${pc.dim("  Exit code:")} ${pc.green(String(stats.exitCode))}`,
-        `${pc.dim("  Problems:")} ${pc.green("0")}`,
-    ].join("\n");
+    return arrayJoin(
+        [
+            title,
+            `${pc.dim("  Duration:")} ${pc.yellow(formatDuration(stats.durationMs))}`,
+            `${pc.dim("  Files linted:")} ${pc.yellow(String(stats.filesLinted))}`,
+            `${pc.dim("  Throughput:")} ${pc.yellow(formatThroughput(stats.durationMs, stats.filesLinted))}`,
+            `${pc.dim("  Exit code:")} ${pc.green(String(stats.exitCode))}`,
+            `${pc.dim("  Problems:")} ${pc.green("0")}`,
+        ],
+        "\n"
+    );
 };
 
 const formatFailureMessage = (
@@ -404,14 +440,17 @@ const formatFailureMessage = (
         return title;
     }
 
-    return [
-        title,
-        `${pc.dim("  Duration:")} ${pc.yellow(formatDuration(stats.durationMs))}`,
-        `${pc.dim("  Files linted:")} ${pc.yellow(String(stats.filesLinted))}`,
-        `${pc.dim("  Throughput:")} ${pc.yellow(formatThroughput(stats.durationMs, stats.filesLinted))}`,
-        `${pc.dim("  Exit code:")} ${pc.red(String(stats.exitCode))}`,
-        `${pc.dim("  Problems:")} ${pc.yellow("detected")}`,
-    ].join("\n");
+    return arrayJoin(
+        [
+            title,
+            `${pc.dim("  Duration:")} ${pc.yellow(formatDuration(stats.durationMs))}`,
+            `${pc.dim("  Files linted:")} ${pc.yellow(String(stats.filesLinted))}`,
+            `${pc.dim("  Throughput:")} ${pc.yellow(formatThroughput(stats.durationMs, stats.filesLinted))}`,
+            `${pc.dim("  Exit code:")} ${pc.red(String(stats.exitCode))}`,
+            `${pc.dim("  Problems:")} ${pc.yellow("detected")}`,
+        ],
+        "\n"
+    );
 };
 
 const bindExitHandler = (): void => {
@@ -463,9 +502,7 @@ const create = (context: Rule.RuleContext): Rule.RuleListener => {
     }
     lintedFileCount += 1;
 
-    const settings = normalizeSettings(
-        (context.settings as undefined | { progress?: unknown })?.progress
-    );
+    const settings = normalizeSettings(getProgressSetting(context.settings));
 
     bindExitHandler();
 

@@ -72,8 +72,8 @@
     "emit": "docs",
     "entryPointStrategy": "expand",
     "entryPoints": [
-        "../../src/plugin.ts",
-        "../../src/_internal"
+        "../../src/index.ts",
+        "../../src/rules"
     ],
     "exclude": [
         "**/dist/**",
@@ -513,7 +513,7 @@
         "@sealed",
         "@virtual"
     ],
-    "name": "eslint-plugin-typefest Documentation",
+    "name": "eslint-plugin-file-progress-2 Documentation",
     "navigation": {
         "compactFolders": false,
         "excludeReferences": false,

@@ -25,6 +25,7 @@
         "*.cjs",
         "*.d.cts",
         "*.d.ts",
+        "eslint.config.js",
         "*.mjs",
         ".remarkrc.mjs",
         "benchmarks/**/*.mjs",

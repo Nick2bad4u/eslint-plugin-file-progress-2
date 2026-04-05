@@ -8,12 +8,23 @@ import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import builtPlugin from "../dist/plugin.js";
-import {
-    typefestConfigMetadataByName,
-    typefestConfigNamesByReadmeOrder,
-    typefestConfigReferenceToName,
-} from "../dist/_internal/typefest-config-references.js";
+/**
+ * @typedef {"all"
+ *     | "experimental"
+ *     | "minimal"
+ *     | "recommended"
+ *     | "recommended-type-checked"
+ *     | "strict"
+ *     | "ts-extras/type-guards"
+ *     | "type-fest/types"} PresetName
+ */
+
+const builtPluginModuleUrl = pathToFileURL(
+    resolve(fileURLToPath(import.meta.url), "../../dist/index.js")
+).href;
+
+// eslint-disable-next-line no-unsanitized/method -- Controlled repository-local file URL; no user input reaches import().
+const { default: builtPlugin } = await import(builtPluginModuleUrl);
 
 /**
  * @typedef {Readonly<{
@@ -30,7 +41,41 @@ import {
 
 /** @typedef {Readonly<Record<string, ReadmeRuleModule>>} ReadmeRulesMap */
 
-/** @typedef {import("../dist/_internal/typefest-config-references.js").TypefestConfigName} PresetName */
+/** @type {Readonly<Record<PresetName, { icon: string }>>} */
+const typefestConfigMetadataByName = {
+    all: { icon: "A" },
+    experimental: { icon: "E" },
+    minimal: { icon: "M" },
+    recommended: { icon: "R" },
+    "recommended-type-checked": { icon: "RT" },
+    strict: { icon: "S" },
+    "ts-extras/type-guards": { icon: "TG" },
+    "type-fest/types": { icon: "TF" },
+};
+
+/** @type {readonly PresetName[]} */
+const typefestConfigNamesByReadmeOrder = [
+    "all",
+    "experimental",
+    "minimal",
+    "recommended",
+    "recommended-type-checked",
+    "strict",
+    "ts-extras/type-guards",
+    "type-fest/types",
+];
+
+/** @type {Readonly<Record<string, PresetName>>} */
+const typefestConfigReferenceToName = {
+    "typefest.configs.all": "all",
+    "typefest.configs.experimental": "experimental",
+    "typefest.configs.minimal": "minimal",
+    "typefest.configs.recommended": "recommended",
+    'typefest.configs["recommended-type-checked"]': "recommended-type-checked",
+    "typefest.configs.strict": "strict",
+    'typefest.configs["ts-extras/type-guards"]': "ts-extras/type-guards",
+    'typefest.configs["type-fest/types"]': "type-fest/types",
+};
 
 const presetOrder = [...typefestConfigNamesByReadmeOrder];
 const presetNameSet = new Set(presetOrder);
@@ -202,8 +247,9 @@ const normalizeTypefestConfigName = (reference) => {
             /** @type {keyof typeof typefestConfigReferenceToName} */ (
                 reference
             );
+        const mappedPresetName = typefestConfigReferenceToName[referenceKey];
 
-        return typefestConfigReferenceToName[referenceKey];
+        return mappedPresetName ?? null;
     }
 
     const presetName = /** @type {PresetName} */ (reference);

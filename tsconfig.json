@@ -69,6 +69,9 @@
             ],
             "@plugin/*": [
                 "./src/*"
+            ],
+            "ts-extras": [
+                "./node_modules/ts-extras/distribution/index.d.ts"
             ]
         },
         "preserveConstEnums": true,
@@ -93,6 +96,7 @@
         "traceResolution": false,
         "tsBuildInfoFile": "./.cache/tsbuildinfo/tsconfig.app.tsbuildinfo",
         "types": [
+            "node",
             "vite/client",
             "vitest/globals"
         ],

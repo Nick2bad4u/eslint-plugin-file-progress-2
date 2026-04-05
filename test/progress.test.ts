@@ -2,8 +2,8 @@ import tseslintPlugin from "@typescript-eslint/eslint-plugin";
 import { ESLint, type Linter, RuleTester } from "eslint";
 import assert from "node:assert/strict";
 import { rm, writeFile } from "node:fs/promises";
-import test from "node:test";
 import { stripVTControlCharacters } from "node:util";
+import { test } from "vitest";
 
 import plugin from "../src/index.js";
 import progressRule, {
@@ -448,7 +448,10 @@ test("typescript-eslint setup lints TypeScript files with plugin rule", async ()
     try {
         const [result] = await eslint.lintFiles([fixtureFilePath]);
 
-        assert.ok(result);
+        if (result === undefined) {
+            assert.fail("Expected ESLint to return a single lint result.");
+        }
+
         assert.equal(result.fatalErrorCount, 0);
         assert.equal(result.errorCount, 0);
     } finally {

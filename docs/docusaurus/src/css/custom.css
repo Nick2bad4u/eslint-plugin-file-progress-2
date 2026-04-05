@@ -48,71 +48,144 @@
 }
 
 :root {
-    --ifm-color-primary: #4f46e5;
-    --ifm-color-primary-dark: #4338ca;
-    --ifm-color-primary-darker: #3730a3;
-    --ifm-color-primary-darkest: #312e81;
-    --ifm-color-primary-light: #6366f1;
-    --ifm-color-primary-lighter: #818cf8;
-    --ifm-color-primary-lightest: #a5b4fc;
+    --brand-mint: #8fd7c4;
+    --brand-sky: #79b7e4;
+    --brand-violet: #6f63eb;
+    --brand-purple: #8142a4;
+    --brand-plum: #2c2144;
+    --brand-yellow: #f6e45d;
+    --brand-orange: #f7a145;
+    --brand-coral: #f35577;
+    --ifm-color-primary: #6f63eb;
+    --ifm-color-primary-dark: #5d50da;
+    --ifm-color-primary-darker: #5144ca;
+    --ifm-color-primary-darkest: #3f33aa;
+    --ifm-color-primary-light: #8378f0;
+    --ifm-color-primary-lighter: #9b92f5;
+    --ifm-color-primary-lightest: #c9c4fb;
+    --ifm-color-primary-contrast-background: #eeebff;
+    --ifm-color-primary-contrast-foreground: #231a37;
+    --ifm-background-color: #f8f6fc;
+    --ifm-background-surface-color: #ffffff;
+    --ifm-navbar-background-color: rgb(255 255 255 / 88%);
+    --ifm-footer-background-color: #2c2144;
+    --ifm-footer-link-color: #f3eefe;
+    --ifm-footer-link-hover-color: #f6e45d;
     --ifm-code-font-size: 95%;
     --ifm-font-family-base:
         "Inter var", "Inter", "Segoe UI", "NerdFontSymbols Nerd Font Symbols",
         system-ui, -apple-system, sans-serif;
-    --sb-accent-overview: #22c55e;
-    --sb-accent-started: #0ea5e9;
-    --sb-accent-developer: #8b5cf6;
-    --sb-accent-developer-ops: #ec4899;
-    --sb-accent-rules: #f97316;
-    --sb-accent-presets: #eab308;
-    --sb-accent-guides: #06b6d4;
-    --sb-accent-api-overview: #6366f1;
-    --sb-accent-api-types: #14b8a6;
-    --sb-accent-api-runtime: #f43f5e;
-    --sb-accent-dev-charts: #38bdf8;
-    --sb-accent-dev-links: #10b981;
-    --sb-accent-adr: #f59e0b;
-    --sb-accent-rules-ts: #22c55e;
-    --sb-prefix-rule-number: #52525b;
-    --sb-preset-minimal: #22c55e;
-    --sb-preset-recommended: #facc15;
-    --sb-preset-recommended-type-checked: #fb923c;
-    --sb-preset-strict: #f43f5e;
-    --sb-preset-all: #a855f7;
-    --sb-preset-experimental: #38bdf8;
-    --sb-preset-type-guards: #fb923c;
+    --sb-accent-overview: #6f63eb;
+    --sb-accent-started: #79b7e4;
+    --sb-accent-developer: #8142a4;
+    --sb-accent-developer-ops: #f35577;
+    --sb-accent-rules: #f7a145;
+    --sb-accent-presets: #f6e45d;
+    --sb-accent-guides: #8fd7c4;
+    --sb-accent-api-overview: #6f63eb;
+    --sb-accent-api-types: #79b7e4;
+    --sb-accent-api-runtime: #f35577;
+    --sb-accent-dev-charts: #79b7e4;
+    --sb-accent-dev-links: #8fd7c4;
+    --sb-accent-adr: #f7a145;
+    --sb-accent-rules-ts: #8fd7c4;
+    --sb-prefix-rule-number: #594a73;
+    --sb-preset-minimal: #8fd7c4;
+    --sb-preset-recommended: #f6e45d;
+    --sb-preset-recommended-type-checked: #f7a145;
+    --sb-preset-strict: #f35577;
+    --sb-preset-all: #8142a4;
+    --sb-preset-experimental: #79b7e4;
+    --sb-preset-type-guards: #f7a145;
 }
 
 [data-theme="dark"] {
-    --ifm-color-primary: #818cf8;
-    --ifm-color-primary-dark: #6366f1;
-    --ifm-color-primary-darker: #4f46e5;
-    --ifm-color-primary-darkest: #4338ca;
-    --ifm-color-primary-light: #a5b4fc;
-    --ifm-color-primary-lighter: #c7d2fe;
-    --ifm-color-primary-lightest: #e0e7ff;
-    --sb-accent-overview: #4ade80;
-    --sb-accent-started: #38bdf8;
-    --sb-accent-developer: #c084fc;
-    --sb-accent-developer-ops: #f472b6;
-    --sb-accent-rules: #fb923c;
-    --sb-accent-presets: #facc15;
-    --sb-accent-guides: #67e8f9;
-    --sb-accent-api-overview: #a5b4fc;
-    --sb-accent-api-types: #2dd4bf;
-    --sb-accent-api-runtime: #fb7185;
-    --sb-accent-dev-charts: #7dd3fc;
-    --sb-accent-dev-links: #34d399;
-    --sb-accent-adr: #fbbf24;
-    --sb-accent-rules-ts: #4ade80;
-    --sb-prefix-rule-number: #a1a1aa;
-    --sb-preset-minimal: #4ade80;
-    --sb-preset-recommended: #fde047;
-    --sb-preset-recommended-type-checked: #fdba74;
-    --sb-preset-strict: #fb7185;
-    --sb-preset-all: #c084fc;
-    --sb-preset-experimental: #7dd3fc;
-    --sb-preset-type-guards: #fdba74;
+    --ifm-color-primary: #b0a5ff;
+    --ifm-color-primary-dark: #9a8eff;
+    --ifm-color-primary-darker: #8a7dff;
+    --ifm-color-primary-darkest: #7263f5;
+    --ifm-color-primary-light: #c1b8ff;
+    --ifm-color-primary-lighter: #d3cdff;
+    --ifm-color-primary-lightest: #efeaff;
+    --ifm-color-primary-contrast-background: #30224c;
+    --ifm-color-primary-contrast-foreground: #f6f2ff;
+    --ifm-background-color: #1e1730;
+    --ifm-background-surface-color: #281e40;
+    --ifm-navbar-background-color: rgb(30 23 48 / 86%);
+    --ifm-footer-background-color: #160f27;
+    --ifm-footer-link-color: #e8e4ff;
+    --ifm-footer-link-hover-color: #f6e45d;
+    --ifm-font-color-base: #f5f3ff;
+    --ifm-heading-color: #ffffff;
+    --sb-accent-overview: #b0a5ff;
+    --sb-accent-started: #79b7e4;
+    --sb-accent-developer: #c8a3ff;
+    --sb-accent-developer-ops: #ff8da3;
+    --sb-accent-rules: #ffb86a;
+    --sb-accent-presets: #f6e45d;
+    --sb-accent-guides: #8fd7c4;
+    --sb-accent-api-overview: #b0a5ff;
+    --sb-accent-api-types: #88c5ef;
+    --sb-accent-api-runtime: #ff8da3;
+    --sb-accent-dev-charts: #88c5ef;
+    --sb-accent-dev-links: #8fd7c4;
+    --sb-accent-adr: #ffb86a;
+    --sb-accent-rules-ts: #8fd7c4;
+    --sb-prefix-rule-number: #c9bddf;
+    --sb-preset-minimal: #8fd7c4;
+    --sb-preset-recommended: #f6e45d;
+    --sb-preset-recommended-type-checked: #ffb86a;
+    --sb-preset-strict: #ff8da3;
+    --sb-preset-all: #c8a3ff;
+    --sb-preset-experimental: #88c5ef;
+    --sb-preset-type-guards: #ffb86a;
+}
+
+html,
+body {
+    background: var(--ifm-background-color);
+}
+
+body {
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--brand-mint) 12%, var(--ifm-background-color))
+            0%,
+        var(--ifm-background-color) 14%,
+        var(--ifm-background-color) 100%
+    );
+
+    [data-theme="dark"] & {
+        background: linear-gradient(
+            180deg,
+            color-mix(
+                    in srgb,
+                    var(--brand-purple) 18%,
+                    var(--ifm-background-color)
+                )
+                0%,
+            color-mix(
+                    in srgb,
+                    var(--brand-violet) 12%,
+                    var(--ifm-background-color)
+                )
+                18%,
+            var(--ifm-background-color) 100%
+        );
+    }
+}
+
+.navbar {
+    backdrop-filter: blur(14px);
+    background: var(--ifm-navbar-background-color);
+    border-block-end: 1px solid
+        color-mix(in srgb, var(--brand-violet) 18%, transparent);
+    box-shadow: 0 10px 30px -24px rgb(17 24 39 / 35%);
+}
+
+.footer {
+    border-block-start: 1px solid
+        color-mix(in srgb, var(--brand-violet) 26%, transparent);
 }
 
 .navbar .dropdown__menu .navbar-dropdown-divider {

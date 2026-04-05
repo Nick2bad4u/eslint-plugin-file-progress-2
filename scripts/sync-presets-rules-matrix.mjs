@@ -8,8 +8,14 @@ import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import builtPlugin from "../dist/plugin.js";
 import { generateReadmeRulesSectionFromRules } from "./sync-readme-rules-table.mjs";
+
+const builtPluginModuleUrl = pathToFileURL(
+    resolve(fileURLToPath(import.meta.url), "../../dist/index.js")
+).href;
+
+// eslint-disable-next-line no-unsanitized/method -- Controlled repository-local file URL; no user input reaches import().
+const { default: builtPlugin } = await import(builtPluginModuleUrl);
 
 /**
  * @typedef {Readonly<{

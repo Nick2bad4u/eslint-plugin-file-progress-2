@@ -1,13 +1,11 @@
 import { existsSync } from "node:fs";
 import * as path from "node:path";
 import process from "node:process";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import tsParser from "@typescript-eslint/parser";
 import { ESLint } from "eslint";
 import pc from "picocolors";
-
-import plugin from "../plugin.mjs";
 
 /**
  * @typedef {Readonly<{
@@ -28,6 +26,17 @@ import plugin from "../plugin.mjs";
 
 const scriptsDirectoryPath = fileURLToPath(new URL(".", import.meta.url));
 const repositoryRootPath = path.resolve(scriptsDirectoryPath, "..");
+const builtPluginPath = path.resolve(repositoryRootPath, "dist/index.js");
+
+if (!existsSync(builtPluginPath)) {
+    throw new Error(
+        `Missing built plugin entry at ${builtPluginPath}. Run \"npm run build\" before executing this smoke test.`
+    );
+}
+
+// eslint-disable-next-line no-unsanitized/method -- Controlled repository-local file URL; no user input reaches import().
+const { default: plugin } = await import(pathToFileURL(builtPluginPath).href);
+
 const typedFixturePath = path.resolve(
     repositoryRootPath,
     "test/fixtures/typed/prefer-ts-extras-safe-cast-to.invalid.ts"

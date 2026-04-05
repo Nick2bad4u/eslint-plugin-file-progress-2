@@ -7,7 +7,7 @@
 #
 # Source repository: https://github.com/actions/dependency-review-action
 # This GitHub Actions workflow is named 'Dependency Review'.
-# It is triggered by pull requests.
+# It is triggered by pull requests and merge queue checks.
 #
 # Permissions:
 # - The workflow has read access to the repository contents.
@@ -17,27 +17,35 @@
 #   - Runs on the latest Ubuntu runner.
 #   - Steps:
 #     1. Harden Runner:
-#        - Uses the 'step-security/harden-runner' action (version v2.10.4).
+#        - Uses the 'step-security/harden-runner' action (version v2.15.1).
 #        - Configured with an egress policy set to audit.
 #     2. Checkout Repository:
-#        - Uses the 'actions/checkout' action (version v4.2.2) to check out the repository.
+#        - Uses the 'actions/checkout' action (version v6.0.2) to check out the repository.
 #     3. Dependency Review:
-#        - Uses the 'actions/dependency-review-action' (version v4.5.0) to perform a dependency review.
+#        - Uses the 'actions/dependency-review-action' (version v4.9.0) to perform a dependency review.
 
 # yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
 name: "Dependency Review"
-on: [pull_request]
+run-name: Dependency Review • ${{ github.ref_name }} @${{ github.actor }}
+
+on:
+    pull_request:
+    merge_group:
+        types:
+            - checks_requested
 
 permissions:
     contents: read
 
 concurrency:
     group: dependency-review-${{ github.ref }}
-    cancel-in-progress: false
+    cancel-in-progress: true
 
 jobs:
     dependency-review:
+        name: Dependency Review
         runs-on: ubuntu-latest
+        timeout-minutes: 20
         steps:
             - name: Harden Runner
               uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
@@ -46,5 +54,8 @@ jobs:
 
             - name: "Checkout Repository"
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
             - name: "Dependency Review"
               uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+              with:
+                  fail-on-severity: moderate

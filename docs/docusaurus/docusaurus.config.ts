@@ -67,7 +67,7 @@ const config: Config = {
                         tagName: "link",
                     },
                     {
-                        content: "#2E2A33",
+                        content: "#6f63eb",
                         name: "theme-color",
                         tagName: "meta",
                     },
@@ -77,7 +77,7 @@ const config: Config = {
                         tagName: "link",
                     },
                     {
-                        color: "#4f46e5",
+                        color: "#8142a4",
                         href: `${baseUrl}img/logo.svg`,
                         rel: "mask-icon",
                         tagName: "link",
@@ -184,12 +184,16 @@ const config: Config = {
                             label: "\ueb09 Releases",
                         },
                         {
-                            href: `https://www.npmjs.com/package/${projectName}`,
-                            label: "\ue616 NPM Package",
-                        },
-                        {
                             href: `https://github.com/${organizationName}/${projectName}`,
                             label: "\uea84 Repository",
+                        },
+                        {
+                            href: `https://nick2bad4u.github.io/eslint-plugin-typefest/eslint-inspector/`,
+                            label: "\ue7d2 ESLint Inspector",
+                        },
+                        {
+                            href: `https://nick2bad4u.github.io/eslint-plugin-typefest/stylelint-inspector/`,
+                            label: "\ue7d2 Stylelint Inspector",
                         },
                     ],
                     title: "📁 Project",
@@ -209,12 +213,8 @@ const config: Config = {
                             label: "\uea84 Original upstream plugin",
                         },
                         {
-                            href: "https://www.npmjs.com/package/nanospinner",
-                            label: "\uf113 nanospinner",
-                        },
-                        {
-                            href: "https://www.npmjs.com/package/picocolors",
-                            label: "\uf113 picocolors",
+                            href: `https://www.npmjs.com/package/${projectName}`,
+                            label: "\ue616 NPM Package",
                         },
                     ],
                     title: "⚙️ Support",

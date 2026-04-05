@@ -10,6 +10,35 @@ const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "..");
 const packageJsonPath = path.join(repositoryRoot, "package.json");
 
+/**
+ * @typedef {Readonly<{ hash: string; subject: string }>} GitCommit
+ */
+
+/**
+ * @typedef {Readonly<{
+ *     compareUrl: string | undefined;
+ *     commits: readonly GitCommit[];
+ *     packageName: string;
+ *     previousTag: string | undefined;
+ *     repositoryUrl: string | undefined;
+ *     tag: string;
+ *     version: string;
+ * }>} ReleaseNotesInput
+ */
+
+/**
+ * @typedef {Readonly<{
+ *     name?: unknown;
+ *     repository?: unknown;
+ *     version?: unknown;
+ * }>} PackageJsonShape
+ */
+
+/**
+ * @param {readonly string[]} argv
+ *
+ * @returns {Map<string, string>}
+ */
 const parseArguments = (argv) => {
     const args = new Map();
 
@@ -32,6 +61,11 @@ const parseArguments = (argv) => {
     return args;
 };
 
+/**
+ * @param {readonly string[]} arguments_
+ *
+ * @returns {Promise<string>}
+ */
 const runGit = async (arguments_) => {
     const { stdout } = await execFileAsync("git", arguments_, {
         cwd: repositoryRoot,
@@ -41,6 +75,11 @@ const runGit = async (arguments_) => {
     return stdout.trim();
 };
 
+/**
+ * @param {readonly string[]} arguments_
+ *
+ * @returns {Promise<string | undefined>}
+ */
 const tryRunGit = async (arguments_) => {
     try {
         return await runGit(arguments_);
@@ -49,28 +88,44 @@ const tryRunGit = async (arguments_) => {
     }
 };
 
+/**
+ * @returns {Promise<PackageJsonShape>}
+ */
 const loadPackageJson = async () => {
     const packageJsonText = await readFile(packageJsonPath, "utf8");
 
-    return JSON.parse(packageJsonText);
+    return /** @type {PackageJsonShape} */ (JSON.parse(packageJsonText));
 };
 
+/**
+ * @param {unknown} repository
+ *
+ * @returns {string | undefined}
+ */
 const normalizeRepositoryUrl = (repository) => {
     if (typeof repository === "string") {
         return repository;
     }
 
-    if (
-        repository !== null &&
-        typeof repository === "object" &&
-        typeof repository.url === "string"
-    ) {
-        return repository.url;
+    if (repository !== null && typeof repository === "object") {
+        const repositoryRecord = /** @type {Record<string, unknown>} */ (
+            repository
+        );
+        const repositoryUrl = repositoryRecord["url"];
+
+        if (typeof repositoryUrl === "string") {
+            return repositoryUrl;
+        }
     }
 
     return undefined;
 };
 
+/**
+ * @param {string | undefined} repositoryUrl
+ *
+ * @returns {string | undefined}
+ */
 const toHttpsRepositoryUrl = (repositoryUrl) => {
     if (repositoryUrl === undefined) {
         return undefined;
@@ -82,6 +137,12 @@ const toHttpsRepositoryUrl = (repositoryUrl) => {
         .replace(/\.git$/u, "");
 };
 
+/**
+ * @param {GitCommit} commit
+ * @param {string | undefined} repositoryUrl
+ *
+ * @returns {string}
+ */
 const toMarkdownCommitLine = (commit, repositoryUrl) => {
     if (repositoryUrl === undefined) {
         return `- ${commit.subject} (${commit.hash})`;
@@ -90,6 +151,11 @@ const toMarkdownCommitLine = (commit, repositoryUrl) => {
     return `- ${commit.subject} ([${commit.hash}](${repositoryUrl}/commit/${commit.hash}))`;
 };
 
+/**
+ * @param {ReleaseNotesInput} input
+ *
+ * @returns {string}
+ */
 const buildReleaseNotes = ({
     commits,
     compareUrl,
@@ -174,10 +240,10 @@ const main = async () => {
             : commitLogText.split(/\r?\n/u).map((line) => {
                   const [hash = "", subject = ""] = line.split("\t");
 
-                  return {
+                  return /** @type {GitCommit} */ ({
                       hash,
                       subject,
-                  };
+                  });
               });
     const compareUrl =
         repositoryUrl !== undefined && previousTag !== undefined
