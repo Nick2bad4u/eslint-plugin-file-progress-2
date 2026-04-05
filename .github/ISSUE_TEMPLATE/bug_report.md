@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a reproducible bug in eslint-plugin-typefest
+about: Report a reproducible bug in eslint-plugin-file-progress-2
 title: "Bug: "
 labels:
     - bug
@@ -14,7 +14,7 @@ assignees: []
 
 ## Rule / Area
 
-<!-- Example: prefer-ts-extras-array-find, docs/docusaurus, presets, runtime API docs -->
+<!-- Example: file-progress/activate, docs/docusaurus, presets, CLI progress output -->
 
 ## Reproduction
 
@@ -33,7 +33,7 @@ assignees: []
 ### Command and output
 
 ```bash
-# Example: npm run test -- test/prefer-ts-extras-array-find.test.ts
+# Example: npm run test
 ```
 
 ## Steps to reproduce
@@ -53,7 +53,7 @@ assignees: []
 - ESLint version:
 - TypeScript version:
 - `@typescript-eslint/*` version:
-- `eslint-plugin-typefest` version/commit:
+- `eslint-plugin-file-progress-2` version/commit:
 - OS:
 
 ## Additional context

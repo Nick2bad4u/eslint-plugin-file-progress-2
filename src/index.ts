@@ -1,15 +1,16 @@
-import packageJson from "../package.json" with { type: "json" };
-import progressRule from "./rules/progress.js";
 import type { FileProgressPlugin } from "./types.js";
 
-const env = process.env as NodeJS.ProcessEnv & { CI?: string };
+import packageJson from "../package.json" with { type: "json" };
+import progressRule from "./rules/progress.js";
+
+const isCi = globalThis.process.env["CI"] === "true";
 
 const plugin: FileProgressPlugin = {
+    configs: {} as FileProgressPlugin["configs"],
     meta: {
         name: "eslint-plugin-file-progress-2",
         version: packageJson.version,
     },
-    configs: {} as FileProgressPlugin["configs"],
     rules: {
         activate: progressRule,
     },
@@ -35,7 +36,7 @@ const configs: FileProgressPlugin["configs"] = {
         },
         settings: {
             progress: {
-                hide: env.CI === "true",
+                hide: isCi,
             },
         },
     },

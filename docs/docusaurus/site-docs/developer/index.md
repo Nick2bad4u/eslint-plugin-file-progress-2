@@ -7,7 +7,7 @@ This section is for contributors and maintainers working on `eslint-plugin-file-
 - [🚀 Release workflow](./release-workflow.md)
 - [🧪 CLI debugging and print-config](./cli-debugging-and-print-config.md)
 - [🧭 Docs and TypeDoc workflow](./docusaurus-site-contract.md)
-- [📘 Generated API reference](/docs/developer/api)
+- [📘 Generated API reference](./api/README.md)
 
 ## Maintainer focus areas
 

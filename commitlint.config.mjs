@@ -1,5 +1,5 @@
 /**
- * Commitlint configuration for eslint-plugin-typefest.
+ * Commitlint configuration for eslint-plugin-file-progress-2.
  *
  * Enforces the repository's hybrid Gitmoji format, e.g.:
  *
@@ -41,7 +41,7 @@ function isMergeCommit(commit) {
  * @returns {boolean}
  */
 function isReleaseCommit(commit) {
-    return commit.startsWith("chore(release)");
+    return commit.startsWith("chore: release ");
 }
 
 /**

@@ -74,13 +74,10 @@ function isRuntimeSidebarLink(link: HTMLAnchorElement): boolean {
  *
  * @param link - Candidate sidebar link.
  *
- * @returns `true` when link is in `ts-extras` or `type-fest` rule lists.
+ * @returns `true` when link is in the numbered rules section.
  */
 function isNumberedRuleSidebarLink(link: HTMLAnchorElement): boolean {
-    return (
-        link.closest(".sb-cat-rules-ts-extras") !== null ||
-        link.closest(".sb-cat-rules-type-fest") !== null
-    );
+    return link.closest(".sb-cat-rules") !== null;
 }
 
 /**
@@ -91,7 +88,7 @@ function isNumberedRuleSidebarLink(link: HTMLAnchorElement): boolean {
  * @returns Matching prefix when present.
  */
 function getRuntimeSidebarKindPrefix(
-    label: string,
+    label: string
 ): (typeof runtimeSidebarKindPrefixes)[number] | null {
     for (const prefix of runtimeSidebarKindPrefixes) {
         if (label.startsWith(`${prefix} `)) {
@@ -110,7 +107,7 @@ function getRuntimeSidebarKindPrefix(
  * @returns Number token and remainder when label begins with digits.
  */
 function getRuleNumberPrefix(
-    label: string,
+    label: string
 ): null | Readonly<{ numberToken: string; remainder: string }> {
     const match = /^(\d{2,3})\s+(.+)$/.exec(label);
 
@@ -142,16 +139,25 @@ function setSidebarLeadingToken(
         tokenClassName: string;
         tokenText: string;
         remainderText: string;
-    }>,
+    }>
 ): void {
-    const { link, separator = " ", tokenClassName, tokenText, remainderText } = options;
+    const {
+        link,
+        separator = " ",
+        tokenClassName,
+        tokenText,
+        remainderText,
+    } = options;
     const token = document.createElement("span");
 
     token.className = tokenClassName;
     token.textContent = tokenText;
     link.dataset[SIDEBAR_TOKENIZED_DATA_KEY] = tokenClassName;
 
-    link.replaceChildren(token, document.createTextNode(`${separator}${remainderText}`));
+    link.replaceChildren(
+        token,
+        document.createTextNode(`${separator}${remainderText}`)
+    );
 }
 
 /**
@@ -191,7 +197,9 @@ function applySidebarLabelTokenColoring(): CleanupFunction {
                 const runtimePrefix = getRuntimeSidebarKindPrefix(linkLabel);
 
                 if (runtimePrefix !== null) {
-                    const remainderText = linkLabel.slice(runtimePrefix.length).trimStart();
+                    const remainderText = linkLabel
+                        .slice(runtimePrefix.length)
+                        .trimStart();
 
                     if (remainderText.length > 0) {
                         mutations.push({
@@ -234,7 +242,7 @@ function applySidebarLabelTokenColoring(): CleanupFunction {
 
     const processSidebarMenuLinks = (): void => {
         const sidebarLinks = document.querySelectorAll<HTMLAnchorElement>(
-            ".theme-doc-sidebar-menu .menu__link",
+            ".theme-doc-sidebar-menu .menu__link"
         );
 
         processLinks(Array.from(sidebarLinks));
@@ -242,7 +250,9 @@ function applySidebarLabelTokenColoring(): CleanupFunction {
 
     processSidebarMenuLinks();
 
-    const sidebarMenu = document.querySelector<HTMLElement>(".theme-doc-sidebar-menu");
+    const sidebarMenu = document.querySelector<HTMLElement>(
+        ".theme-doc-sidebar-menu"
+    );
 
     let sidebarRefreshTimer: null | ReturnType<typeof setTimeout> = null;
 
@@ -278,7 +288,9 @@ function applySidebarLabelTokenColoring(): CleanupFunction {
                           }
 
                           const nestedLinks =
-                              addedNode.querySelectorAll<HTMLAnchorElement>("a.menu__link");
+                              addedNode.querySelectorAll<HTMLAnchorElement>(
+                                  "a.menu__link"
+                              );
                           addedLinks.push(...Array.from(nestedLinks));
                       }
                   }
@@ -341,8 +353,10 @@ function createScrollIndicator(): CleanupFunction {
     document.body.append(indicator);
 
     const update = (): void => {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const scrollTop =
+            window.pageYOffset || document.documentElement.scrollTop;
+        const docHeight =
+            document.documentElement.scrollHeight - window.innerHeight;
         const safeHeight = docHeight > 0 ? docHeight : 1;
         const scrollPercent = (scrollTop / safeHeight) * 100;
         indicator.style.width = `${Math.max(0, Math.min(100, scrollPercent))}%`;
@@ -363,7 +377,9 @@ function createScrollIndicator(): CleanupFunction {
  * @returns Cleanup callback that removes click listeners and pending timers.
  */
 function applyThemeToggleAnimation(): CleanupFunction {
-    const themeToggle = document.querySelector('[aria-label*="color mode"], [title*="Switch"]');
+    const themeToggle = document.querySelector(
+        '[aria-label*="color mode"], [title*="Switch"]'
+    );
 
     if (!isHTMLElement(themeToggle)) {
         return (): void => {
@@ -405,7 +421,9 @@ function applyThemeToggleAnimation(): CleanupFunction {
  * @returns Cleanup callback for all registered enhancement handlers.
  */
 function initializeAdvancedFeatures(): CleanupFunction {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+    ).matches;
     const cleanupFunctions: CleanupFunction[] = [];
 
     cleanupFunctions.push(createScrollIndicator());

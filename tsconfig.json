@@ -26,19 +26,25 @@
         "explainFiles": false,
         "extendedDiagnostics": false,
         "forceConsistentCasingInFileNames": true,
-        "importHelpers": false,
+        "importHelpers": true,
         "incremental": true,
         "inlineSourceMap": false,
         "inlineSources": false,
         "isolatedDeclarations": true,
         "isolatedModules": true,
-        "lib": ["ES2024"],
+        "jsx": "react-jsx",
+        "jsxImportSource": "react",
+        "lib": [
+            "DOM",
+            "DOM.Iterable",
+            "ESNext"
+        ],
         "listEmittedFiles": false,
         "listFiles": false,
-        "module": "NodeNext",
-        "moduleDetection": "force",
-        "moduleResolution": "NodeNext",
-        "newLine": "lf",
+        "module": "ESNext",
+        "moduleDetection": "auto",
+        "moduleResolution": "bundler",
+        "newLine": "crlf",
         "noCheck": false,
         "noEmit": true,
         "noEmitHelpers": false,
@@ -57,6 +63,14 @@
         "noUncheckedSideEffectImports": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
+        "paths": {
+            "@assets/*": [
+                "./assets/*"
+            ],
+            "@plugin/*": [
+                "./src/*"
+            ]
+        },
         "preserveConstEnums": true,
         "preserveSymlinks": false,
         "preserveWatchOutput": false,
@@ -67,7 +81,7 @@
         "resolvePackageJsonImports": true,
         "rewriteRelativeImportExtensions": true,
         "skipLibCheck": true,
-        "sourceMap": false,
+        "sourceMap": true,
         "strict": true,
         "strictBindCallApply": true,
         "strictBuiltinIteratorReturn": true,
@@ -77,18 +91,32 @@
         "stripInternal": false,
         "target": "ES2024",
         "traceResolution": false,
-        "tsBuildInfoFile": "./.cache/tsbuildinfo/tsconfig.tsbuildinfo",
-        "paths": {
-            "@assets/*": ["./assets/*"],
-            "@plugin/*": ["./src/*"]
-        },
-        "types": ["node"],
+        "tsBuildInfoFile": "./.cache/tsbuildinfo/tsconfig.app.tsbuildinfo",
+        "types": [
+            "vite/client",
+            "vitest/globals"
+        ],
         "useDefineForClassFields": true,
         "useUnknownInCatchVariables": true,
         "verbatimModuleSyntax": true
     },
-    "exclude": [".cache/**", "coverage/**", "dist/**", "node_modules/**", "test/fixtures/**"],
-    "include": ["src/**/*.ts", "test/**/*.ts"],
+    "exclude": [
+        ".cache/**",
+        "coverage/**",
+        "dist/**",
+        "docs/docusaurus/.docusaurus/**",
+        "docs/docusaurus/build/**",
+        "eslint.config.bundled_*.mjs",
+        "node_modules/**",
+        "test/fixtures/**"
+    ],
+    "include": [
+        "src/**/*.d.ts",
+        "src/**/*.ts",
+        "test/**/*.d.ts",
+        "test/**/*.ts",
+        "vite.config.ts"
+    ],
     "typeAcquisition": {
         "enable": true,
         "exclude": [],
@@ -97,16 +125,16 @@
     "watchOptions": {
         "excludeDirectories": [
             "**/node_modules",
-            "_build",
-            "temp/*",
-            "dist/*",
-            "out/*",
-            "release/*",
             ".cache",
             ".coverage",
             ".git",
             ".husky",
-            ".vscode"
+            ".vscode",
+            "_build",
+            "dist/*",
+            "out/*",
+            "release/*",
+            "temp/*"
         ],
         "excludeFiles": [],
         "fallbackPolling": "dynamicPriority",

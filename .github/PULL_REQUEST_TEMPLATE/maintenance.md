@@ -15,4 +15,4 @@
 
 - [ ] `npm run typecheck`
 - [ ] `npm run test` (if behavior touched)
-- [ ] `npm run lint:all:fix:quiet` (or explain why not run)
+- [ ] `npm run lint` (or explain why not run)

@@ -1,22 +1,29 @@
 # yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
-name: TruffleHog Secret Scan
+name: Truffle Hog Secret Scan
+run-name: ${{ format('Trufflehog scan for {0}', github.ref_name) }}
 
 on:
     push:
     pull_request:
+        branches: ["master"]
+        types: [opened, synchronize, reopened, ready_for_review]
+    merge_group:
+        types: [checks_requested]
     workflow_dispatch:
     schedule:
         - cron: "44 4 * * 0" # Runs every Sunday at midnight UTC; https://crontab.guru/#0_0_*_*_0
 
-permissions:
-    contents: read
+concurrency:
+    group: trufflehog-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
     trufflehog:
+        name: Trufflehog scan
         runs-on: ubuntu-latest
-        concurrency:
-            group: trufflehog-${{ github.ref }}
-            cancel-in-progress: false
+        timeout-minutes: 15
+        permissions:
+            contents: read
         steps:
             - name: Harden the runner (Audit all outbound calls)
               uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1

@@ -1,4 +1,0 @@
-npm run test
-
-echo "\npublint:"
-npx --no -- publint

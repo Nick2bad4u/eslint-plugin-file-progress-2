@@ -1,52 +1,57 @@
-import path from "node:path";
 import type { Rule } from "eslint";
+
 import { createSpinner, type Spinner } from "nanospinner";
+import path from "node:path";
 import pc from "picocolors";
 
 import type { ProgressSettings, SpinnerStyle } from "../types.js";
 
 export interface NormalizedProgressSettings {
+    detailedSuccess: boolean;
+    failureMark: string;
+    fileNameOnNewLine: boolean;
     hide: boolean;
+    hideDirectoryNames: boolean;
     hideFileName: boolean;
     hidePrefix: boolean;
-    hideDirectoryNames: boolean;
-    fileNameOnNewLine: boolean;
-    successMessage: string;
-    detailedSuccess: boolean;
-    spinnerStyle: SpinnerStyle;
     prefixMark: string;
+    spinnerStyle: SpinnerStyle;
     successMark: string;
-    failureMark: string;
-}
-
-interface LintSummaryStats {
-    durationMs: number;
-    filesLinted: number;
-    exitCode: number;
+    successMessage: string;
 }
 
 export interface ProgressInternals {
     defaultSettings: Readonly<NormalizedProgressSettings>;
+    formatDuration: (durationMs: number) => string;
+    formatFailureMessage: (
+        settings: NormalizedProgressSettings,
+        stats: LintSummaryStats
+    ) => string;
+    formatFileProgress: (
+        relativeFilePath: string,
+        settings?: NormalizedProgressSettings
+    ) => string;
+    formatGenericProgress: (settings?: NormalizedProgressSettings) => string;
+    formatSuccessMessage: (
+        settings: NormalizedProgressSettings,
+        stats: LintSummaryStats
+    ) => string;
+    formatThroughput: (durationMs: number, filesLinted: number) => string;
     normalizeSettings: (raw: unknown) => NormalizedProgressSettings;
     resolveSpinnerStyle: (rawStyle: unknown) => SpinnerStyle;
     toRelativeFilePath: (filename: string, cwd: string) => string;
-    formatDuration: (durationMs: number) => string;
-    formatThroughput: (durationMs: number, filesLinted: number) => string;
-    formatFileProgress: (relativeFilePath: string, settings?: NormalizedProgressSettings) => string;
-    formatGenericProgress: (settings?: NormalizedProgressSettings) => string;
-    formatSuccessMessage: (settings: NormalizedProgressSettings, stats: LintSummaryStats) => string;
-    formatFailureMessage: (settings: NormalizedProgressSettings, stats: LintSummaryStats) => string;
 }
 
-const spinnerPresets: Record<SpinnerStyle, { frames: string[]; interval: number }> = {
-    line: {
-        frames: ["|", "/", "-", "\\"],
-        interval: 90,
-    },
-    dots: {
-        frames: ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"],
-        interval: 80,
-    },
+interface LintSummaryStats {
+    durationMs: number;
+    exitCode: number;
+    filesLinted: number;
+}
+
+const spinnerPresets: Record<
+    SpinnerStyle,
+    { frames: string[]; interval: number }
+> = {
     arc: {
         frames: ["◜", "◠", "◝", "◞", "◡", "◟"],
         interval: 90,
@@ -56,23 +61,44 @@ const spinnerPresets: Record<SpinnerStyle, { frames: string[]; interval: number 
         interval: 120,
     },
     clock: {
-        frames: ["🕛", "🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚"],
+        frames: [
+            "🕛",
+            "🕐",
+            "🕑",
+            "🕒",
+            "🕓",
+            "🕔",
+            "🕕",
+            "🕖",
+            "🕗",
+            "🕘",
+            "🕙",
+            "🕚",
+        ],
         interval: 120,
+    },
+    dots: {
+        frames: ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"],
+        interval: 80,
+    },
+    line: {
+        frames: ["|", "/", "-", "\\"],
+        interval: 90,
     },
 };
 
 const defaultSettings: Readonly<NormalizedProgressSettings> = Object.freeze({
+    detailedSuccess: false,
+    failureMark: "✖",
+    fileNameOnNewLine: false,
     hide: false,
+    hideDirectoryNames: false,
     hideFileName: false,
     hidePrefix: false,
-    hideDirectoryNames: false,
-    fileNameOnNewLine: false,
-    successMessage: "Lint complete.",
-    detailedSuccess: false,
-    spinnerStyle: "dots",
     prefixMark: "•",
+    spinnerStyle: "dots",
     successMark: "✔",
-    failureMark: "✖",
+    successMessage: "Lint complete.",
 });
 
 const formatPluginPrefix = (settings: NormalizedProgressSettings): string =>
@@ -115,7 +141,9 @@ const resolveSpinnerStyle = (rawStyle: unknown): SpinnerStyle => {
         return defaultSettings.spinnerStyle;
     }
 
-    return rawStyle in spinnerPresets ? (rawStyle as SpinnerStyle) : defaultSettings.spinnerStyle;
+    return rawStyle in spinnerPresets
+        ? (rawStyle as SpinnerStyle)
+        : defaultSettings.spinnerStyle;
 };
 
 const ensureSpinnerStyle = (spinnerStyle: SpinnerStyle): void => {
@@ -148,26 +176,36 @@ const normalizeSettings = (raw: unknown): NormalizedProgressSettings => {
     const fileNameOnNewLine = typedRaw.fileNameOnNewLine === true;
     const detailedSuccess = typedRaw.detailedSuccess === true;
     const spinnerStyle = resolveSpinnerStyle(typedRaw.spinnerStyle);
-    const prefixMark = resolveMark(typedRaw.prefixMark, defaultSettings.prefixMark);
-    const successMark = resolveMark(typedRaw.successMark, defaultSettings.successMark);
-    const failureMark = resolveMark(typedRaw.failureMark, defaultSettings.failureMark);
+    const prefixMark = resolveMark(
+        typedRaw.prefixMark,
+        defaultSettings.prefixMark
+    );
+    const successMark = resolveMark(
+        typedRaw.successMark,
+        defaultSettings.successMark
+    );
+    const failureMark = resolveMark(
+        typedRaw.failureMark,
+        defaultSettings.failureMark
+    );
     const successMessage =
-        typeof typedRaw.successMessage === "string" && typedRaw.successMessage.trim().length > 0
+        typeof typedRaw.successMessage === "string" &&
+        typedRaw.successMessage.trim().length > 0
             ? typedRaw.successMessage.trim()
             : defaultSettings.successMessage;
 
     return {
+        detailedSuccess,
+        failureMark,
+        fileNameOnNewLine,
         hide,
+        hideDirectoryNames,
         hideFileName,
         hidePrefix,
-        hideDirectoryNames,
-        fileNameOnNewLine,
-        successMessage,
-        detailedSuccess,
-        spinnerStyle,
         prefixMark,
+        spinnerStyle,
         successMark,
-        failureMark,
+        successMessage,
     };
 };
 
@@ -189,7 +227,9 @@ const toRelativeFilePath = (filename: string, cwd: string): string => {
         : path.relative(effectiveCwd, filename);
 
     if (relativePath.length === 0) {
-        return isWindowsAbsolutePath ? path.win32.basename(filename) : path.basename(filename);
+        return isWindowsAbsolutePath
+            ? path.win32.basename(filename)
+            : path.basename(filename);
     }
 
     return relativePath;
@@ -203,10 +243,21 @@ const formatFileSegment = (fileSegment: string): string => {
         : pc.bold(pc.green(fileSegment));
 };
 
-const formatPathSegments = (relativeFilePath: string, hideDirectoryNames = false): string => {
-    const directoryColorizers = [pc.magenta, pc.blue, pc.yellow, pc.green, pc.cyan] as const;
+const formatPathSegments = (
+    relativeFilePath: string,
+    hideDirectoryNames = false
+): string => {
+    const directoryColorizers = [
+        pc.magenta,
+        pc.blue,
+        pc.yellow,
+        pc.green,
+        pc.cyan,
+    ] as const;
     const separator = relativeFilePath.includes("\\") ? "\\" : "/";
-    const segments = relativeFilePath.split(/[/\\]+/).filter((segment) => segment.length > 0);
+    const segments = relativeFilePath
+        .split(/[/\\]+/)
+        .filter((segment) => segment.length > 0);
 
     if (segments.length === 0) {
         return pc.bold(pc.green(relativeFilePath));
@@ -223,7 +274,9 @@ const formatPathSegments = (relativeFilePath: string, hideDirectoryNames = false
 
     const formattedDirectories = directorySegments
         .map((segment, index) => {
-            const colorizer = directoryColorizers[index % directoryColorizers.length] ?? pc.cyan;
+            const colorizer =
+                directoryColorizers[index % directoryColorizers.length] ??
+                pc.cyan;
             return pc.bold(colorizer(segment));
         })
         .join(pc.dim(separator));
@@ -237,9 +290,12 @@ const formatPathSegments = (relativeFilePath: string, hideDirectoryNames = false
 
 const formatFileProgress = (
     relativeFilePath: string,
-    settings: NormalizedProgressSettings = defaultSettings,
+    settings: NormalizedProgressSettings = defaultSettings
 ): string => {
-    const formattedPath = formatPathSegments(relativeFilePath, settings.hideDirectoryNames);
+    const formattedPath = formatPathSegments(
+        relativeFilePath,
+        settings.hideDirectoryNames
+    );
 
     if (settings.hidePrefix) {
         return formattedPath;
@@ -254,7 +310,9 @@ const formatFileProgress = (
     return `${lintingPrefix}\n${pc.dim("  ↳")} ${formattedPath}`;
 };
 
-const formatGenericProgress = (settings: NormalizedProgressSettings = defaultSettings): string => {
+const formatGenericProgress = (
+    settings: NormalizedProgressSettings = defaultSettings
+): string => {
     if (settings.hidePrefix) {
         return pc.dim("linting project files...");
     }
@@ -263,11 +321,11 @@ const formatGenericProgress = (settings: NormalizedProgressSettings = defaultSet
 };
 
 const formatDuration = (durationMs: number): string => {
-    if (durationMs < 1_000) {
+    if (durationMs < 1000) {
         return `${durationMs}ms`;
     }
 
-    return `${(durationMs / 1_000).toFixed(2)}s`;
+    return `${(durationMs / 1000).toFixed(2)}s`;
 };
 
 const formatThroughput = (durationMs: number, filesLinted: number): string => {
@@ -279,16 +337,17 @@ const formatThroughput = (durationMs: number, filesLinted: number): string => {
         return `${filesLinted.toFixed(2)} files/s`;
     }
 
-    return `${(filesLinted / (durationMs / 1_000)).toFixed(2)} files/s`;
+    return `${(filesLinted / (durationMs / 1000)).toFixed(2)} files/s`;
 };
 
 const formatSuccessMessage = (
     settings: NormalizedProgressSettings,
-    stats: LintSummaryStats,
+    stats: LintSummaryStats
 ): string => {
     const summaryLabel = formatSummaryLabel(settings);
     const resultText = `${pc.bold(pc.green(settings.successMark))} ${pc.green(settings.successMessage)}`;
-    const title = summaryLabel.length > 0 ? `${summaryLabel} ${resultText}` : resultText;
+    const title =
+        summaryLabel.length > 0 ? `${summaryLabel} ${resultText}` : resultText;
 
     if (!settings.detailedSuccess) {
         return title;
@@ -306,11 +365,12 @@ const formatSuccessMessage = (
 
 const formatFailureMessage = (
     settings: NormalizedProgressSettings,
-    stats: LintSummaryStats,
+    stats: LintSummaryStats
 ): string => {
     const summaryLabel = formatSummaryLabel(settings);
     const resultText = `${pc.bold(pc.red(settings.failureMark))} ${pc.red("Lint failed.")}`;
-    const title = summaryLabel.length > 0 ? `${summaryLabel} ${resultText}` : resultText;
+    const title =
+        summaryLabel.length > 0 ? `${summaryLabel} ${resultText}` : resultText;
 
     if (!settings.detailedSuccess) {
         return title;
@@ -332,24 +392,35 @@ const bindExitHandler = (): void => {
     }
 
     process.once("exit", (exitCode) => {
-        if (lastVisibleSettings.hide !== true) {
+        if (!lastVisibleSettings.hide) {
             const now = Date.now();
-            const durationMs = lintStartedAt > 0 ? Math.max(0, now - lintStartedAt) : 0;
+            const durationMs =
+                lintStartedAt > 0 ? Math.max(0, now - lintStartedAt) : 0;
             const summaryStats: LintSummaryStats = {
                 durationMs,
-                filesLinted: lintedFileCount,
                 exitCode,
+                filesLinted: lintedFileCount,
             };
 
             if (exitCode === 0) {
                 spinner.success({
-                    mark: lastVisibleSettings.hidePrefix ? "" : lastVisibleSettings.prefixMark,
-                    text: formatSuccessMessage(lastVisibleSettings, summaryStats),
+                    mark: lastVisibleSettings.hidePrefix
+                        ? ""
+                        : lastVisibleSettings.prefixMark,
+                    text: formatSuccessMessage(
+                        lastVisibleSettings,
+                        summaryStats
+                    ),
                 });
             } else {
                 spinner.error({
-                    mark: lastVisibleSettings.hidePrefix ? "" : lastVisibleSettings.prefixMark,
-                    text: formatFailureMessage(lastVisibleSettings, summaryStats),
+                    mark: lastVisibleSettings.hidePrefix
+                        ? ""
+                        : lastVisibleSettings.prefixMark,
+                    text: formatFailureMessage(
+                        lastVisibleSettings,
+                        summaryStats
+                    ),
                 });
             }
         }
@@ -365,7 +436,7 @@ const create = (context: Rule.RuleContext): Rule.RuleListener => {
     lintedFileCount += 1;
 
     const settings = normalizeSettings(
-        (context.settings as { progress?: unknown } | undefined)?.progress,
+        (context.settings as undefined | { progress?: unknown })?.progress
     );
 
     bindExitHandler();
@@ -384,8 +455,13 @@ const create = (context: Rule.RuleContext): Rule.RuleListener => {
             initialReportDone = true;
         }
     } else {
-        const relativeFilePath = toRelativeFilePath(context.filename, context.cwd);
-        spinner.update({ text: formatFileProgress(relativeFilePath, settings) });
+        const relativeFilePath = toRelativeFilePath(
+            context.filename,
+            context.cwd
+        );
+        spinner.update({
+            text: formatFileProgress(relativeFilePath, settings),
+        });
     }
 
     spinner.spin();
@@ -394,34 +470,34 @@ const create = (context: Rule.RuleContext): Rule.RuleListener => {
 };
 
 const progressRule: Rule.RuleModule = {
+    create,
     meta: {
-        type: "suggestion",
+        deprecated: false,
         docs: {
             description: "enforce displaying lint progress in CLI output.",
-            recommended: true,
             frozen: false,
+            recommended: true,
             url: "https://github.com/Nick2bad4u/eslint-plugin-file-progress-2#readme",
         },
-        deprecated: false,
-        schema: [],
         messages: {
             status: "Display lint progress in CLI output.",
         },
+        schema: [],
+        type: "suggestion",
     },
-    create,
 };
 
 export const internals: ProgressInternals = {
     defaultSettings,
-    normalizeSettings,
-    resolveSpinnerStyle,
-    toRelativeFilePath,
     formatDuration,
-    formatThroughput,
+    formatFailureMessage,
     formatFileProgress,
     formatGenericProgress,
     formatSuccessMessage,
-    formatFailureMessage,
+    formatThroughput,
+    normalizeSettings,
+    resolveSpinnerStyle,
+    toRelativeFilePath,
 };
 
 export default progressRule;

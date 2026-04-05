@@ -37,4 +37,8 @@ const cjsTypeDefinitionContent = `import plugin from "./index.js";
 export = plugin;
 `;
 
-await writeFile(path.join(distDirectoryPath, "index.d.cts"), cjsTypeDefinitionContent, "utf8");
+await writeFile(
+    path.join(distDirectoryPath, "index.d.cts"),
+    cjsTypeDefinitionContent,
+    "utf8"
+);

@@ -1,27 +1,33 @@
+import tseslintPlugin from "@typescript-eslint/eslint-plugin";
+import { ESLint, type Linter, RuleTester } from "eslint";
 import assert from "node:assert/strict";
 import { rm, writeFile } from "node:fs/promises";
 import test from "node:test";
 import { stripVTControlCharacters } from "node:util";
 
-import tseslintPlugin from "@typescript-eslint/eslint-plugin";
-import { ESLint, RuleTester, type Linter } from "eslint";
-
 import plugin from "../src/index.js";
-import progressRule, { internals, type NormalizedProgressSettings } from "../src/rules/progress.js";
+import progressRule, {
+    internals,
+    type NormalizedProgressSettings,
+} from "../src/rules/progress.js";
 
 const tsFiles = ["src/**/*.ts", "test/**/*.ts"];
 
 const tsRecommendedTypeCheckedConfigs = (
-    tseslintPlugin.configs["flat/recommended-type-checked"] as unknown as Linter.Config[]
+    tseslintPlugin.configs[
+        "flat/recommended-type-checked"
+    ] as unknown as Linter.Config[]
 ).map((config) => ({
     ...config,
     files: tsFiles,
 }));
 
 const stripAnsi = (value: string): string => stripVTControlCharacters(value);
+const normalizePathSeparators = (value: string): string =>
+    value.replaceAll("\\", "/");
 
 const makeSettings = (
-    overrides: Partial<NormalizedProgressSettings> = {},
+    overrides: Partial<NormalizedProgressSettings> = {}
 ): NormalizedProgressSettings => ({
     ...internals.defaultSettings,
     ...overrides,
@@ -31,8 +37,8 @@ type SummaryStats = Parameters<typeof internals.formatSuccessMessage>[1];
 
 const makeStats = (overrides: Partial<SummaryStats> = {}): SummaryStats => ({
     durationMs: 900,
-    filesLinted: 3,
     exitCode: 0,
+    filesLinted: 3,
     ...overrides,
 });
 
@@ -47,13 +53,15 @@ test("plugin exports recommended configs", () => {
     });
 
     const ciHideSetting = (
-        plugin.configs["recommended-ci"].settings as { progress?: { hide?: boolean } } | undefined
+        plugin.configs["recommended-ci"].settings as
+            | undefined
+            | { progress?: { hide?: boolean } }
     )?.progress?.hide;
 
     const detailedSetting = (
         plugin.configs["recommended-detailed"].settings as
-            | { progress?: { detailedSuccess?: boolean } }
             | undefined
+            | { progress?: { detailedSuccess?: boolean } }
     )?.progress?.detailedSuccess;
 
     assert.equal(typeof ciHideSetting, "boolean");
@@ -61,88 +69,94 @@ test("plugin exports recommended configs", () => {
 });
 
 test("normalizeSettings handles invalid values safely", () => {
-    const cases: { input: unknown; expected: NormalizedProgressSettings }[] = [
+    const cases: { expected: NormalizedProgressSettings; input: unknown }[] = [
         {
-            input: undefined,
             expected: makeSettings(),
+            input: undefined,
         },
         {
+            expected: makeSettings({
+                hide: true,
+                successMessage: "Done",
+            }),
             input: {
                 hide: true,
                 hideFileName: false,
                 successMessage: "  Done  ",
             },
-            expected: makeSettings({
-                hide: true,
-                successMessage: "Done",
-            }),
         },
         {
-            input: {
-                detailedSuccess: true,
-            },
             expected: makeSettings({
                 detailedSuccess: true,
             }),
+            input: {
+                detailedSuccess: true,
+            },
         },
         {
-            input: {
-                spinnerStyle: "arc",
-            },
             expected: makeSettings({
                 spinnerStyle: "arc",
             }),
+            input: {
+                spinnerStyle: "arc",
+            },
         },
         {
+            expected: makeSettings(),
             input: {
                 spinnerStyle: "not-a-style",
             },
-            expected: makeSettings(),
         },
         {
-            input: {
-                prefixMark: "»",
-                successMark: "✅",
-                failureMark: "❌",
-            },
             expected: makeSettings({
+                failureMark: "❌",
                 prefixMark: "»",
                 successMark: "✅",
-                failureMark: "❌",
             }),
+            input: {
+                failureMark: "❌",
+                prefixMark: "»",
+                successMark: "✅",
+            },
         },
         {
-            input: {
-                fileNameOnNewLine: true,
-            },
             expected: makeSettings({
                 fileNameOnNewLine: true,
             }),
+            input: {
+                fileNameOnNewLine: true,
+            },
         },
         {
-            input: {
-                hidePrefix: true,
-                hideDirectoryNames: true,
-            },
             expected: makeSettings({
-                hidePrefix: true,
                 hideDirectoryNames: true,
+                hidePrefix: true,
             }),
+            input: {
+                hideDirectoryNames: true,
+                hidePrefix: true,
+            },
         },
     ];
 
-    for (const { input, expected } of cases) {
+    for (const { expected, input } of cases) {
         assert.deepEqual(internals.normalizeSettings(input), expected);
     }
 });
 
 test("formatters produce readable summary text", () => {
     assert.match(
-        stripAnsi(internals.formatFileProgress("shared/test/utils/typeGuards.debug.test.ts")),
-        /shared[\\/]test[\\/]utils[\\/]typeGuards\.debug\.test\.ts/,
+        normalizePathSeparators(
+            stripAnsi(
+                internals.formatFileProgress(
+                    "shared/test/utils/typeGuards.debug.test.ts"
+                )
+            )
+        ),
+        /shared\/test\/utils\/typeGuards\.debug\.test\.ts/v
     );
 
-    assert.match(internals.formatGenericProgress(), /linting project files/);
+    assert.match(internals.formatGenericProgress(), /linting project files/v);
 
     assert.match(
         stripAnsi(
@@ -150,71 +164,73 @@ test("formatters produce readable summary text", () => {
                 makeSettings({
                     successMessage: "All good",
                 }),
-                makeStats(),
-            ),
+                makeStats()
+            )
         ),
-        /eslint-plugin-file-progress-2:[\s\S]*All good/,
+        /eslint-plugin-file-progress-2:[\s\S]*All good/v
     );
 
     assert.match(
         internals.formatSuccessMessage(
             makeSettings({
-                successMessage: "All good",
                 detailedSuccess: true,
+                successMessage: "All good",
             }),
             makeStats({
                 durationMs: 1534,
                 filesLinted: 5,
-            }),
+            })
         ),
-        /Duration:[\s\S]*Files linted:[\s\S]*Throughput:[\s\S]*Exit code:/,
+        /Duration:[\s\S]*Files linted:[\s\S]*Throughput:[\s\S]*Exit code:/v
     );
 
     assert.match(
         internals.formatSuccessMessage(
             makeSettings({
-                successMessage: "All good",
                 detailedSuccess: true,
-                successMark: "✅",
                 failureMark: "❌",
+                successMark: "✅",
+                successMessage: "All good",
             }),
             makeStats({
                 durationMs: 224,
                 filesLinted: 5,
-            }),
+            })
         ),
-        /Problems:[\s\S]*0/,
+        /Problems:[\s\S]*0/v
     );
 
     assert.match(
         internals.formatFailureMessage(
             makeSettings({
-                successMessage: "All good",
                 detailedSuccess: true,
-                successMark: "✅",
                 failureMark: "❌",
+                successMark: "✅",
+                successMessage: "All good",
             }),
             makeStats({
                 durationMs: 224,
-                filesLinted: 5,
                 exitCode: 2,
-            }),
+                filesLinted: 5,
+            })
         ),
-        /Lint failed\.[\s\S]*Throughput:[\s\S]*Exit code:[\s\S]*2[\s\S]*Problems:[\s\S]*detected/,
+        /Lint failed\.[\s\S]*Throughput:[\s\S]*Exit code:[^2]*2[\s\S]*Problems:[\s\S]*detected/v
     );
 });
 
 test("formatFileProgress supports newline and directory controls", () => {
     assert.match(
-        stripAnsi(
-            internals.formatFileProgress(
-                "src/rules/progress.ts",
-                makeSettings({
-                    fileNameOnNewLine: true,
-                }),
-            ),
+        normalizePathSeparators(
+            stripAnsi(
+                internals.formatFileProgress(
+                    "src/rules/progress.ts",
+                    makeSettings({
+                        fileNameOnNewLine: true,
+                    })
+                )
+            )
         ),
-        /linting\s*\n\s*↳\s*src[\\/]rules[\\/]progress\.ts/,
+        /linting[\t ]*\n[\t ]*↳[\t ]*src\/rules\/progress\.ts/v
     );
 
     assert.match(
@@ -223,10 +239,10 @@ test("formatFileProgress supports newline and directory controls", () => {
                 "src/rules/progress.ts",
                 makeSettings({
                     hideDirectoryNames: true,
-                }),
-            ),
+                })
+            )
         ),
-        /linting\s+progress\.ts$/,
+        /linting\s+progress\.ts$/v
     );
 });
 
@@ -235,24 +251,27 @@ test("hidePrefix composes with directory and summary settings", () => {
         internals.formatFileProgress(
             "src/rules/progress.ts",
             makeSettings({
-                hidePrefix: true,
                 fileNameOnNewLine: true,
-            }),
-        ),
+                hidePrefix: true,
+            })
+        )
     );
 
-    assert.match(prefixHiddenText, /^src[\\/]rules[\\/]progress\.ts$/);
+    assert.match(
+        normalizePathSeparators(prefixHiddenText),
+        /^src\/rules\/progress\.ts$/v
+    );
     assert.ok(!prefixHiddenText.includes("\n"));
 
     const prefixAndDirectoriesHiddenText = stripAnsi(
         internals.formatFileProgress(
             "src/rules/progress.ts",
             makeSettings({
-                hidePrefix: true,
-                hideDirectoryNames: true,
                 fileNameOnNewLine: true,
-            }),
-        ),
+                hideDirectoryNames: true,
+                hidePrefix: true,
+            })
+        )
     );
 
     assert.equal(prefixAndDirectoriesHiddenText, "progress.ts");
@@ -262,11 +281,13 @@ test("hidePrefix composes with directory and summary settings", () => {
             makeSettings({
                 hideFileName: true,
                 hidePrefix: true,
-            }),
-        ),
+            })
+        )
     );
 
-    assert.ok(!genericWithPrefixHidden.includes("eslint-plugin-file-progress-2"));
+    assert.ok(
+        !genericWithPrefixHidden.includes("eslint-plugin-file-progress-2")
+    );
 
     const successWithPrefixHidden = stripAnsi(
         internals.formatSuccessMessage(
@@ -277,19 +298,28 @@ test("hidePrefix composes with directory and summary settings", () => {
             makeStats({
                 durationMs: 100,
                 filesLinted: 1,
-            }),
-        ),
+            })
+        )
     );
 
-    assert.ok(!successWithPrefixHidden.includes("eslint-plugin-file-progress-2:"));
+    assert.ok(
+        !successWithPrefixHidden.includes("eslint-plugin-file-progress-2:")
+    );
 });
 
 test("toRelativeFilePath handles absolute paths", () => {
-    assert.match(internals.toRelativeFilePath("/repo/src/file.ts", "/repo"), /^src[\\/]file\.ts$/);
+    assert.match(
+        normalizePathSeparators(
+            internals.toRelativeFilePath("/repo/src/file.ts", "/repo")
+        ),
+        /^src\/file\.ts$/v
+    );
 
     assert.match(
-        internals.toRelativeFilePath("C:/repo/src/file.ts", "C:/repo"),
-        /^src[\\/]file\.ts$/,
+        normalizePathSeparators(
+            internals.toRelativeFilePath("C:/repo/src/file.ts", "C:/repo")
+        ),
+        /^src\/file\.ts$/v
     );
 });
 
@@ -297,14 +327,15 @@ test("rule works with ESLint 10 RuleContext properties", () => {
     const ruleTester = new RuleTester();
 
     ruleTester.run("file-progress/activate", progressRule, {
+        invalid: [],
         valid: [
             {
-                filename: "src/file-a.js",
                 code: 'const foo = "bar";',
+                filename: "src/file-a.js",
             },
             {
-                filename: "src/file-b.js",
                 code: 'const foo = "bar";',
+                filename: "src/file-b.js",
                 name: "hidden progress setting",
                 settings: {
                     progress: {
@@ -313,8 +344,8 @@ test("rule works with ESLint 10 RuleContext properties", () => {
                 },
             },
             {
-                filename: "src/file-c.js",
                 code: 'const foo = "bar";',
+                filename: "src/file-c.js",
                 name: "hide filename with custom success message",
                 settings: {
                     progress: {
@@ -324,8 +355,8 @@ test("rule works with ESLint 10 RuleContext properties", () => {
                 },
             },
             {
-                filename: "src/file-d.js",
                 code: 'const foo = "bar";',
+                filename: "src/file-d.js",
                 name: "show filename on a second line",
                 settings: {
                     progress: {
@@ -334,12 +365,12 @@ test("rule works with ESLint 10 RuleContext properties", () => {
                 },
             },
             {
-                filename: "src/file-e.ts",
                 code: 'const foo = "bar";',
+                filename: "src/file-e.ts",
             },
             {
-                filename: "src/nested/file-f.ts",
                 code: 'const foo = "bar";',
+                filename: "src/nested/file-f.ts",
                 name: "hide prefix and keep file names",
                 settings: {
                     progress: {
@@ -348,8 +379,8 @@ test("rule works with ESLint 10 RuleContext properties", () => {
                 },
             },
             {
-                filename: "src/deeply/nested/file-g.ts",
                 code: 'const foo = "bar";',
+                filename: "src/deeply/nested/file-g.ts",
                 name: "hide directory names only",
                 settings: {
                     progress: {
@@ -358,19 +389,18 @@ test("rule works with ESLint 10 RuleContext properties", () => {
                 },
             },
             {
-                filename: "src/deeply/nested/file-h.ts",
                 code: 'const foo = "bar";',
+                filename: "src/deeply/nested/file-h.ts",
                 name: "hide prefix and directory names together",
                 settings: {
                     progress: {
-                        hidePrefix: true,
-                        hideDirectoryNames: true,
                         fileNameOnNewLine: true,
+                        hideDirectoryNames: true,
+                        hidePrefix: true,
                     },
                 },
             },
         ],
-        invalid: [],
     });
 });
 
@@ -383,11 +413,10 @@ test("typescript-eslint setup lints TypeScript files with plugin rule", async ()
             'const value: string = "lint-ok";',
             "export const readValue = (): string => value;",
             "",
-        ].join("\n"),
+        ].join("\n")
     );
 
     const eslint = new ESLint({
-        overrideConfigFile: true,
         overrideConfig: [
             ...tsRecommendedTypeCheckedConfigs,
             {
@@ -405,14 +434,15 @@ test("typescript-eslint setup lints TypeScript files with plugin rule", async ()
                     "file-progress": plugin,
                 },
                 rules: {
-                    "file-progress/activate": "warn",
                     "@typescript-eslint/no-unsafe-argument": "off",
                     "@typescript-eslint/no-unsafe-assignment": "off",
                     "@typescript-eslint/no-unsafe-member-access": "off",
                     "@typescript-eslint/no-unsafe-return": "off",
+                    "file-progress/activate": "warn",
                 },
             },
         ],
+        overrideConfigFile: true,
     });
 
     try {

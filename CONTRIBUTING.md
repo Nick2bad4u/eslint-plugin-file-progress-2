@@ -1,20 +1,19 @@
-# Contributing to eslint-plugin-typefest
+# Contributing to eslint-plugin-file-progress-2
 
 Thanks for your interest in contributing.
 
-This repository contains an ESLint plugin focused on `type-fest` and
-`ts-extras` usage patterns for TypeScript codebases.
+This repository contains an ESLint plugin that adds file-by-file progress output
+for CLI lint runs, plus a Docusaurus + TypeDoc docs site for the package.
 
 ## Prerequisites
 
-- Node.js `>=22.0.0` (see `package.json#engines`)
+- Node.js `>=22.0.0`
 - npm `>=11`
 - Git
 
 ## Local setup
 
 1. Fork and clone the repository.
-
 2. Install dependencies from the repository root:
 
    ```bash
@@ -24,119 +23,100 @@ This repository contains an ESLint plugin focused on `type-fest` and
 3. Run the main quality gate:
 
    ```bash
-   npm run lint:all:fix:quiet
-   npm run typecheck
-   npm test
+   npm run check
    ```
 
 ## Recommended development workflow
 
-1. Create a branch from `main`.
+1. Create a branch from `master`.
 2. Make focused changes.
 3. Add or update tests in `test/` when behavior changes.
-4. Update relevant documentation in `docs/` and root docs when needed.
-5. Run validation commands before opening a pull request.
+4. Update docs when public behavior changes:
+   - root docs such as `README.md` and `DEVELOPMENT.md`
+   - rule docs under `docs/rules/`
+   - site docs under `docs/docusaurus/site-docs/`
+5. Run the relevant validation commands before opening a pull request.
 
-## Debugging and logging policy
+## Validation commands
 
-To keep runtime plugin behavior predictable, this repository enforces strict
-rules for logging and debugger usage in source code.
+Use these commands locally before opening a pull request:
 
-- `src/**` and `plugin.mjs`: do **not** commit `console.*` or `debugger`
-  statements.
-- `scripts/**`: `console.log`/`console.warn`/`console.error` are allowed for
-  CLI progress and diagnostics.
-- `test/**`: avoid noisy logging by default; only keep it when a test is
-  explicitly validating logging behavior.
+- `npm run check`
+- `npm run docs:check`
+- `npm run release:check`
+- `npm run test:coverage`
 
-When adding script output, prefer this severity split:
+Focused checks are also available:
 
-- `console.log`: normal progress
-- `console.warn`: recoverable issue or fallback behavior
-- `console.error`: failure path (typically followed by a non-zero exit code)
+- `npm run lint`
+- `npm run typecheck`
+- `npm run test`
+- `npm run lint:md`
+- `npm run lint:styles`
+- `npm run format:check`
+
+## Logging and diagnostics policy
+
+This plugin intentionally produces terminal output as part of its feature set.
+That means progress and summary output in `src/rules/progress.ts` is legitimate
+product behavior, not incidental debug logging.
+
+Please follow these rules when changing runtime output:
+
+- Keep user-facing progress output intentional, minimal, and documented.
+- Do not add stray debug-only `console.*` statements in source files.
+- Prefer test assertions over ad hoc logging in `test/**`.
+- CLI/build scripts under `scripts/**` may use `console.log`/`console.warn` when
+  they are part of normal command output.
 
 ## Project layout
 
 ```text
 .
-├── src/                  # Plugin source and rule implementations
-├── test/                 # Rule tests and test helpers
-├── docs/                 # Rule docs and Docusaurus docs app
-├── scripts/              # Repository scripts
-├── .github/              # Workflows and automation configs
-└── package.json          # Scripts, dependencies, metadata
+├── src/                  # Plugin source and exported configs
+├── test/                 # Node test runner suites
+├── docs/                 # Rule docs and Docusaurus site app
+├── scripts/              # Build and release helper scripts
+├── .github/              # Workflows, issue templates, and automation config
+└── package.json          # Scripts, dependencies, and metadata
 ```
 
-## Validation commands
+## Docs and release notes
 
-Use these commands locally before submitting a pull request:
+If you change package behavior, keep the public docs aligned:
 
-- `npm run typecheck`
-- `npm test`
-- `npm run lint:all:fix:quiet`
+- `README.md` for installation and quick-start usage
+- `docs/rules/*.md` for rule/preset details
+- `docs/docusaurus/site-docs/**` for site content
 
-## Snapshot testing guidance
-
-This repository uses Vitest snapshots selectively for stable contract surfaces,
-not as a replacement for explicit rule behavior assertions.
-
-Use snapshots for:
-
-- normalized plugin contract summaries
-- normalized rule metadata matrices
-- generated documentation artifacts (for example README rules sections)
-- docs structure schemas where heading order and presence are contractual
-
-Avoid snapshots for:
-
-- raw AST trees
-- broad ESLint diagnostics payloads in rule tests
-- unnormalized objects with volatile or environment-specific fields
-
-Focused update flow:
+Manual releases are handled by `.github/workflows/release.yml`. Before triggering
+that workflow, run:
 
 ```bash
-npx vitest run test/plugin-contract-snapshots.test.ts -u
-npx vitest run test/rule-metadata-snapshots.test.ts -u
-npm run sync:readme-rules-table:update
-npx vitest run test/docs-heading-snapshots.test.ts -u
+npm run release:check
 ```
-
-Verification flow:
-
-```bash
-npx vitest run test/plugin-contract-snapshots.test.ts test/rule-metadata-snapshots.test.ts test/readme-rules-table-sync.test.ts test/docs-heading-snapshots.test.ts
-```
-
-For detailed design and review guidance, see
-[`docs/rules/guides/snapshot-testing.md`](./docs/rules/guides/snapshot-testing.md).
-
-Optional focused checks:
-
-- `npm run mutation:test` for Stryker mutation testing
-- `npm run changelog:preview` to preview unreleased changelog output
 
 ## Commit guidance
 
-Gitmoji + Conventional type commits are recommended because release notes and
-changelog tooling are commit-message aware.
+Gitmoji + bracketed conventional type commits are recommended because release
+notes and changelog tooling are commit-message aware.
 
 Format:
 
-- `:gitmoji: type(scope?): subject`
+- `<gitmoji> [type](scope?): subject`
 
 Examples:
 
-- `:sparkles: feat(rule): add prefer-type-fest-xyz`
-- `:bug: fix(rule): avoid false positive in union type handling`
-- `:memo: docs: clarify configuration for type-aware rules`
+- `✨ [feat](docs): add developer workflow page`
+- `🐛 [fix](progress): avoid duplicate success summary`
+- `📝 [docs]: clarify recommended-ci behavior`
 
 ## Pull request expectations
 
 - Keep pull requests scoped and reviewable.
 - Include tests for behavior changes.
 - Keep docs in sync with implementation changes.
-- Do not include generated lockfile churn unrelated to the change.
+- Avoid unrelated lockfile or formatting churn.
 
 ## Security
 
@@ -145,5 +125,5 @@ Use the process described in [SECURITY.md](./SECURITY.md).
 
 ## License
 
-By contributing, you agree your contributions are licensed under the
+By contributing, you agree that your contributions are licensed under the
 [MIT License](./LICENSE).

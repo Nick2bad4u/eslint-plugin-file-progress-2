@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest a new rule or improvement for eslint-plugin-typefest
+about: Suggest a new feature or improvement for eslint-plugin-file-progress-2
 title: "Feature: "
 labels:
     - enhancement
@@ -18,7 +18,7 @@ assignees: []
 
 ## Scope
 
-- Type: New rule / Rule enhancement / Config preset / Docs / Tooling
+- Type: Rule enhancement / Config preset / Docs / Tooling / Release automation
 - Affected rule IDs (if any):
 - Requires type checking?: Yes / No / Unsure
 

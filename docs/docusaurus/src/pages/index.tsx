@@ -32,7 +32,8 @@ type HomeCard = {
  */
 const heroBadges = [
     {
-        description: "Drop-in config for ESLint v9+ and modern Flat Config projects.",
+        description:
+            "Drop-in config for ESLint v9+ and modern Flat Config projects.",
         icon: "\uf013",
         label: "Flat Config native",
     },
@@ -42,7 +43,8 @@ const heroBadges = [
         label: "CI-aware preset",
     },
     {
-        description: "Optional end-of-run duration, file count, and throughput summary.",
+        description:
+            "Optional end-of-run duration, file count, and throughput summary.",
         icon: "\uf0ad",
         label: "Detailed success summary",
     },
@@ -55,15 +57,18 @@ const heroBadges = [
  */
 const heroStats = [
     {
-        description: "A single purpose-built rule focused on CLI lint progress output.",
+        description:
+            "A single purpose-built rule focused on CLI lint progress output.",
         headline: "\uf0ca 1 Rule",
     },
     {
-        description: "Recommended, CI-friendly, and detailed-summary presets ready to use.",
+        description:
+            "Recommended, CI-friendly, and detailed-summary presets ready to use.",
         headline: "\ue690 3 Presets",
     },
     {
-        description: "Shows active file progress and a cleaner final summary for lint runs.",
+        description:
+            "Shows active file progress and a cleaner final summary for lint runs.",
         headline: "\udb80\udc68 CLI-first Progress UX",
     },
 ] as const satisfies readonly HeroStat[];
@@ -84,10 +89,12 @@ const homepageKeywords =
 const homepageStructuredData = {
     "@context": "https://schema.org",
     "@type": "SoftwareSourceCode",
-    codeRepository: "https://github.com/Nick2bad4u/eslint-plugin-file-progress-2",
+    codeRepository:
+        "https://github.com/Nick2bad4u/eslint-plugin-file-progress-2",
     description: homepageDescription,
     image: "https://nick2bad4u.github.io/eslint-plugin-file-progress-2/img/logo.png",
-    license: "https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/blob/master/LICENSE",
+    license:
+        "https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/blob/master/LICENSE",
     name: "eslint-plugin-file-progress-2",
     programmingLanguage: "TypeScript",
     runtimePlatform: "Node.js",
@@ -132,13 +139,18 @@ export default function Home() {
     const logoSrc = useBaseUrl("/img/logo.svg");
 
     return (
-        <Layout title="CLI-first ESLint progress output" description={homepageDescription}>
+        <Layout
+            title="CLI-first ESLint progress output"
+            description={homepageDescription}
+        >
             <Head>
                 <meta content={homepageKeywords} name="keywords" />
                 <meta content={homepageSocialImageUrl} property="og:image" />
                 <meta content="summary_large_image" name="twitter:card" />
                 <meta content={homepageSocialImageUrl} name="twitter:image" />
-                <script type="application/ld+json">{JSON.stringify(homepageStructuredData)}</script>
+                <script type="application/ld+json">
+                    {JSON.stringify(homepageStructuredData)}
+                </script>
             </Head>
             <header className={styles.heroBanner}>
                 <div className={`container ${styles.heroContent}`}>
@@ -151,8 +163,9 @@ export default function Home() {
                                 eslint-plugin-file-progress-2
                             </Heading>
                             <p className={styles.heroSubtitle}>
-                                A focused ESLint plugin that prints live file progress and optional
-                                end-of-run summaries while linting. It is powered by{" "}
+                                A focused ESLint plugin that prints live file
+                                progress and optional end-of-run summaries while
+                                linting. It is powered by{" "}
                                 <Link
                                     className={`${styles.heroInlineLink} ${styles.heroInlineLinkSpinner}`}
                                     href="https://github.com/usmanyunusov/nanospinner"
@@ -174,7 +187,10 @@ export default function Home() {
 
                             <div className={styles.heroBadgeRow}>
                                 {heroBadges.map((badge) => (
-                                    <article key={badge.label} className={styles.heroBadge}>
+                                    <article
+                                        key={badge.label}
+                                        className={styles.heroBadge}
+                                    >
                                         <p className={styles.heroBadgeLabel}>
                                             <span
                                                 aria-hidden="true"
@@ -184,7 +200,11 @@ export default function Home() {
                                             </span>
                                             {badge.label}
                                         </p>
-                                        <p className={styles.heroBadgeDescription}>
+                                        <p
+                                            className={
+                                                styles.heroBadgeDescription
+                                            }
+                                        >
                                             {badge.description}
                                         </p>
                                     </article>
@@ -224,9 +244,16 @@ export default function Home() {
 
                     <div className={styles.heroStats}>
                         {heroStats.map((stat) => (
-                            <article key={stat.headline} className={styles.heroStatCard}>
-                                <p className={styles.heroStatHeading}>{stat.headline}</p>
-                                <p className={styles.heroStatDescription}>{stat.description}</p>
+                            <article
+                                key={stat.headline}
+                                className={styles.heroStatCard}
+                            >
+                                <p className={styles.heroStatHeading}>
+                                    {stat.headline}
+                                </p>
+                                <p className={styles.heroStatDescription}>
+                                    {stat.description}
+                                </p>
                             </article>
                         ))}
                     </div>
@@ -239,12 +266,19 @@ export default function Home() {
                         {homeCards.map((card) => (
                             <article key={card.title} className={styles.card}>
                                 <div className={styles.cardHeader}>
-                                    <p className={styles.cardIcon}>{card.icon}</p>
-                                    <Heading as="h2" className={styles.cardTitle}>
+                                    <p className={styles.cardIcon}>
+                                        {card.icon}
+                                    </p>
+                                    <Heading
+                                        as="h2"
+                                        className={styles.cardTitle}
+                                    >
                                         {card.title}
                                     </Heading>
                                 </div>
-                                <p className={styles.cardDescription}>{card.description}</p>
+                                <p className={styles.cardDescription}>
+                                    {card.description}
+                                </p>
                                 <Link className={styles.cardLink} to={card.to}>
                                     Open section →
                                 </Link>

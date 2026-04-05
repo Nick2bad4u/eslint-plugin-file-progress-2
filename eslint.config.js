@@ -36,7 +36,6 @@ import deMorgan from "eslint-plugin-de-morgan";
 import depend from "eslint-plugin-depend";
 import eslintPluginEslintPlugin from "eslint-plugin-eslint-plugin";
 import etcMisc from "eslint-plugin-etc-misc";
-import progress from "eslint-plugin-file-progress-2";
 import githubActions from "eslint-plugin-github-actions-2";
 import immutable from "eslint-plugin-immutable-2";
 import { importX } from "eslint-plugin-import-x";
@@ -82,16 +81,17 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as tomlEslintParser from "toml-eslint-parser";
 import * as yamlEslintParser from "yaml-eslint-parser";
+import typefest from "eslint-plugin-typefest";
+
+import fileProgressPlugin from "./dist/index.js";
 
 /**
  * @remarks
- * When bootstrapping a new ESLint plugin, do the following:
+ * Dogfood the built local plugin during repository lint runs.
  *
- * 1. Import `typefest` from the npm package and add it above
- * 2. Change the `typefest` local import below to be the new plugin's name and path
- * 3. Setup the `🚢 Local Plugin Import` section below for new plugin
+ * `prelint` runs `npm run build` before ESLint loads this file, so the local
+ * build is available at `./dist/index.js`.
  */
-import typefest from "./plugin.mjs";
 
 // NOTE: eslint-plugin-json-schema-validator may attempt to fetch remote schemas
 // at lint time. That makes linting flaky/offline-hostile.
@@ -149,7 +149,7 @@ const HIDE_PROGRESS_FILENAMES = ESLINT_PROGRESS_MODE === "nofile";
 /** @type {import("eslint").Linter.Config} */
 const fileProgressOverridesConfig = {
     name: "CLI: file progress overrides",
-    plugins: { "file-progress": progress },
+    plugins: { "file-progress": fileProgressPlugin },
     rules: {
         // The preset already auto-hides on CI, but we also support explicit
         // local toggles.
@@ -182,8 +182,8 @@ if (
         try {
             return require.resolve("recheck-jar/recheck.jar");
         } catch {
-            console.warn(
-                '[eslint.config] Unable to resolve "recheck-jar/recheck.jar". eslint-plugin-redos will rely on its internal resolution logic.'
+            globalThis.process.stderr.write(
+                '[eslint.config] Unable to resolve "recheck-jar/recheck.jar". eslint-plugin-redos will rely on its internal resolution logic.\n'
             );
             return undefined;
         }
@@ -296,10 +296,14 @@ export default defineConfig([
         files: ["**/*.{js,jsx,mjs,cjs,ts,tsx,cts,mts}"],
         name: "Import-X TypeScript (code files only)",
     },
-    progress.configs["recommended-ci"],
+    fileProgressPlugin.configs["recommended-ci"],
     copilot.configs.all,
     sdl.configs.required,
-    githubActions.configs.all,
+    {
+        ...githubActions.configs.all,
+        files: [".github/workflows/*.{yml,yaml}"],
+        name: "GitHub Actions workflows",
+    },
     vite.configs.all,
     {
         ...immutable.configs.all,
@@ -651,39 +655,18 @@ export default defineConfig([
         },
     },
     // #endregion
-    // #region 🚢 Local Plugin Import
+    // #region ⌨️ Local Plugin Rules
     // ═══════════════════════════════════════════════════════════════════════════════
-    // SECTION: 🚢 Local Plugin Import
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // {
-    //     files: [
-    //         "src/**/*.{ts,tsx,mts,cts}",
-    //         //    "test/**/*.{ts,tsx,mts,cts}"
-    //     ],
-    //     name: "Local Plugin Rules from Source",
-    //     plugins: {
-    //         typefest: typefest,
-    //     },
-    //     rules: {
-    //         ...typefest.configs.all.rules,
-    //     },
-    // },
-    // #endregion
-    // #region ⌨️ Typefest
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // SECTION: ⌨️ Typefest (typefest/*)
+    // SECTION: ⌨️ File Progress (file-progress/*)
     // ═══════════════════════════════════════════════════════════════════════════════
     {
-        files: [
-            "src/**/*.{ts,tsx,mts,cts}",
-            //    "test/**/*.{ts,tsx,mts,cts}"
-        ],
-        name: "Typefest Rules for Source",
+        files: ["src/**/*.{ts,tsx,mts,cts}", "test/**/*.{ts,tsx,mts,cts}"],
+        name: "File Progress Rules for Source",
         plugins: {
-            typefest: typefest,
+            "file-progress": fileProgressPlugin,
         },
         rules: {
-            ...typefest.configs.experimental.rules,
+            "file-progress/activate": "warn",
         },
     },
     // #endregion
@@ -831,13 +814,30 @@ export default defineConfig([
                         "./tsconfig.eslint.json",
                         "./tsconfig.json",
                         "./tsconfig.build.json",
-                        "./tsconfig.js.json",
                     ],
                 }),
             ],
         },
     },
     // #endregion
+    // #region ⌨️ Typefest
+    // SECTION: 🚢 Typefest
+    // ═══════════════════════════════════════════════════════════════════════════════
+    {
+        files: [
+            "src/**/*.{ts,tsx,mts,cts}",
+            //    "test/**/*.{ts,tsx,mts,cts}"
+        ],
+        name: "Typefest Rules for Source",
+        plugins: {
+            typefest: typefest,
+        },
+        rules: {
+            ...typefest.configs.experimental.rules,
+        },
+    },
+    // #endregion
+    // ═══════════════════════════════════════════════════════════════════════════════
     // #region 🔌 ESLint Plugin config
     // ═══════════════════════════════════════════════════════════════════════════════
     // SECTION: ESLint Plugin config
@@ -849,7 +849,7 @@ export default defineConfig([
             "test/**/*.{js,mjs,cjs,ts,mts,cts,tsx}",
             "benchmarks/**/*.{js,mjs,cjs,ts,mts,cts,tsx}",
         ],
-        ignores: ["plugin.mjs"],
+        ignores: ["dist/**"],
         languageOptions: {
             globals: {
                 ...globals.browser,
@@ -1521,8 +1521,7 @@ export default defineConfig([
     {
         files: [
             "commitlint.config.mjs",
-            "eslint.config.mjs",
-            "plugin.mjs",
+            "eslint.config.js",
             "src/**/*.{js,mjs,cjs,ts,mts,cts,tsx}",
             "vite.config.ts",
         ],
@@ -1972,6 +1971,39 @@ export default defineConfig([
             vitest: {
                 typecheck: true,
             },
+        },
+    },
+    {
+        files: ["src/index.ts"],
+        name: "Public module boundary overrides",
+        rules: {
+            "canonical/filename-no-index": "off",
+            "canonical/no-barrel-import": "off",
+            "canonical/no-re-export": "off",
+            "no-barrel-files/no-barrel-files": "off",
+        },
+    },
+    {
+        files: ["src/**/*.{ts,tsx,mts,cts}", "test/**/*.{ts,tsx,mts,cts}"],
+        name: "Repository TypeScript authoring overrides",
+        rules: {
+            "@typescript-eslint/prefer-readonly-parameter-types": "off",
+            "tsdoc-require-2/require": "off",
+        },
+    },
+    {
+        files: ["test/**/*.{ts,tsx,mts,cts,js,mjs,cjs}"],
+        name: "Node test runner overrides",
+        rules: {
+            "@typescript-eslint/no-unsafe-call": "off",
+            "@typescript-eslint/strict-boolean-expressions": "off",
+            "eslint-plugin/test-case-property-ordering": "off",
+            "vitest/expect-expect": "off",
+            "vitest/no-import-node-test": "off",
+            "vitest/prefer-expect-assertions": "off",
+            "vitest/prefer-importing-vitest-globals": "off",
+            "vitest/require-top-level-describe": "off",
+            "vitest/valid-title": "off",
         },
     },
     // #endregion
@@ -3067,7 +3099,7 @@ export default defineConfig([
         },
     },
     {
-        files: ["plugin.mjs", "src/**/*.{ts,tsx,mts,cts,js,mjs,cjs}"],
+        files: ["eslint.config.js", "src/**/*.{ts,tsx,mts,cts,js,mjs,cjs}"],
         name: "Source runtime logging policy",
         rules: {
             // Runtime/library code should not emit console output.

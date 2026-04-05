@@ -106,8 +106,6 @@ out
 # Nuxt.js build / generate output
 .nuxt
 dist
-docs/docusaurus/build
-docs/docusaurus/site-docs/developer/api
 
 # Gatsby files
 .cache/
@@ -784,6 +782,9 @@ release/
 # Coverage directories
 coverage-results.json
 
+# Test reports
+test-report.junit.xml
+
 # Docusaurus
 !docs/docusaurus/static/manifest.json
 docs/docusaurus/.docusaurus
@@ -801,6 +802,8 @@ docs/docusaurus/docs/typedoc.json
 docs/docusaurus/docs/typedoc-sidebar.cjs
 docs/docusaurus/docs/_media
 docs/docusaurus/static/eslint-inspector/
+docs/docusaurus/static/stylelint-inspector/
+docs/docusaurus/static/*-inspector/
 docs/docusaurus/static/storybook/
 docs/docusaurus/stylelintcache
 **/docs/docusaurus/.docusaurus
@@ -863,5 +866,5 @@ eslint.config.bundled_**
 
 # Docusaurus API reference files (if auto-generated)
 **/site-docs/developer/api/
-docs/docusaurus/static/stylelint-inspector/
-docs/docusaurus/static/eslint-inspector/
+# Local Chrome DevTools automatic workspace metadata (machine-specific absolute path)
+docs/docusaurus/static/.well-known/appspecific/com.chrome.devtools.json

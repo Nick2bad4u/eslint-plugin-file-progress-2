@@ -58,7 +58,9 @@ const liveBadges = [
  * @returns Badge strip with links to package/repository metadata.
  */
 export default function GitHubStats({ className = "" }: GitHubStatsProps) {
-    const badgeListClassName = [styles.liveBadgeList, className].filter(Boolean).join(" ");
+    const badgeListClassName = [styles.liveBadgeList, className]
+        .filter(Boolean)
+        .join(" ");
 
     return (
         <ul className={badgeListClassName}>

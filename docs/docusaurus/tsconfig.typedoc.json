@@ -5,9 +5,18 @@
         "declaration": true,
         "emitDeclarationOnly": false,
         "noEmit": true,
-        "types": ["node"]
+        "types": [
+            "node"
+        ]
     },
-    "exclude": ["../../coverage/**", "../../dist/**", "../../node_modules/**", "../../test/**"],
+    "exclude": [
+        "../../coverage/**",
+        "../../dist/**",
+        "../../node_modules/**",
+        "../../test/**"
+    ],
     "extends": "../../tsconfig.json",
-    "include": ["../../src/**/*.ts"]
+    "include": [
+        "../../src/**/*.ts"
+    ]
 }

@@ -7,7 +7,9 @@
  *
  * @param inlineTagText - The inline-tag payload stored by TypeDoc.
  */
-export declare function convertHashLinksToBangLinksInInlineTagText(inlineTagText: string): string;
+export declare function convertHashLinksToBangLinksInInlineTagText(
+    inlineTagText: string
+): string;
 
 /**
  * Mutates a TypeDoc comment in-place, rewriting repo-style `path#Symbol` links
@@ -15,7 +17,9 @@ export declare function convertHashLinksToBangLinksInInlineTagText(inlineTagText
  *
  * @param comment - A TypeDoc Comment object.
  */
-export declare function convertHashLinksToBangLinksInComment(comment: unknown): void;
+export declare function convertHashLinksToBangLinksInComment(
+    comment: unknown
+): void;
 
 /**
  * Mutates an array of TypeDoc comment display parts in-place.
@@ -23,5 +27,5 @@ export declare function convertHashLinksToBangLinksInComment(comment: unknown): 
  * @param parts - Display parts collection whose inline-tag text may be rewritten.
  */
 export declare function convertHashLinksToBangLinksInParts(
-    parts: Array<Record<string, unknown>>,
+    parts: Array<Record<string, unknown>>
 ): void;

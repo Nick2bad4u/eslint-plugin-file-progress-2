@@ -21,7 +21,6 @@ declare const styles: {
     readonly "sb-cat-presets": string;
     readonly "sb-cat-rules": string;
     readonly "sb-cat-rules-ts-extras": string;
-    readonly "sb-cat-rules-type-fest": string;
     readonly "sb-doc-getting-started": string;
     readonly "sb-doc-overview": string;
     readonly "sb-inline-rule-number": string;
@@ -31,7 +30,6 @@ declare const styles: {
     readonly "sb-preset-recommended": string;
     readonly "sb-preset-recommended-type-checked": string;
     readonly "sb-preset-strict": string;
-    readonly "sb-preset-type-fest": string;
     readonly "sb-preset-type-guards": string;
     readonly "theme-doc-markdown": string;
     readonly "theme-doc-sidebar-item-category-level-2": string;

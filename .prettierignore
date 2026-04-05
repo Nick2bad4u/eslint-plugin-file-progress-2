@@ -31,6 +31,8 @@ electron-app/package-lock.json
 
 # Ignore specific files
 **/coverage-results.json
+_config.yml
+.all-contributorsrc
 
 # Ignore prompts (Changed " to ' for tools messes up agents)
 **/**.prompt.md

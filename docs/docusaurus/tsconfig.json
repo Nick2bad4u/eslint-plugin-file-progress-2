@@ -8,9 +8,23 @@
         "noEmit": true,
         "skipLibCheck": true,
         "strict": true,
-        "types": ["node"]
+        "types": [
+            "node"
+        ]
     },
-    "exclude": [".docusaurus", "build", "node_modules"],
-    "extends": ["../../tsconfig.json", "@docusaurus/tsconfig"],
-    "include": ["docusaurus.config.ts", "sidebars.ts", "sidebars.rules.ts", "src/**/*"]
+    "exclude": [
+        ".docusaurus",
+        "build",
+        "node_modules"
+    ],
+    "extends": [
+        "../../tsconfig.json",
+        "@docusaurus/tsconfig"
+    ],
+    "include": [
+        "docusaurus.config.ts",
+        "sidebars.ts",
+        "sidebars.rules.ts",
+        "src/**/*"
+    ]
 }

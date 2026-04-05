@@ -7,7 +7,14 @@
  */
 
 /** @type {ReadonlySet<string>} */
-const URL_LIKE_SCHEMES = new Set(["blob", "data", "file", "mailto", "tel", "urn"]);
+const URL_LIKE_SCHEMES = new Set([
+    "blob",
+    "data",
+    "file",
+    "mailto",
+    "tel",
+    "urn",
+]);
 
 /**
  * @param {string} moduleSource
@@ -29,7 +36,10 @@ function isUrlLike(moduleSource) {
 
     // Windows drive letter followed by `:` (e.g. `C:`) with a path segment is
     // not a URL.
-    if (/^[A-Za-z]$/u.test(scheme) && /[\\/]/u.test(moduleSource.slice(firstColon + 1))) {
+    if (
+        /^[A-Za-z]$/u.test(scheme) &&
+        /[\\/]/u.test(moduleSource.slice(firstColon + 1))
+    ) {
         return false;
     }
 
@@ -66,15 +76,22 @@ function isModuleSourceLike(moduleSource) {
  */
 export function convertHashLinksToBangLinksInInlineTagText(inlineTagText) {
     const pipeIndex = inlineTagText.indexOf("|");
-    const beforePipe = pipeIndex === -1 ? inlineTagText : inlineTagText.slice(0, pipeIndex);
+    const beforePipe =
+        pipeIndex === -1 ? inlineTagText : inlineTagText.slice(0, pipeIndex);
 
     const trimmedStart = beforePipe.trimStart();
-    const leadingWs = beforePipe.slice(0, beforePipe.length - trimmedStart.length);
+    const leadingWs = beforePipe.slice(
+        0,
+        beforePipe.length - trimmedStart.length
+    );
 
     const trimmedEnd = beforePipe.trimEnd();
     const trailingWs = beforePipe.slice(trimmedEnd.length);
 
-    const trimmed = beforePipe.slice(leadingWs.length, beforePipe.length - trailingWs.length);
+    const trimmed = beforePipe.slice(
+        leadingWs.length,
+        beforePipe.length - trailingWs.length
+    );
 
     const hashIndex = trimmed.indexOf("#");
     if (hashIndex === -1) {
@@ -109,9 +126,13 @@ export function convertHashLinksToBangLinksInParts(parts) {
     for (const part of parts) {
         if (
             part.kind === "inline-tag" &&
-            (part.tag === "@link" || part.tag === "@linkcode" || part.tag === "@linkplain")
+            (part.tag === "@link" ||
+                part.tag === "@linkcode" ||
+                part.tag === "@linkplain")
         ) {
-            const rewritten = convertHashLinksToBangLinksInInlineTagText(part.text);
+            const rewritten = convertHashLinksToBangLinksInInlineTagText(
+                part.text
+            );
             if (rewritten !== part.text) {
                 part.text = rewritten;
                 // Ensure TypeDoc re-resolves this link based on updated text.

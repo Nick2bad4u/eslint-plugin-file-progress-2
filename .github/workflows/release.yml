@@ -26,12 +26,9 @@ on:
                 default: "master"
                 type: string
 
-permissions:
-    contents: read
-
 concurrency:
     group: "${{ github.workflow }}-${{ github.repository }}"
-    cancel-in-progress: false
+    cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 defaults:
     run:

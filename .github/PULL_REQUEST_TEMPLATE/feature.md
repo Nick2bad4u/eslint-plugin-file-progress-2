@@ -20,6 +20,6 @@
 
 - [ ] `npm run typecheck`
 - [ ] `npm run test`
-- [ ] `npm run lint:all:fix:quiet` (or explain why not run)
+- [ ] `npm run lint` (or explain why not run)
 - [ ] Added/updated tests for valid/invalid/edge/fixer cases
 - [ ] Updated docs (`docs/rules/<rule-id>.md` and related tables/pages)

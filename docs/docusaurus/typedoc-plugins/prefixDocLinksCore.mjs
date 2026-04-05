@@ -92,7 +92,8 @@ function prefixIfBareRelativeMarkdownFile(url) {
     const beforeHash = hashIndex === -1 ? trimmed : trimmed.slice(0, hashIndex);
 
     const queryIndex = beforeHash.indexOf("?");
-    const pathname = queryIndex === -1 ? beforeHash : beforeHash.slice(0, queryIndex);
+    const pathname =
+        queryIndex === -1 ? beforeHash : beforeHash.slice(0, queryIndex);
 
     // Only touch markdown-file links.
     if (!pathname.endsWith(".md") && !pathname.endsWith(".mdx")) {
@@ -254,7 +255,9 @@ function prefixInlineLinkPayload(payload) {
     }
 
     const isAngleWrapped =
-        destination.startsWith("<") && destination.endsWith(">") && destination.length >= 2;
+        destination.startsWith("<") &&
+        destination.endsWith(">") &&
+        destination.length >= 2;
     const inner = isAngleWrapped ? destination.slice(1, -1) : destination;
 
     const rewrittenInner = prefixIfBareRelativeMarkdownFile(inner);
@@ -262,7 +265,9 @@ function prefixInlineLinkPayload(payload) {
         return payload;
     }
 
-    const rewrittenDestination = isAngleWrapped ? `<${rewrittenInner}>` : rewrittenInner;
+    const rewrittenDestination = isAngleWrapped
+        ? `<${rewrittenInner}>`
+        : rewrittenInner;
 
     return `${leadingWs}${rewrittenDestination}${remainder}${trailingWs}`;
 }
@@ -288,7 +293,10 @@ function prefixInlineMarkdownLinksInLine(line) {
      */
     const countRun = (startIndex, char) => {
         let count = 0;
-        while (startIndex + count < line.length && line.charAt(startIndex + count) === char) {
+        while (
+            startIndex + count < line.length &&
+            line.charAt(startIndex + count) === char
+        ) {
             count += 1;
         }
         return count;
@@ -367,7 +375,10 @@ export function prefixBareMarkdownFileLinksInMarkdown(input) {
             const [matchText] = fenceMatch;
             const run = matchText.trimStart();
             const { groups } = fenceMatch;
-            const typedGroups = /** @type {undefined | { marker: string | undefined }} */ (groups);
+            const typedGroups =
+                /** @type {undefined | { marker: string | undefined }} */ (
+                    groups
+                );
             const markerChar = typedGroups?.marker ?? run.charAt(0);
             /** @type {"`" | "~"} */
             let marker = "~";
@@ -378,7 +389,10 @@ export function prefixBareMarkdownFileLinksInMarkdown(input) {
 
             if (fenceState === null) {
                 fenceState = { length, marker };
-            } else if (marker === fenceState.marker && length >= fenceState.length) {
+            } else if (
+                marker === fenceState.marker &&
+                length >= fenceState.length
+            ) {
                 fenceState = null;
             }
 

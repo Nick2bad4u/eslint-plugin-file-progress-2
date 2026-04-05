@@ -145,7 +145,8 @@ const config: Config = {
         ],
     ],
     projectName,
-    tagline: "Flat Config-ready progress output and final summaries for ESLint CLI runs.",
+    tagline:
+        "Flat Config-ready progress output and final summaries for ESLint CLI runs.",
     themeConfig: {
         colorMode: {
             defaultMode: "dark",

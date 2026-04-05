@@ -2,25 +2,29 @@
 # by a third-party and are governed by separate terms of service, privacy
 # policy, and support documentation.
 
-name: Scorecard supply-chain security
+name: Scorecard Supply Chain Security
+run-name: ${{ format('Scorecard for {0}', github.ref_name) }}
 on:
     # For Branch-Protection check. Only the default branch is supported. See
     # https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection
     branch_protection_rule:
+        types: [edited]
     # To guarantee Maintained check is occasionally updated. See
     # https://github.com/ossf/scorecard/blob/main/docs/checks.md#maintained
     schedule:
         - cron: "20 7 * * 2"
     push:
-        branches: ["main"]
+        branches: ["master"]
 
-# Declare default permissions as read only.
-permissions: read-all
+concurrency:
+    group: scorecards-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
     analysis:
         name: Scorecard analysis
         runs-on: ubuntu-latest
+        timeout-minutes: 20
         permissions:
             # Needed to upload the results to code-scanning dashboard.
             security-events: write

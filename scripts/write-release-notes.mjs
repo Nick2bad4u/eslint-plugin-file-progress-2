@@ -134,7 +134,8 @@ const main = async () => {
     const outputPath = path.resolve(repositoryRoot, outputPathValue);
     const packageJson = await loadPackageJson();
     const version =
-        typeof packageJson.version === "string" && packageJson.version.length > 0
+        typeof packageJson.version === "string" &&
+        packageJson.version.length > 0
             ? packageJson.version
             : "0.0.0";
     const packageName =
@@ -142,10 +143,21 @@ const main = async () => {
             ? packageJson.name
             : path.basename(repositoryRoot);
     const tagArgument = args.get("tag");
-    const tag = tagArgument !== undefined && tagArgument.length > 0 ? tagArgument : `v${version}`;
-    const repositoryUrl = toHttpsRepositoryUrl(normalizeRepositoryUrl(packageJson.repository));
-    const previousTag = await tryRunGit(["describe", "--tags", "--abbrev=0", `${tag}^`]);
-    const commitRange = previousTag === undefined ? "HEAD" : `${previousTag}..HEAD`;
+    const tag =
+        tagArgument !== undefined && tagArgument.length > 0
+            ? tagArgument
+            : `v${version}`;
+    const repositoryUrl = toHttpsRepositoryUrl(
+        normalizeRepositoryUrl(packageJson.repository)
+    );
+    const previousTag = await tryRunGit([
+        "describe",
+        "--tags",
+        "--abbrev=0",
+        `${tag}^`,
+    ]);
+    const commitRange =
+        previousTag === undefined ? "HEAD" : `${previousTag}..HEAD`;
     const commitLogText = await tryRunGit([
         "log",
         "--no-merges",

@@ -11,9 +11,23 @@
     overflow: clip;
     padding: 4.45rem 0 3.65rem;
     background:
-        radial-gradient(circle at 86% 12%, rgb(244 114 182 / 28%), transparent 40%),
-        radial-gradient(circle at 16% 90%, rgb(34 211 238 / 30%), transparent 45%),
-        linear-gradient(134deg, #312e81 0%, #4338ca 38%, #3b82f6 72%, #22d3ee 100%);
+        radial-gradient(
+            circle at 86% 12%,
+            rgb(244 114 182 / 28%),
+            transparent 40%
+        ),
+        radial-gradient(
+            circle at 16% 90%,
+            rgb(34 211 238 / 30%),
+            transparent 45%
+        ),
+        linear-gradient(
+            134deg,
+            #312e81 0%,
+            #4338ca 38%,
+            #3b82f6 72%,
+            #22d3ee 100%
+        );
     border-block-end: 1px solid rgb(255 255 255 / 18%);
     color: #ffffff;
     isolation: isolate;
@@ -293,7 +307,8 @@
 .heroActionSecondary {
     border-color: rgb(191 219 254 / 34%);
     background:
-        linear-gradient(145deg, rgb(186 230 253 / 20%), rgb(147 197 253 / 11%)), rgb(15 23 42 / 28%);
+        linear-gradient(145deg, rgb(186 230 253 / 20%), rgb(147 197 253 / 11%)),
+        rgb(15 23 42 / 28%);
     color: rgb(222 235 255);
 
     &:hover,
@@ -316,7 +331,8 @@
     margin: 0;
     backdrop-filter: blur(10px);
     background:
-        linear-gradient(155deg, rgb(15 23 42 / 45%), rgb(15 23 42 / 22%)), rgb(30 41 59 / 28%);
+        linear-gradient(155deg, rgb(15 23 42 / 45%), rgb(15 23 42 / 22%)),
+        rgb(30 41 59 / 28%);
     box-shadow:
         0 20px 30px -26px rgb(15 23 42 / 85%),
         inset 0 1px 0 rgb(255 255 255 / 15%);
@@ -437,7 +453,12 @@
     border: 1px solid var(--ifm-color-emphasis-300);
     border-radius: 0.95rem;
     background:
-        linear-gradient(165deg, rgb(79 70 229 / 10%), rgb(14 165 233 / 8%) 56%, transparent),
+        linear-gradient(
+            165deg,
+            rgb(79 70 229 / 10%),
+            rgb(14 165 233 / 8%) 56%,
+            transparent
+        ),
         var(--ifm-background-surface-color);
     box-shadow: var(--ifm-global-shadow-lw);
     gap: 0.85rem;
@@ -529,7 +550,12 @@
     border: 1px solid var(--ifm-color-emphasis-200);
     border-radius: 0.95rem;
     background:
-        linear-gradient(170deg, rgb(79 70 229 / 7%), rgb(14 165 233 / 6%) 48%, transparent),
+        linear-gradient(
+            170deg,
+            rgb(79 70 229 / 7%),
+            rgb(14 165 233 / 6%) 48%,
+            transparent
+        ),
         var(--ifm-card-background-color);
     box-shadow: var(--ifm-global-shadow-lw);
     transition:
@@ -575,7 +601,8 @@
     background: rgb(79 70 229 / 14%);
     block-size: 1.9rem;
     font-family:
-        "NerdFontSymbols Nerd Font Symbols", "Symbols Nerd Font Mono", "Segoe UI Emoji", sans-serif;
+        "NerdFontSymbols Nerd Font Symbols", "Symbols Nerd Font Mono",
+        "Segoe UI Emoji", sans-serif;
     font-size: 1.12rem;
     font-variant-ligatures: none;
     inline-size: 1.9rem;
