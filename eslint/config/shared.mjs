@@ -4,18 +4,8 @@
 /** @typedef {import("eslint").Linter.RulesRecord} EslintRulesRecord */
 
 /* eslint-disable @eslint-community/eslint-comments/disable-enable-pair -- Intentional file-wide module-boundary exception for shared config re-exports. */
-/* eslint-disable no-barrel-files/no-barrel-files -- This shared module is the intentional dependency boundary for the modular ESLint config. */
+/* eslint-disable canonical/no-re-export, perfectionist/sort-named-exports, unicorn/prefer-export-from -- This shared module intentionally centralizes re-exported config dependencies for the modular ESLint config. */
 
-import pluginDocusaurus from "@docusaurus/eslint-plugin";
-import comments from "@eslint-community/eslint-plugin-eslint-comments/configs";
-import eslintReactPlugin from "@eslint-react/eslint-plugin";
-import { globalIgnores } from "@eslint/config-helpers";
-import css from "@eslint/css";
-import js from "@eslint/js";
-import json from "@eslint/json";
-import markdown from "@eslint/markdown";
-import html from "@html-eslint/eslint-plugin";
-import * as htmlParser from "@html-eslint/parser";
 import stylistic from "@stylistic/eslint-plugin";
 import tseslint from "@typescript-eslint/eslint-plugin";
 import tseslintParser from "@typescript-eslint/parser";
@@ -110,10 +100,11 @@ const enableJsonSchemaValidation =
 
 const jsonSchemaValidatorPackageName = "eslint-plugin-json-schema-validator";
 
-let eslintPluginJsonSchemaValidator;
+let eslintPluginJsonSchemaValidator = undefined;
 
 /**
  * @param {unknown} value
+ *
  * @returns {EslintPlugin}
  */
 export function asEslintPlugin(value) {
@@ -122,6 +113,7 @@ export function asEslintPlugin(value) {
 
 /**
  * @param {unknown} value
+ *
  * @returns {EslintRulesRecord}
  */
 export function asRulesRecord(value) {
@@ -264,10 +256,8 @@ export const nodeImportStyleStyles = {
 
 export {
     arrayFunc,
-    comments,
     copilot,
     createTypeScriptImportResolver,
-    css,
     deMorgan,
     depend,
     etcMisc,
@@ -281,22 +271,15 @@ export {
     eslintPluginToml,
     eslintPluginUnicorn,
     eslintPluginYml,
-    eslintReactPlugin,
     fileProgressPlugin,
     gitignore,
-    globalIgnores,
     githubActions,
     globals,
-    html,
-    htmlParser,
     immutable,
     importX,
-    js,
     jsdocPlugin,
-    json,
     jsoncEslintParser,
     listeners,
-    markdown,
     moduleInterop,
     nitpick,
     noBarrelFiles,
@@ -309,7 +292,6 @@ export {
     pluginCanonical,
     pluginCasePolice,
     pluginCssModules,
-    pluginDocusaurus,
     pluginJSDoc,
     pluginNFDAR,
     pluginNoOnly,
@@ -337,3 +319,14 @@ export {
     writeGoodComments,
     yamlEslintParser,
 };
+
+export { default as pluginDocusaurus } from "@docusaurus/eslint-plugin";
+export { default as comments } from "@eslint-community/eslint-plugin-eslint-comments/configs";
+export { default as eslintReactPlugin } from "@eslint-react/eslint-plugin";
+export { globalIgnores } from "@eslint/config-helpers";
+export { default as css } from "@eslint/css";
+export { default as js } from "@eslint/js";
+export { default as json } from "@eslint/json";
+export { default as markdown } from "@eslint/markdown";
+export { default as html } from "@html-eslint/eslint-plugin";
+export * as htmlParser from "@html-eslint/parser";

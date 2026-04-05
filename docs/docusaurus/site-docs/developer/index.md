@@ -7,12 +7,12 @@ This section is for contributors and maintainers working on `eslint-plugin-file-
 - [🚀 Release workflow](./release-workflow.md)
 - [🧪 CLI debugging and print-config](./cli-debugging-and-print-config.md)
 - [🧭 Docs and TypeDoc workflow](./docusaurus-site-contract.md)
-- [📘 Generated API reference](./api/README.md)
+- [📘 Generated API reference](./api/index.md)
 
 ## Maintainer focus areas
 
 - **Release management**: Manual npm + GitHub releases are handled from the `Release` workflow.
-- **Rule behavior**: The plugin has one public rule, `file-progress/activate`, with a meaningful settings surface and three presets.
+- **Rule behavior**: The plugin exposes three runtime rules with rule-option-based configuration and seven presets.
 - **Docs maintenance**: Rule docs are written by hand under `docs/rules`, while API docs are generated from TypeScript with TypeDoc.
 - **CLI ergonomics**: Most debugging is about ESLint CLI resolution, terminal output behavior, and cross-platform path formatting.
 

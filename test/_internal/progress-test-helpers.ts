@@ -1,8 +1,7 @@
+import type { createSpinner, Spinner } from "nanospinner";
+
 import { EventEmitter } from "node:events";
 import { stripVTControlCharacters } from "node:util";
-
-import type { Spinner } from "nanospinner";
-import { createSpinner } from "nanospinner";
 
 import {
     internals,
@@ -33,6 +32,32 @@ export const makeStats = (
     ...overrides,
 });
 
+export interface MockProcess {
+    readonly cwd: () => string;
+    readonly emitExit: (exitCode: number) => boolean;
+    readonly once: NodeJS.Process["once"];
+    readonly stderr: MockWriteStream<2>;
+    readonly stdout: MockWriteStream<1>;
+}
+
+export interface MockSpinnerEvent {
+    readonly method: SpinnerMethod;
+    readonly payload?: unknown;
+}
+
+export interface MockSpinnerRecord {
+    readonly events: MockSpinnerEvent[];
+    readonly options: SpinnerCreateOptions | undefined;
+    readonly spinner: Spinner;
+    readonly text: string;
+}
+
+export interface MockWriteStream<Fd extends 1 | 2 = 1 | 2>
+    extends NodeJS.WriteStream {
+    fd: Fd;
+    readonly writes: string[];
+}
+
 type SpinnerCreateOptions = NonNullable<Parameters<typeof createSpinner>[1]>;
 
 type SpinnerMethod =
@@ -49,31 +74,6 @@ type SpinnerMethod =
     | "update"
     | "warn"
     | "write";
-
-export interface MockSpinnerEvent {
-    readonly method: SpinnerMethod;
-    readonly payload?: unknown;
-}
-
-export interface MockSpinnerRecord {
-    readonly events: MockSpinnerEvent[];
-    readonly options: SpinnerCreateOptions | undefined;
-    readonly spinner: Spinner;
-}
-
-export interface MockWriteStream<Fd extends 1 | 2 = 1 | 2>
-    extends NodeJS.WriteStream {
-    fd: Fd;
-    readonly writes: string[];
-}
-
-export interface MockProcess {
-    readonly cwd: () => string;
-    readonly emitExit: (exitCode: number) => boolean;
-    readonly once: NodeJS.Process["once"];
-    readonly stderr: MockWriteStream<2>;
-    readonly stdout: MockWriteStream<1>;
-}
 
 const recordEvent = (
     events: MockSpinnerEvent[],
@@ -100,7 +100,7 @@ export const createMockSpinnerFactory = (): {
     const created: MockSpinnerRecord[] = [];
 
     const spinnerFactory = (
-        _text = "",
+        text = "",
         options?: SpinnerCreateOptions
     ): Spinner => {
         const events: MockSpinnerEvent[] = [];
@@ -177,6 +177,7 @@ export const createMockSpinnerFactory = (): {
             events,
             options,
             spinner,
+            text,
         });
 
         return spinner;
@@ -215,13 +216,12 @@ export const createMockWriteStream = <Fd extends 1 | 2 = 1>(
 export const createMockProcess = (
     streams: Partial<Pick<MockProcess, "stderr" | "stdout">> = {}
 ): MockProcess => {
+    // eslint-disable-next-line unicorn/prefer-event-target -- Node.js process.once semantics are EventEmitter-based, so the mock matches that API directly.
     const emitter = new EventEmitter();
     const stdout =
-        streams.stdout ??
-        (createMockWriteStream({ fd: 1, isTTY: true }) as MockWriteStream<1>);
+        streams.stdout ?? createMockWriteStream({ fd: 1, isTTY: true });
     const stderr =
-        streams.stderr ??
-        (createMockWriteStream({ fd: 2, isTTY: true }) as MockWriteStream<2>);
+        streams.stderr ?? createMockWriteStream({ fd: 2, isTTY: true });
 
     return {
         cwd: () => "/repo",

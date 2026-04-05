@@ -425,17 +425,17 @@ function applyThemeToggleAnimation(): CleanupFunction {
  * @returns Cleanup callback for all registered enhancement handlers.
  */
 function initializeAdvancedFeatures(): CleanupFunction {
-    const prefersReducedMotion = window.matchMedia(
+    const browserWindow = globalThis.window;
+    const prefersReducedMotion = browserWindow.matchMedia(
         "(prefers-reduced-motion: reduce)"
     ).matches;
-    const cleanupFunctions: CleanupFunction[] = [];
-
-    cleanupFunctions.push(createScrollIndicator());
-    cleanupFunctions.push(applySidebarLabelTokenColoring());
-
-    if (!prefersReducedMotion) {
-        cleanupFunctions.push(applyThemeToggleAnimation());
-    }
+    const cleanupFunctions: CleanupFunction[] = prefersReducedMotion
+        ? [createScrollIndicator(), applySidebarLabelTokenColoring()]
+        : [
+              createScrollIndicator(),
+              applySidebarLabelTokenColoring(),
+              applyThemeToggleAnimation(),
+          ];
 
     return (): void => {
         cleanupFunctions.forEach((cleanup) => {
@@ -450,6 +450,7 @@ function initializeAdvancedFeatures(): CleanupFunction {
  * @returns Cleanup callback that unregisters observers and listeners.
  */
 function initializeEnhancements(): CleanupFunction {
+    const browserWindow = globalThis.window;
     const cleanupRef: CleanupRef = {
         current: null,
     };
@@ -463,7 +464,7 @@ function initializeEnhancements(): CleanupFunction {
 
     const cancelInitialSetup = (): void => {
         if (initialSetupFrame !== null) {
-            window.cancelAnimationFrame(initialSetupFrame);
+            browserWindow.cancelAnimationFrame(initialSetupFrame);
             initialSetupFrame = null;
         }
 
@@ -476,7 +477,7 @@ function initializeEnhancements(): CleanupFunction {
     const scheduleInitialSetup = (): void => {
         cancelInitialSetup();
 
-        initialSetupFrame = window.requestAnimationFrame(() => {
+        initialSetupFrame = browserWindow.requestAnimationFrame(() => {
             initialSetupFrame = null;
 
             initialSetupTimer = setTimeout(() => {
@@ -487,14 +488,16 @@ function initializeEnhancements(): CleanupFunction {
     };
 
     const handleWindowLoad = (): void => {
-        window.removeEventListener("load", handleWindowLoad);
+        browserWindow.removeEventListener("load", handleWindowLoad);
         scheduleInitialSetup();
     };
 
     if (document.readyState === "complete") {
         scheduleInitialSetup();
     } else {
-        window.addEventListener("load", handleWindowLoad, { once: true });
+        browserWindow.addEventListener("load", handleWindowLoad, {
+            once: true,
+        });
     }
 
     let routeChangeTimer: null | ReturnType<typeof setTimeout> = null;
@@ -520,7 +523,7 @@ function initializeEnhancements(): CleanupFunction {
     observer.observe(document.body, { childList: true, subtree: true });
 
     const handleBeforeUnload = (): void => {
-        window.removeEventListener("load", handleWindowLoad);
+        browserWindow.removeEventListener("load", handleWindowLoad);
         cancelInitialSetup();
         cleanupRef.current?.();
 
@@ -532,17 +535,22 @@ function initializeEnhancements(): CleanupFunction {
         observer.disconnect();
     };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
+    browserWindow.addEventListener("beforeunload", handleBeforeUnload);
 
     return (): void => {
-        window.removeEventListener("beforeunload", handleBeforeUnload);
+        browserWindow.removeEventListener("beforeunload", handleBeforeUnload);
         handleBeforeUnload();
     };
 }
 
-if (typeof window !== "undefined" && typeof document !== "undefined") {
+if (
+    typeof globalThis.window !== "undefined" &&
+    typeof globalThis.document !== "undefined"
+) {
+    const browserWindow = globalThis.window;
+
     initializeEnhancements();
-    window.initializeAdvancedFeatures = initializeAdvancedFeatures;
+    browserWindow.initializeAdvancedFeatures = initializeAdvancedFeatures;
 }
 
 export { initializeAdvancedFeatures, initializeEnhancements };

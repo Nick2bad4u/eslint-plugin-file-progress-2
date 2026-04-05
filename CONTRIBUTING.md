@@ -42,7 +42,7 @@ for CLI lint runs, plus a Docusaurus + TypeDoc docs site for the package.
 Use these commands locally before opening a pull request:
 
 - `npm run check`
-- `npm run docs:check`
+- `npm run docs:check-links`
 - `npm run release:check`
 - `npm run test:coverage`
 
@@ -51,9 +51,9 @@ Focused checks are also available:
 - `npm run lint`
 - `npm run typecheck`
 - `npm run test`
-- `npm run lint:md`
-- `npm run lint:styles`
-- `npm run format:check`
+- `npm run lint:remark`
+- `npm run lint:css`
+- `npm run lint:prettier`
 
 ## Logging and diagnostics policy
 
@@ -103,13 +103,17 @@ notes and changelog tooling are commit-message aware.
 
 Format:
 
-- `<gitmoji> [type](scope?): subject`
+```text
+<gitmoji> [type](scope?): subject
+```
 
 Examples:
 
-- `✨ [feat](docs): add developer workflow page`
-- `🐛 [fix](progress): avoid duplicate success summary`
-- `📝 [docs]: clarify recommended-ci behavior`
+```text
+✨ [feat](docs): add developer workflow page
+🐛 [fix](progress): avoid duplicate success summary
+📝 [docs]: clarify recommended-ci behavior
+```
 
 ## Pull request expectations
 

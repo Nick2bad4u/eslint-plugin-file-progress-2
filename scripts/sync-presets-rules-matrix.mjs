@@ -9,88 +9,36 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const scriptDirectoryPath = dirname(fileURLToPath(import.meta.url));
-const presetsIndexPath = resolve(
-    scriptDirectoryPath,
-    "../docs/rules/presets/index.md"
-);
+const builtCatalogModuleUrl = pathToFileURL(
+    resolve(scriptDirectoryPath, "../dist/_internal/plugin-catalog.js")
+).href;
 const builtPluginModuleUrl = pathToFileURL(
     resolve(scriptDirectoryPath, "../dist/index.js")
 ).href;
 const markerStart = "<!-- begin generated preset matrix -->";
 const markerEnd = "<!-- end generated preset matrix -->";
+const presetsIndexPath = resolve(
+    scriptDirectoryPath,
+    "../docs/rules/presets/index.md"
+);
 
+// eslint-disable-next-line no-unsanitized/method -- Controlled repository-local file URL; no user input reaches import().
+const { fileProgressPresetCatalog, getRuleCatalogEntry } = await import(
+    builtCatalogModuleUrl
+);
 // eslint-disable-next-line no-unsanitized/method -- Controlled repository-local file URL; no user input reaches import().
 const { default: builtPlugin } = await import(builtPluginModuleUrl);
 
-/** @typedef {"activate" | "compact" | "summary-only"} RuleName */
-/** @typedef {"recommended"
-    | "recommended-ci"
-    | "recommended-ci-detailed"
-    | "recommended-compact"
-    | "recommended-detailed"
-    | "recommended-summary-only"
-    | "recommended-tty"} PresetName */
-
-/** @type {readonly PresetName[]} */
-const presetOrder = [
-    "recommended",
-    "recommended-ci",
-    "recommended-detailed",
-    "recommended-compact",
-    "recommended-summary-only",
-    "recommended-tty",
-    "recommended-ci-detailed",
-];
-
-/** @type {Readonly<
-    Record<
-        PresetName,
-        {
-            expectedRuleName: RuleName;
-            optionSummary: string;
-            purpose: string;
-        }
-    >
->} */
-const presetMetadataByName = {
-    recommended: {
-        expectedRuleName: "activate",
-        optionSummary: "defaults",
-        purpose: "Default per-file progress for local CLI runs.",
-    },
-    "recommended-ci": {
-        expectedRuleName: "activate",
-        optionSummary: '`hide: CI === "true"`',
-        purpose: "Hide all plugin output in CI.",
-    },
-    "recommended-ci-detailed": {
-        expectedRuleName: "activate",
-        optionSummary:
-            '`detailedSuccess: true`, `hide: CI === "true"`, `showSummaryWhenHidden: CI === "true"`',
-        purpose:
-            "Keep CI quiet while still printing a detailed final summary there.",
-    },
-    "recommended-compact": {
-        expectedRuleName: "compact",
-        optionSummary: "defaults",
-        purpose: "Use compact live mode without per-file paths.",
-    },
-    "recommended-detailed": {
-        expectedRuleName: "activate",
-        optionSummary: "`detailedSuccess: true`",
-        purpose: "Keep full per-file progress and enrich the final summary.",
-    },
-    "recommended-summary-only": {
-        expectedRuleName: "summary-only",
-        optionSummary: "defaults",
-        purpose: "Print only the final summary line.",
-    },
-    "recommended-tty": {
-        expectedRuleName: "activate",
-        optionSummary: "`ttyOnly: true`",
-        purpose: "Only show progress on interactive terminals.",
-    },
-};
+/**
+ * @type {readonly {
+ *     docsPath: string;
+ *     name: string;
+ *     optionSummary: string;
+ *     purpose: string;
+ *     ruleName: string;
+ * }[]}
+ */
+const presetCatalog = fileProgressPresetCatalog;
 
 /**
  * @param {string} markdown
@@ -117,18 +65,18 @@ const normalizeLineEndings = (markdown, lineEnding) =>
 const isRecord = (value) => typeof value === "object" && value !== null;
 
 /**
- * @param {PresetName} presetName
+ * @param {string} presetName
  *
- * @returns {RuleName}
+ * @returns {string}
  */
 const getEnabledRuleName = (presetName) => {
     const presetConfig = builtPlugin.configs[presetName];
 
-    if (!isRecord(presetConfig) || !isRecord(presetConfig.rules)) {
+    if (!isRecord(presetConfig) || !isRecord(presetConfig["rules"])) {
         throw new TypeError(`Preset '${presetName}' is missing a rules block.`);
     }
 
-    const fileProgressRuleNames = Object.keys(presetConfig.rules)
+    const fileProgressRuleNames = Object.keys(presetConfig["rules"])
         .filter((ruleId) => ruleId.startsWith("file-progress/"))
         .map((ruleId) => ruleId.slice("file-progress/".length));
 
@@ -138,40 +86,52 @@ const getEnabledRuleName = (presetName) => {
         );
     }
 
-    return /** @type {RuleName} */ (fileProgressRuleNames[0]);
+    const [enabledRuleName] = fileProgressRuleNames;
+
+    if (enabledRuleName === undefined) {
+        throw new TypeError(`Preset '${presetName}' did not resolve a rule.`);
+    }
+
+    return enabledRuleName;
 };
 
 /**
- * @param {PresetName} presetName
+ * @param {string} presetDocsPath
  *
  * @returns {string}
  */
-const createPresetDocsPath = (presetName) =>
-    `./${presetName}.md`;
+const createPresetDocsPath = (presetDocsPath) =>
+    `./${presetDocsPath.slice("./docs/rules/presets/".length)}`;
 
 /**
- * @param {RuleName} ruleName
+ * @param {string} ruleName
  *
  * @returns {string}
  */
-const createRuleDocsPath = (ruleName) => `../${ruleName}.md`;
+const createRuleDocsPath = (ruleName) =>
+    `../${getRuleCatalogEntry(ruleName).docsId}.md`;
 
 /**
- * @param {PresetName} presetName
+ * @param {{
+ *     docsPath: string;
+ *     name: string;
+ *     optionSummary: string;
+ *     purpose: string;
+ *     ruleName: string;
+ * }} presetCatalogEntry
  *
  * @returns {string}
  */
-const createPresetRow = (presetName) => {
-    const metadata = presetMetadataByName[presetName];
-    const enabledRuleName = getEnabledRuleName(presetName);
+const createPresetRow = (presetCatalogEntry) => {
+    const enabledRuleName = getEnabledRuleName(presetCatalogEntry.name);
 
-    if (enabledRuleName !== metadata.expectedRuleName) {
+    if (enabledRuleName !== presetCatalogEntry.ruleName) {
         throw new TypeError(
-            `Preset '${presetName}' enables '${enabledRuleName}', expected '${metadata.expectedRuleName}'.`
+            `Preset '${presetCatalogEntry.name}' enables '${enabledRuleName}', expected '${presetCatalogEntry.ruleName}'.`
         );
     }
 
-    return `| [\`${presetName}\`](${createPresetDocsPath(presetName)}) | [\`file-progress/${enabledRuleName}\`](${createRuleDocsPath(enabledRuleName)}) | ${metadata.optionSummary} | ${metadata.purpose} |`;
+    return `| [\`${presetCatalogEntry.name}\`](${createPresetDocsPath(presetCatalogEntry.docsPath)}) | [\`file-progress/${enabledRuleName}\`](${createRuleDocsPath(enabledRuleName)}) | ${presetCatalogEntry.optionSummary} | ${presetCatalogEntry.purpose} |`;
 };
 
 /**
@@ -187,7 +147,7 @@ export const generatePresetMatrixSectionFromPlugin = (plugin) => {
         "",
         "| Preset | Rule | Key options | Intended use |",
         "| --- | --- | --- | --- |",
-        ...presetOrder.map(createPresetRow),
+        ...presetCatalog.map(createPresetRow),
     ].join("\n");
 };
 
@@ -245,4 +205,11 @@ export const syncPresetsRulesMatrix = async ({ writeChanges }) => {
 };
 
 const writeChanges = process.argv.includes("--write");
-await syncPresetsRulesMatrix({ writeChanges });
+
+const isDirectExecution =
+    typeof process.argv[1] === "string" &&
+    pathToFileURL(process.argv[1]).href === import.meta.url;
+
+if (isDirectExecution) {
+    await syncPresetsRulesMatrix({ writeChanges });
+}

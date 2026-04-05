@@ -1,6 +1,9 @@
 import type { FileProgressRuleModule } from "../types.js";
 
+import { getRuleCatalogEntry } from "../_internal/plugin-catalog.js";
 import { createProgressRule } from "../_internal/progress-runtime.js";
+
+const { docsUrl } = getRuleCatalogEntry("compact");
 
 const compactRule: FileProgressRuleModule = createProgressRule({
     defaultOptions: {
@@ -10,7 +13,7 @@ const compactRule: FileProgressRuleModule = createProgressRule({
         "Display compact lint progress in CLI output without showing file names.",
     liveMode: "generic",
     ruleId: "compact",
-    url: "https://nick2bad4u.github.io/eslint-plugin-file-progress-2/docs/rules/compact",
+    url: docsUrl,
 });
 
 export default compactRule;

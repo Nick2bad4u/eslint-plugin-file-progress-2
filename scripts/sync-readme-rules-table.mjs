@@ -10,6 +10,9 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const scriptDirectoryPath = dirname(fileURLToPath(import.meta.url));
 const readmeFilePath = resolve(scriptDirectoryPath, "../README.md");
+const builtCatalogModuleUrl = pathToFileURL(
+    resolve(scriptDirectoryPath, "../dist/_internal/plugin-catalog.js")
+).href;
 const builtPluginModuleUrl = pathToFileURL(
     resolve(scriptDirectoryPath, "../dist/index.js")
 ).href;
@@ -17,34 +20,17 @@ const markerStart = "<!-- begin generated rules table -->";
 const markerEnd = "<!-- end generated rules table -->";
 
 // eslint-disable-next-line no-unsanitized/method -- Controlled repository-local file URL; no user input reaches import().
+const { fileProgressPresetCatalog, fileProgressRuleCatalog } = await import(
+    builtCatalogModuleUrl
+);
+// eslint-disable-next-line no-unsanitized/method -- Controlled repository-local file URL; no user input reaches import().
 const { default: builtPlugin } = await import(builtPluginModuleUrl);
 
-/** @typedef {"activate" | "compact" | "summary-only"} RuleName */
-/** @typedef {"recommended"
-    | "recommended-ci"
-    | "recommended-ci-detailed"
-    | "recommended-compact"
-    | "recommended-detailed"
-    | "recommended-summary-only"
-    | "recommended-tty"} PresetName */
+/** @type {readonly { docsPath: string; name: string }[]} */
+const presetCatalog = fileProgressPresetCatalog;
 
-/** @type {readonly RuleName[]} */
-const ruleOrder = [
-    "activate",
-    "compact",
-    "summary-only",
-];
-
-/** @type {readonly PresetName[]} */
-const presetOrder = [
-    "recommended",
-    "recommended-ci",
-    "recommended-detailed",
-    "recommended-compact",
-    "recommended-summary-only",
-    "recommended-tty",
-    "recommended-ci-detailed",
-];
+/** @type {readonly { docsPath: string; name: string }[]} */
+const ruleCatalog = fileProgressRuleCatalog;
 
 /**
  * @param {string} markdown
@@ -64,21 +50,6 @@ const normalizeLineEndings = (markdown, lineEnding) =>
     markdown.replace(/\r?\n/gv, lineEnding);
 
 /**
- * @param {string} presetName
- *
- * @returns {string}
- */
-const createPresetDocsPath = (presetName) =>
-    `./docs/rules/presets/${presetName}.md`;
-
-/**
- * @param {RuleName} ruleName
- *
- * @returns {string}
- */
-const createRuleDocsPath = (ruleName) => `./docs/rules/${ruleName}.md`;
-
-/**
  * @param {unknown} value
  *
  * @returns {value is Readonly<Record<string, unknown>>}
@@ -86,39 +57,41 @@ const createRuleDocsPath = (ruleName) => `./docs/rules/${ruleName}.md`;
 const isRecord = (value) => typeof value === "object" && value !== null;
 
 /**
- * @param {PresetName} presetName
- * @param {RuleName} ruleName
+ * @param {string} presetName
+ * @param {string} ruleName
  *
  * @returns {boolean}
  */
 const presetIncludesRule = (presetName, ruleName) => {
     const presetConfig = builtPlugin.configs[presetName];
 
-    if (!isRecord(presetConfig) || !isRecord(presetConfig.rules)) {
+    if (!isRecord(presetConfig) || !isRecord(presetConfig["rules"])) {
         return false;
     }
 
-    return Object.hasOwn(presetConfig.rules, `file-progress/${ruleName}`);
+    return Object.hasOwn(presetConfig["rules"], `file-progress/${ruleName}`);
 };
 
 /**
- * @param {RuleName} ruleName
+ * @param {string} ruleName
  *
  * @returns {string}
  */
 const collectPresetLinks = (ruleName) => {
-    const presetLinks = presetOrder
-        .filter((presetName) => presetIncludesRule(presetName, ruleName))
+    const presetLinks = presetCatalog
+        .filter((presetCatalogEntry) =>
+            presetIncludesRule(presetCatalogEntry.name, ruleName)
+        )
         .map(
-            (presetName) =>
-                `[\`${presetName}\`](${createPresetDocsPath(presetName)})`
+            (presetCatalogEntry) =>
+                `[\`${presetCatalogEntry.name}\`](${presetCatalogEntry.docsPath})`
         );
 
     return presetLinks.length > 0 ? presetLinks.join(", ") : "—";
 };
 
 /**
- * @param {RuleName} ruleName
+ * @param {string} ruleName
  *
  * @returns {string}
  */
@@ -127,15 +100,15 @@ const getRuleDescription = (ruleName) => {
 
     if (
         !isRecord(ruleModule) ||
-        !isRecord(ruleModule.meta) ||
-        !isRecord(ruleModule.meta.docs)
+        !isRecord(ruleModule["meta"]) ||
+        !isRecord(ruleModule["meta"]["docs"])
     ) {
         throw new TypeError(
             `Rule '${ruleName}' is missing meta.docs.description.`
         );
     }
 
-    const description = ruleModule.meta.docs.description;
+    const description = ruleModule["meta"]["docs"]["description"];
 
     if (typeof description !== "string" || description.trim().length === 0) {
         throw new TypeError(
@@ -147,12 +120,12 @@ const getRuleDescription = (ruleName) => {
 };
 
 /**
- * @param {RuleName} ruleName
+ * @param {{ docsPath: string; name: string }} ruleCatalogEntry
  *
  * @returns {string}
  */
-const createRuleRow = (ruleName) =>
-    `| [\`file-progress/${ruleName}\`](${createRuleDocsPath(ruleName)}) | ${getRuleDescription(ruleName)} | ${collectPresetLinks(ruleName)} |`;
+const createRuleRow = (ruleCatalogEntry) =>
+    `| [\`file-progress/${ruleCatalogEntry.name}\`](${ruleCatalogEntry.docsPath}) | ${getRuleDescription(ruleCatalogEntry.name)} | ${collectPresetLinks(ruleCatalogEntry.name)} |`;
 
 /**
  * @param {{
@@ -170,7 +143,7 @@ export const generateReadmeRulesSectionFromPlugin = (plugin) => {
         "",
         "| Rule | Description | Included in presets |",
         "| --- | --- | --- |",
-        ...ruleOrder.map(createRuleRow),
+        ...ruleCatalog.map(createRuleRow),
     ].join("\n");
 };
 
@@ -228,4 +201,11 @@ export const syncReadmeRulesTable = async ({ writeChanges }) => {
 };
 
 const writeChanges = process.argv.includes("--write");
-await syncReadmeRulesTable({ writeChanges });
+
+const isDirectExecution =
+    typeof process.argv[1] === "string" &&
+    pathToFileURL(process.argv[1]).href === import.meta.url;
+
+if (isDirectExecution) {
+    await syncReadmeRulesTable({ writeChanges });
+}

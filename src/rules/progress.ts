@@ -1,14 +1,17 @@
 import type { FileProgressRuleModule } from "../types.js";
 
+import { getRuleCatalogEntry } from "../_internal/plugin-catalog.js";
 import { createProgressRule } from "../_internal/progress-runtime.js";
+
+const { docsUrl } = getRuleCatalogEntry("activate");
 
 const progressRule: FileProgressRuleModule = createProgressRule({
     defaultOptions: {},
-    description: "Display lint progress in CLI output.",
+    description: "Display live per-file lint progress in CLI output.",
     liveMode: "file",
     recommended: true,
     ruleId: "activate",
-    url: "https://nick2bad4u.github.io/eslint-plugin-file-progress-2/docs/rules/activate",
+    url: docsUrl,
 });
 
 export default progressRule;

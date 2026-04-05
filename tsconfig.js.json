@@ -26,6 +26,7 @@
         "*.cjs",
         "*.d.ts",
         "*.d.cts",
+        "*.d.mts",
         "eslint.config.mjs",
         "eslint/**/*.mjs",
         "*.mjs",

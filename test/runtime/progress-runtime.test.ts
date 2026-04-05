@@ -2,7 +2,10 @@ import type { Rule } from "eslint";
 
 import { expect, test } from "vitest";
 
-import { internals } from "../../src/_internal/progress-runtime.js";
+import {
+    createProgressRule,
+    internals,
+} from "../../src/_internal/progress-runtime.js";
 import {
     createMockProcess,
     createMockSpinnerFactory,
@@ -298,6 +301,34 @@ test("toRelativeFilePath handles absolute paths and edge branches", () => {
     expect(
         normalizePathSeparators(internals.toRelativeFilePath("C:/repo", ""))
     ).toMatch(/repo$/v);
+    expect(internals.toRelativeFilePath("src/relative.ts", "/repo")).toBe(
+        "src/relative.ts"
+    );
+});
+
+test("createProgressRule fills in optional factory defaults", () => {
+    const customRule = createProgressRule({
+        description: "Custom progress rule.",
+        liveMode: "summary-only",
+        ruleId: "activate",
+        url: "https://example.invalid/custom-progress-rule",
+    });
+
+    expect(customRule.defaultOptions).toStrictEqual([{}]);
+    expect(customRule.meta.docs.recommended).toBeFalsy();
+    expect(customRule.meta.messages.status).toBe("Custom progress rule.");
+    expect(customRule.create(makeContext())).toStrictEqual({});
+});
+
+test("formatting helpers cover generic file-only and throughput edge cases", () => {
+    expect(
+        stripAnsi(internals.formatFileProgress("progress.ts", makeSettings()))
+    ).toMatch(/linting\s+progress\.ts$/v);
+
+    expect(internals.formatDuration(12)).toBe("12ms");
+    expect(internals.formatDuration(1200)).toBe("1.20s");
+    expect(internals.formatThroughput(100, 0)).toBe("0.00 files/s");
+    expect(internals.formatThroughput(0, 2)).toBe("2.00 files/s");
 });
 
 test("controller delays live output until minFilesBeforeShow", () => {
@@ -408,18 +439,183 @@ test("controller shows the final summary when live output is hidden", () => {
 
     expect(
         spinnerRecord.events.some((event) => event.method === "update")
-    ).toBe(false);
+    ).toBeFalsy();
     expect(
         spinnerRecord.events.some((event) => event.method === "success")
-    ).toBe(true);
+    ).toBeTruthy();
+});
+
+test("controller summary-only mode suppresses live output but still reports success", () => {
+    const { created, spinnerFactory } = createMockSpinnerFactory();
+    const controller = internals.createProgressController({
+        process: createMockProcess(),
+        spinnerFactory,
+    });
+    const spinnerRecord = getLatestSpinnerRecord(created);
+
+    controller.handleLintFile({
+        context: makeContext(undefined, undefined, "src/summary-only.ts"),
+        liveMode: "summary-only",
+    });
+    controller.handleExit(0);
+
+    expect(
+        spinnerRecord.events.some((event) => event.method === "update")
+    ).toBeFalsy();
+    expect(
+        spinnerRecord.events.some((event) => event.method === "success")
+    ).toBeTruthy();
+});
+
+test("controller emits an error summary for non-zero exit codes", () => {
+    const { created, spinnerFactory } = createMockSpinnerFactory();
+    const controller = internals.createProgressController({
+        process: createMockProcess(),
+        spinnerFactory,
+    });
+    const spinnerRecord = getLatestSpinnerRecord(created);
+
+    controller.handleLintFile({
+        context: makeContext(undefined, undefined, "src/runtime-error.ts"),
+        liveMode: "file",
+    });
+    controller.handleExit(2);
+
+    expect(
+        spinnerRecord.events.some((event) => event.method === "error")
+    ).toBeTruthy();
+});
+
+test("controller ignores exit when no files were linted", () => {
+    const { created, spinnerFactory } = createMockSpinnerFactory();
+    const controller = internals.createProgressController({
+        process: createMockProcess(),
+        spinnerFactory,
+    });
+    const spinnerRecord = getLatestSpinnerRecord(created);
+
+    controller.handleExit(0);
+
+    expect(spinnerRecord.events).toHaveLength(0);
+});
+
+test("controller reset restores a clean state", () => {
+    const { created, spinnerFactory } = createMockSpinnerFactory();
+    const controller = internals.createProgressController({
+        process: createMockProcess(),
+        spinnerFactory,
+    });
+    const spinnerRecord = getLatestSpinnerRecord(created);
+
+    controller.handleLintFile({
+        context: makeContext(undefined, undefined, "src/runtime-reset.ts"),
+        liveMode: "file",
+    });
+    controller.reset();
+
+    expect(
+        spinnerRecord.events.some((event) => event.method === "stop")
+    ).toBeTruthy();
+    expect(controller.getState().lintedFileCount).toBe(0);
+    expect(controller.getState().initialLiveReportDone).toBeFalsy();
+});
+
+test("controller reuses the spinner when style and stream do not change", () => {
+    const { created, spinnerFactory } = createMockSpinnerFactory();
+    const controller = internals.createProgressController({
+        process: createMockProcess(),
+        spinnerFactory,
+    });
+
+    controller.handleLintFile({
+        context: makeContext(
+            {
+                outputStream: "stderr",
+                spinnerStyle: "dots",
+            },
+            undefined,
+            "src/runtime-a.ts"
+        ),
+        liveMode: "file",
+    });
+    controller.handleLintFile({
+        context: makeContext(
+            {
+                outputStream: "stderr",
+                spinnerStyle: "dots",
+            },
+            undefined,
+            "src/runtime-b.ts"
+        ),
+        liveMode: "file",
+    });
+
+    expect(created).toHaveLength(1);
+});
+
+test("controller recreates the spinner when style or stream changes", () => {
+    const { created, spinnerFactory } = createMockSpinnerFactory();
+    const controller = internals.createProgressController({
+        process: createMockProcess(),
+        spinnerFactory,
+    });
+    const firstSpinnerRecord = getLatestSpinnerRecord(created);
+
+    controller.handleLintFile({
+        context: makeContext(
+            {
+                outputStream: "stderr",
+                spinnerStyle: "dots",
+            },
+            undefined,
+            "src/runtime-a.ts"
+        ),
+        liveMode: "file",
+    });
+    controller.handleLintFile({
+        context: makeContext(
+            {
+                outputStream: "stdout",
+                spinnerStyle: "arc",
+            },
+            undefined,
+            "src/runtime-b.ts"
+        ),
+        liveMode: "file",
+    });
+
+    expect(created.length).toBeGreaterThan(1);
+    expect(
+        firstSpinnerRecord.events.some((event) => event.method === "stop")
+    ).toBeTruthy();
+});
+
+test("controller exit handler can be exercised through the process exit event", () => {
+    const mockProcess = createMockProcess();
+    const { created, spinnerFactory } = createMockSpinnerFactory();
+    const controller = internals.createProgressController({
+        process: mockProcess,
+        spinnerFactory,
+    });
+    const spinnerRecord = getLatestSpinnerRecord(created);
+
+    controller.handleLintFile({
+        context: makeContext(undefined, undefined, "src/runtime-exit-event.ts"),
+        liveMode: "file",
+    });
+    mockProcess.emitExit(0);
+
+    expect(
+        spinnerRecord.events.some((event) => event.method === "success")
+    ).toBeTruthy();
 });
 
 test("controller honors ttyOnly and outputStream when selecting the spinner stream", () => {
-    const stdout = createMockWriteStream<1>({
+    const stdout = createMockWriteStream({
         fd: 1,
         isTTY: false,
     });
-    const stderr = createMockWriteStream<2>({
+    const stderr = createMockWriteStream({
         fd: 2,
         isTTY: true,
     });
@@ -448,5 +644,5 @@ test("controller honors ttyOnly and outputStream when selecting the spinner stre
     expect(spinnerRecord.options?.stream).toBe(stdout);
     expect(
         spinnerRecord.events.some((event) => event.method === "success")
-    ).toBe(true);
+    ).toBeTruthy();
 });

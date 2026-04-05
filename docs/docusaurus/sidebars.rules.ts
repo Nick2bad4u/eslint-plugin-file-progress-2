@@ -1,4 +1,10 @@
 import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
+
+import {
+    fileProgressPresetCatalog,
+    fileProgressRuleCatalog,
+} from "../../src/_internal/plugin-catalog.js";
+
 const sidebars: SidebarsConfig = {
     rules: [
         {
@@ -22,50 +28,14 @@ const sidebars: SidebarsConfig = {
                 type: "doc",
                 id: "presets/index",
             },
-            items: [
-                {
-                    className: "sb-preset-recommended",
-                    id: "presets/recommended",
-                    label: "🟡 Recommended",
-                    type: "doc",
-                },
-                {
-                    className: "sb-preset-recommended-ci",
-                    id: "presets/recommended-ci",
-                    label: "🟠 Recommended CI",
-                    type: "doc",
-                },
-                {
-                    className: "sb-preset-recommended-detailed",
-                    id: "presets/recommended-detailed",
-                    label: "🔵 Recommended Detailed",
-                    type: "doc",
-                },
-                {
-                    className: "sb-preset-recommended-compact",
-                    id: "presets/recommended-compact",
-                    label: "🟣 Recommended Compact",
-                    type: "doc",
-                },
-                {
-                    className: "sb-preset-recommended-summary-only",
-                    id: "presets/recommended-summary-only",
-                    label: "⚪ Recommended Summary Only",
-                    type: "doc",
-                },
-                {
-                    className: "sb-preset-recommended-tty",
-                    id: "presets/recommended-tty",
-                    label: "🟢 Recommended TTY",
-                    type: "doc",
-                },
-                {
-                    className: "sb-preset-recommended-ci-detailed",
-                    id: "presets/recommended-ci-detailed",
-                    label: "🟤 Recommended CI Detailed",
-                    type: "doc",
-                },
-            ],
+            items: fileProgressPresetCatalog.map(
+                ({ docsId, sidebarClassName, sidebarLabel }) => ({
+                    className: sidebarClassName,
+                    id: docsId,
+                    label: sidebarLabel,
+                    type: "doc" as const,
+                })
+            ),
         },
         {
             className: "sb-cat-rules",
@@ -79,23 +49,11 @@ const sidebars: SidebarsConfig = {
                 description:
                     "Documentation for the CLI progress rules shipped by eslint-plugin-file-progress-2.",
             },
-            items: [
-                {
-                    id: "activate",
-                    label: "01 file-progress/activate",
-                    type: "doc",
-                },
-                {
-                    id: "compact",
-                    label: "02 file-progress/compact",
-                    type: "doc",
-                },
-                {
-                    id: "summary-only",
-                    label: "03 file-progress/summary-only",
-                    type: "doc",
-                },
-            ],
+            items: fileProgressRuleCatalog.map(({ docsId, sidebarLabel }) => ({
+                id: docsId,
+                label: sidebarLabel,
+                type: "doc" as const,
+            })),
         },
     ],
 };

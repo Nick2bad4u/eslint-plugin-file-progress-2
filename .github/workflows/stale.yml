@@ -46,15 +46,13 @@ on:
             - edited
     workflow_dispatch:
 
-permissions:
-    contents: read
-
 jobs:
     stale:
         name: Mark stale issues and pull requests
         runs-on: ubuntu-latest
         timeout-minutes: 20
         permissions:
+            contents: read
             issues: write
             pull-requests: write
 

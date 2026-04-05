@@ -1,7 +1,14 @@
 import type { Rule } from "eslint";
-import type { UnknownRecord } from "type-fest";
+import type { UnknownArray, UnknownRecord } from "type-fest";
 
-import { keyIn } from "ts-extras";
+import {
+    arrayFirst,
+    arrayIncludes,
+    isDefined,
+    isInteger,
+    keyIn,
+    objectEntries,
+} from "ts-extras";
 
 import type {
     OutputStream,
@@ -133,13 +140,13 @@ const isRecord = (value: unknown): value is UnknownRecord =>
     typeof value === "object" && value !== null;
 
 const isSpinnerStyle = (value: string): value is SpinnerStyle =>
-    spinnerStyles.includes(value as SpinnerStyle);
+    arrayIncludes(spinnerStyles, value as SpinnerStyle);
 
 const isOutputStream = (value: string): value is OutputStream =>
-    outputStreams.includes(value as OutputStream);
+    arrayIncludes(outputStreams, value as OutputStream);
 
 const isProgressPathFormat = (value: string): value is ProgressPathFormat =>
-    pathFormats.includes(value as ProgressPathFormat);
+    arrayIncludes(pathFormats, value as ProgressPathFormat);
 
 const getBooleanSetting = (
     rawSettings: UnknownRecord,
@@ -159,7 +166,7 @@ const getNonNegativeIntegerSetting = (
 
     if (
         typeof settingValue !== "number" ||
-        !Number.isInteger(settingValue) ||
+        !isInteger(settingValue) ||
         settingValue < 0
     ) {
         return undefined;
@@ -192,20 +199,20 @@ export const getLegacyProgressSettings = (
 };
 
 export const getRuleOptionSettings = (context: Rule.RuleContext): unknown =>
-    context.options[0];
+    arrayFirst(context.options);
 
 export const mergeProgressSettings = (
-    ...sources: readonly unknown[]
-): Readonly<Record<string, unknown>> => {
-    const mergedSettings: Record<string, unknown> = {};
+    ...sources: Readonly<UnknownArray>
+): Readonly<UnknownRecord> => {
+    const mergedSettings: UnknownRecord = {};
 
     for (const source of sources) {
         if (!isRecord(source)) {
             continue;
         }
 
-        for (const [key, value] of Object.entries(source)) {
-            if (value !== undefined) {
+        for (const [key, value] of objectEntries(source)) {
+            if (isDefined(value)) {
                 mergedSettings[key] = value;
             }
         }

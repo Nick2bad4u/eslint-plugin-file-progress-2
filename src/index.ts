@@ -1,4 +1,7 @@
 import type { Linter } from "eslint";
+import type { Except } from "type-fest";
+
+import { isDefined } from "ts-extras";
 
 import type {
     FileProgressConfigName,
@@ -9,6 +12,10 @@ import type {
 } from "./types.js";
 
 import packageJson from "../package.json" with { type: "json" };
+import {
+    fileProgressPresetCatalog,
+    fileProgressRuleCatalog,
+} from "./_internal/plugin-catalog.js";
 import compactRule from "./rules/compact.js";
 import progressRule from "./rules/progress.js";
 import summaryOnlyRule from "./rules/summary-only.js";
@@ -18,7 +25,30 @@ const isCi = globalThis.process.env["CI"] === "true";
 const createRuleEntry = (
     options?: ProgressRuleOptions
 ): Linter.RuleEntry<ProgressRuleOptionsTuple> =>
-    options === undefined ? "warn" : ["warn", options];
+    isDefined(options) ? ["warn", options] : "warn";
+
+const createCatalogRecord = <
+    TName extends string,
+    TCatalogEntry extends Readonly<{ name: TName }>,
+    TValue,
+>(
+    catalogEntries: readonly TCatalogEntry[],
+    getValue: (catalogEntry: TCatalogEntry) => TValue
+): Record<TName, TValue> => {
+    const catalogRecord = {} as Record<TName, TValue>;
+
+    for (const catalogEntry of catalogEntries) {
+        catalogRecord[catalogEntry.name] = getValue(catalogEntry);
+    }
+
+    return catalogRecord;
+};
+
+const ruleModulesByName = {
+    activate: progressRule,
+    compact: compactRule,
+    "summary-only": summaryOnlyRule,
+} satisfies FileProgressPlugin["rules"];
 
 const pluginCore = {
     meta: {
@@ -26,12 +56,11 @@ const pluginCore = {
         namespace: "file-progress",
         version: packageJson.version,
     },
-    rules: {
-        activate: progressRule,
-        compact: compactRule,
-        "summary-only": summaryOnlyRule,
-    },
-} satisfies Omit<FileProgressPlugin, "configs">;
+    rules: createCatalogRecord(
+        fileProgressRuleCatalog,
+        ({ name }) => ruleModulesByName[name]
+    ),
+} satisfies Except<FileProgressPlugin, "configs">;
 
 const createPresetConfig = (
     configName: FileProgressConfigName,
@@ -47,36 +76,35 @@ const createPresetConfig = (
     },
 });
 
-const configs: FileProgressPlugin["configs"] = {
-    recommended: createPresetConfig("recommended", "activate"),
-    "recommended-ci": createPresetConfig("recommended-ci", "activate", {
+const presetOptionsByName: Readonly<
+    Record<FileProgressConfigName, ProgressRuleOptions | undefined>
+> = {
+    recommended: undefined,
+    "recommended-ci": {
         hide: isCi,
-    }),
-    "recommended-ci-detailed": createPresetConfig(
-        "recommended-ci-detailed",
-        "activate",
-        {
-            detailedSuccess: true,
-            hide: isCi,
-            showSummaryWhenHidden: isCi,
-        }
-    ),
-    "recommended-compact": createPresetConfig("recommended-compact", "compact"),
-    "recommended-detailed": createPresetConfig(
-        "recommended-detailed",
-        "activate",
-        {
-            detailedSuccess: true,
-        }
-    ),
-    "recommended-summary-only": createPresetConfig(
-        "recommended-summary-only",
-        "summary-only"
-    ),
-    "recommended-tty": createPresetConfig("recommended-tty", "activate", {
+    },
+    "recommended-ci-detailed": {
+        detailedSuccess: true,
+        hide: isCi,
+        showSummaryWhenHidden: isCi,
+    },
+    "recommended-compact": undefined,
+    "recommended-detailed": {
+        detailedSuccess: true,
+    },
+    "recommended-summary-only": undefined,
+    "recommended-tty": {
         ttyOnly: true,
-    }),
+    },
 };
+
+const configs: FileProgressPlugin["configs"] = createCatalogRecord<
+    FileProgressConfigName,
+    (typeof fileProgressPresetCatalog)[number],
+    Linter.Config
+>(fileProgressPresetCatalog, ({ name, ruleName }) =>
+    createPresetConfig(name, ruleName, presetOptionsByName[name])
+);
 
 const plugin: FileProgressPlugin = {
     ...pluginCore,

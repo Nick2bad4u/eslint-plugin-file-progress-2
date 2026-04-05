@@ -1,6 +1,9 @@
 import type { FileProgressRuleModule } from "../types.js";
 
+import { getRuleCatalogEntry } from "../_internal/plugin-catalog.js";
 import { createProgressRule } from "../_internal/progress-runtime.js";
+
+const { docsUrl } = getRuleCatalogEntry("summary-only");
 
 const summaryOnlyRule: FileProgressRuleModule = createProgressRule({
     defaultOptions: {},
@@ -8,7 +11,7 @@ const summaryOnlyRule: FileProgressRuleModule = createProgressRule({
         "Display only the final lint completion summary in CLI output.",
     liveMode: "summary-only",
     ruleId: "summary-only",
-    url: "https://nick2bad4u.github.io/eslint-plugin-file-progress-2/docs/rules/summary-only",
+    url: docsUrl,
 });
 
 export default summaryOnlyRule;

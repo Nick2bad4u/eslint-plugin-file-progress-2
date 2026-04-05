@@ -1,10 +1,55 @@
 import type { ESLint, Linter, Rule } from "eslint";
+import type { Except } from "type-fest";
 
-export type SpinnerStyle = "arc" | "bounce" | "clock" | "dots" | "line";
+import type {
+    FileProgressConfigName as CatalogFileProgressConfigName,
+    FileProgressRuleName as CatalogFileProgressRuleName,
+} from "./_internal/plugin-catalog.js";
+
+export type FileProgressConfigName = CatalogFileProgressConfigName;
+
+export interface FileProgressPlugin extends Except<
+    ESLint.Plugin,
+    "configs" | "meta" | "rules"
+> {
+    configs: Readonly<Record<FileProgressConfigName, Linter.Config>>;
+    meta: NonNullable<ESLint.Plugin["meta"]> & {
+        name: "eslint-plugin-file-progress-2";
+        namespace: "file-progress";
+        version: string;
+    };
+    rules: {
+        activate: FileProgressRuleModule;
+        compact: FileProgressRuleModule;
+        "summary-only": FileProgressRuleModule;
+    };
+}
+
+export type FileProgressRuleMetaData = Except<
+    NonNullable<Rule.RuleModule["meta"]>,
+    "docs" | "messages" | "schema"
+> & {
+    docs: ProgressRuleDocs;
+    messages: Readonly<Record<ProgressRuleMessageIds, string>>;
+    schema: RuleSchema;
+};
+
+export type FileProgressRuleModule = Except<Rule.RuleModule, "meta"> & {
+    defaultOptions: ProgressRuleOptionsTuple;
+    meta: FileProgressRuleMetaData;
+};
+
+export type FileProgressRuleName = CatalogFileProgressRuleName;
 
 export type OutputStream = "stderr" | "stdout";
 
-export type ProgressPathFormat = "relative" | "basename";
+export type ProgressPathFormat = "basename" | "relative";
+
+export type ProgressRuleMessageIds = "status";
+
+export type ProgressRuleOptions = ProgressSettings;
+
+export type ProgressRuleOptionsTuple = [ProgressRuleOptions?];
 
 /**
  * Shared option object accepted by all rules.
@@ -18,7 +63,7 @@ export interface ProgressSettings {
     fileNameOnNewLine?: boolean;
     hide?: boolean;
     /**
-     * @deprecated Use `pathFormat: "basename"` instead.
+     * Legacy compatibility alias. Prefer `pathFormat: "basename"` instead.
      */
     hideDirectoryNames?: boolean;
     hideFileName?: boolean;
@@ -35,13 +80,7 @@ export interface ProgressSettings {
     ttyOnly?: boolean;
 }
 
-export type ProgressRuleOptions = ProgressSettings;
-
-export type ProgressRuleMessageIds = "status";
-
-export type ProgressRuleOptionsTuple = [ProgressRuleOptions?];
-
-type RuleSchema = NonNullable<NonNullable<Rule.RuleModule["meta"]>["schema"]>;
+export type SpinnerStyle = "arc" | "bounce" | "clock" | "dots" | "line";
 
 type ProgressRuleDocs = Readonly<{
     description: string;
@@ -51,44 +90,4 @@ type ProgressRuleDocs = Readonly<{
     url: string;
 }>;
 
-export type FileProgressRuleMetaData = Omit<
-    NonNullable<Rule.RuleModule["meta"]>,
-    "docs" | "messages" | "schema"
-> & {
-    docs: ProgressRuleDocs;
-    messages: Readonly<Record<ProgressRuleMessageIds, string>>;
-    schema: RuleSchema;
-};
-
-export type FileProgressRuleModule = Omit<Rule.RuleModule, "meta"> & {
-    defaultOptions: ProgressRuleOptionsTuple;
-    meta: FileProgressRuleMetaData;
-};
-
-export type FileProgressConfigName =
-    | "recommended"
-    | "recommended-ci"
-    | "recommended-ci-detailed"
-    | "recommended-compact"
-    | "recommended-detailed"
-    | "recommended-summary-only"
-    | "recommended-tty";
-
-export type FileProgressRuleName = keyof FileProgressPlugin["rules"];
-
-export interface FileProgressPlugin extends Omit<
-    ESLint.Plugin,
-    "configs" | "meta" | "rules"
-> {
-    configs: Readonly<Record<FileProgressConfigName, Linter.Config>>;
-    meta: NonNullable<ESLint.Plugin["meta"]> & {
-        name: "eslint-plugin-file-progress-2";
-        namespace: "file-progress";
-        version: string;
-    };
-    rules: {
-        activate: FileProgressRuleModule;
-        compact: FileProgressRuleModule;
-        "summary-only": FileProgressRuleModule;
-    };
-}
+type RuleSchema = NonNullable<NonNullable<Rule.RuleModule["meta"]>["schema"]>;

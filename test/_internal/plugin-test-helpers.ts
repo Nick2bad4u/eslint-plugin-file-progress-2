@@ -1,8 +1,11 @@
-import plugin from "../../src/index.js";
+import type { RuleTester } from "@typescript-eslint/rule-tester";
+
 import type { FileProgressRuleName } from "../../src/types.js";
-import { RuleTester } from "@typescript-eslint/rule-tester";
+
+import plugin from "../../src/index.js";
 
 type CompatibleRuleModule = Parameters<RuleTester["run"]>[1];
+type PluginRuleModule = (typeof plugin.rules)[FileProgressRuleName];
 
 export const getPluginRule = (
     ruleName: FileProgressRuleName
@@ -13,5 +16,5 @@ export const getPluginRule = (
         throw new Error(`Missing plugin rule: ${ruleName}`);
     }
 
-    return ruleModule as unknown as CompatibleRuleModule;
+    return ruleModule as CompatibleRuleModule & PluginRuleModule;
 };

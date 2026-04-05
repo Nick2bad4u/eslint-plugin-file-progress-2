@@ -1,6 +1,8 @@
 import tseslintPlugin from "@typescript-eslint/eslint-plugin";
 import { ESLint, type Linter } from "eslint";
 import { mkdir, rm, writeFile } from "node:fs/promises";
+import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 import { expect, test } from "vitest";
 
 import plugin from "../../src/index.js";
@@ -15,6 +17,11 @@ const tsRecommendedTypeCheckedConfigs = (
     ...config,
     files: tsFiles,
 }));
+
+const require = createRequire(import.meta.url);
+const builtPluginEsmUrl = pathToFileURL(
+    require.resolve("../../dist/index.js")
+).href;
 
 test("plugin exports the expanded preset surface", () => {
     expect(plugin.meta.name).toBe("eslint-plugin-file-progress-2");
@@ -35,23 +42,23 @@ test("plugin exports the expanded preset surface", () => {
 
     const recommendedCiRuleEntry = (
         plugin.configs["recommended-ci"].rules as
-            | undefined
             | Record<string, unknown>
+            | undefined
     )?.["file-progress/activate"];
     const recommendedCiDetailedRuleEntry = (
         plugin.configs["recommended-ci-detailed"].rules as
-            | undefined
             | Record<string, unknown>
+            | undefined
     )?.["file-progress/activate"];
     const recommendedCompactRuleEntry = (
         plugin.configs["recommended-compact"].rules as
-            | undefined
             | Record<string, unknown>
+            | undefined
     )?.["file-progress/compact"];
     const recommendedSummaryOnlyRuleEntry = (
         plugin.configs["recommended-summary-only"].rules as
-            | undefined
             | Record<string, unknown>
+            | undefined
     )?.["file-progress/summary-only"];
 
     expect(recommendedCompactRuleEntry).toBe("warn");
@@ -70,6 +77,30 @@ test("plugin exports the expanded preset surface", () => {
             showSummaryWhenHidden: expect.any(Boolean),
         },
     ]);
+});
+
+test("built package entrypoints expose the same plugin contract", async () => {
+    // eslint-disable-next-line no-unsanitized/method -- Controlled repository-local dist entry URL; no user input reaches import().
+    const esmModule = (await import(builtPluginEsmUrl)) as {
+        default: typeof plugin;
+    };
+    const cjsModule = require("../../dist/index.cjs") as typeof plugin;
+
+    expect(esmModule.default.meta).toStrictEqual(plugin.meta);
+    expect(Object.keys(esmModule.default.rules)).toStrictEqual(
+        Object.keys(plugin.rules)
+    );
+    expect(Object.keys(esmModule.default.configs)).toStrictEqual(
+        Object.keys(plugin.configs)
+    );
+
+    expect(cjsModule.meta).toStrictEqual(plugin.meta);
+    expect(Object.keys(cjsModule.rules)).toStrictEqual(
+        Object.keys(plugin.rules)
+    );
+    expect(Object.keys(cjsModule.configs)).toStrictEqual(
+        Object.keys(plugin.configs)
+    );
 });
 
 test("typescript-eslint setup lints TypeScript files with the plugin rule", async () => {

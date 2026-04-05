@@ -6,7 +6,7 @@ import {
 
 const ruleTester = createRuleTester();
 
-ruleTester.run("summary-only", getPluginRule("summary-only") as never, {
+ruleTester.run("summary-only", getPluginRule("summary-only"), {
     invalid: [],
     valid: [
         ...sharedValidCases,

@@ -4,6 +4,7 @@
 import {
     asEslintPlugin,
     asRulesRecord,
+    eslintPluginUnicorn,
     globals,
     importX,
     js,
@@ -15,7 +16,6 @@ import {
     tseslint,
     tseslintParser,
     vitest,
-    eslintPluginUnicorn,
 } from "./shared.mjs";
 
 /** @type {EslintConfig[]} */
@@ -103,16 +103,17 @@ export const testConfigs = [
             },
         },
         name: "Tests test/**/*.{spec,test}.*.{TS,TSX,MTS,CTS,MJS,JS,JSX,CJS}",
-        plugins: /** @type {Record<string, import("eslint").ESLint.Plugin>} */ ({
-            "@typescript-eslint": asEslintPlugin(tseslint),
-            "import-x": importX,
-            n: nodePlugin,
-            "no-only-tests": asEslintPlugin(pluginNoOnly),
-            "testing-library": pluginTestingLibrary,
-            unicorn: eslintPluginUnicorn,
-            "unused-imports": pluginUnusedImports,
-            vitest: vitest,
-        }),
+        plugins:
+            /** @type {Record<string, import("eslint").ESLint.Plugin>} */ ({
+                "@typescript-eslint": asEslintPlugin(tseslint),
+                "import-x": importX,
+                n: nodePlugin,
+                "no-only-tests": asEslintPlugin(pluginNoOnly),
+                "testing-library": pluginTestingLibrary,
+                unicorn: eslintPluginUnicorn,
+                "unused-imports": pluginUnusedImports,
+                vitest: vitest,
+            }),
         rules: asRulesRecord({
             ...js.configs.all.rules,
             ...tseslint.configs["recommendedTypeChecked"],

@@ -6,7 +6,7 @@ import {
 
 const ruleTester = createRuleTester();
 
-ruleTester.run("compact", getPluginRule("compact") as never, {
+ruleTester.run("compact", getPluginRule("compact"), {
     invalid: [],
     valid: [
         ...sharedValidCases,

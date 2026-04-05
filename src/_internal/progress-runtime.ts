@@ -1,24 +1,16 @@
+/* eslint-disable canonical/no-reassign-imports, canonical/no-re-export, no-barrel-files/no-barrel-files -- This module intentionally aggregates internal helper exports for rule construction and tests. */
+
 import type {
     FileProgressRuleModule,
     ProgressRuleMessageIds,
     ProgressRuleOptions,
 } from "../types.js";
+
 import {
     createProgressController,
+    type ProgressController,
     type ProgressLiveMode,
 } from "./progress-controller.js";
-import {
-    defaultSettings,
-    getLegacyProgressSettings,
-    getRuleOptionSettings,
-    mergeProgressSettings,
-    normalizeSettings,
-    progressOptionsSchema,
-    resolveOutputStream,
-    resolvePathFormat,
-    resolveSpinnerStyle,
-    type NormalizedProgressSettings,
-} from "./progress-options.js";
 import {
     formatDuration,
     formatFailureMessage,
@@ -27,17 +19,19 @@ import {
     formatSuccessMessage,
     formatThroughput,
     toRelativeFilePath,
-    type LintSummaryStats,
 } from "./progress-formatting.js";
-
-interface CreateProgressRuleOptions {
-    readonly defaultOptions?: ProgressRuleOptions;
-    readonly description: string;
-    readonly liveMode: ProgressLiveMode;
-    readonly recommended?: boolean;
-    readonly ruleId: "activate" | "compact" | "summary-only";
-    readonly url: string;
-}
+import {
+    defaultSettings,
+    getLegacyProgressSettings,
+    getRuleOptionSettings,
+    mergeProgressSettings,
+    type NormalizedProgressSettings,
+    normalizeSettings,
+    progressOptionsSchema,
+    resolveOutputStream,
+    resolvePathFormat,
+    resolveSpinnerStyle,
+} from "./progress-options.js";
 
 export interface ProgressInternals {
     readonly createProgressController: typeof createProgressController;
@@ -59,7 +53,25 @@ export interface ProgressInternals {
     readonly toRelativeFilePath: typeof toRelativeFilePath;
 }
 
-const sharedProgressController = createProgressController();
+interface CreateProgressRuleOptions {
+    readonly defaultOptions?: ProgressRuleOptions;
+    readonly description: string;
+    readonly liveMode: ProgressLiveMode;
+    readonly recommended?: boolean;
+    readonly ruleId: "activate" | "compact" | "summary-only";
+    readonly url: string;
+}
+
+let sharedProgressController: null | ProgressController = null;
+
+const getSharedProgressController = (): ProgressController => {
+    const progressController =
+        sharedProgressController ?? createProgressController();
+
+    sharedProgressController = progressController;
+
+    return progressController;
+};
 
 const createMeta = (
     options: CreateProgressRuleOptions
@@ -83,7 +95,7 @@ export const createProgressRule = (
     options: CreateProgressRuleOptions
 ): FileProgressRuleModule => ({
     create(context) {
-        sharedProgressController.handleLintFile({
+        getSharedProgressController().handleLintFile({
             context,
             liveMode: options.liveMode,
         });
@@ -114,4 +126,7 @@ export const internals: ProgressInternals = {
     toRelativeFilePath,
 };
 
-export type { LintSummaryStats, NormalizedProgressSettings };
+export { type LintSummaryStats } from "./progress-formatting.js";
+export { type NormalizedProgressSettings } from "./progress-options.js";
+
+/* eslint-enable canonical/no-reassign-imports, canonical/no-re-export, no-barrel-files/no-barrel-files -- Re-enable after the intentional internal aggregation surface. */

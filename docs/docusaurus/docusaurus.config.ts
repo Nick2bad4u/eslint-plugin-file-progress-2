@@ -4,6 +4,11 @@ import type { Options as DocsPluginOptions } from "@docusaurus/plugin-content-do
 import type * as Preset from "@docusaurus/preset-classic";
 import type { Config } from "@docusaurus/types";
 
+import {
+    fileProgressPresetCatalog,
+    fileProgressRuleCatalog,
+} from "../../src/_internal/plugin-catalog.js";
+
 const organizationName = "Nick2bad4u";
 const projectName = "eslint-plugin-file-progress-2";
 const siteOrigin = "https://nick2bad4u.github.io";
@@ -278,18 +283,12 @@ const config: Config = {
                             label: "• Rule Reference",
                             to: "/docs/rules",
                         },
-                        {
-                            label: "• file-progress/activate",
-                            to: "/docs/rules/activate",
-                        },
-                        {
-                            label: "• file-progress/compact",
-                            to: "/docs/rules/compact",
-                        },
-                        {
-                            label: "• file-progress/summary-only",
-                            to: "/docs/rules/summary-only",
-                        },
+                        ...fileProgressRuleCatalog.map(
+                            ({ docsId, navbarLabel }) => ({
+                                label: navbarLabel,
+                                to: `/docs/rules/${docsId}`,
+                            })
+                        ),
                     ],
                     label: "📜 Rules",
                     position: "left",
@@ -302,34 +301,12 @@ const config: Config = {
                             label: "• Preset Reference",
                             to: "/docs/rules/presets",
                         },
-                        {
-                            label: "🟡 Recommended",
-                            to: "/docs/rules/presets/recommended",
-                        },
-                        {
-                            label: "🟠 Recommended CI",
-                            to: "/docs/rules/presets/recommended-ci",
-                        },
-                        {
-                            label: "🔵 Recommended Detailed",
-                            to: "/docs/rules/presets/recommended-detailed",
-                        },
-                        {
-                            label: "🟣 Recommended Compact",
-                            to: "/docs/rules/presets/recommended-compact",
-                        },
-                        {
-                            label: "⚪ Recommended Summary Only",
-                            to: "/docs/rules/presets/recommended-summary-only",
-                        },
-                        {
-                            label: "🟢 Recommended TTY",
-                            to: "/docs/rules/presets/recommended-tty",
-                        },
-                        {
-                            label: "🟤 Recommended CI Detailed",
-                            to: "/docs/rules/presets/recommended-ci-detailed",
-                        },
+                        ...fileProgressPresetCatalog.map(
+                            ({ name, navbarLabel }) => ({
+                                label: navbarLabel,
+                                to: `/docs/rules/presets/${name}`,
+                            })
+                        ),
                     ],
                     label: "🛠️ Presets",
                     position: "left",

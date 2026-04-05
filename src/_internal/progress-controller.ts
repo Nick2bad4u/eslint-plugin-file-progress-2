@@ -3,14 +3,7 @@ import type { Rule } from "eslint";
 import { createSpinner, type Spinner } from "nanospinner";
 
 import type { OutputStream, SpinnerStyle } from "../types.js";
-import {
-    type NormalizedProgressSettings,
-    defaultSettings,
-    getLegacyProgressSettings,
-    getRuleOptionSettings,
-    mergeProgressSettings,
-    normalizeSettings,
-} from "./progress-options.js";
+
 import {
     formatFailureMessage,
     formatFileProgress,
@@ -19,14 +12,28 @@ import {
     type LintSummaryStats,
     toRelativeFilePath,
 } from "./progress-formatting.js";
+import {
+    defaultSettings,
+    getLegacyProgressSettings,
+    getRuleOptionSettings,
+    mergeProgressSettings,
+    type NormalizedProgressSettings,
+    normalizeSettings,
+} from "./progress-options.js";
+
+export interface ProgressController {
+    getState: () => Readonly<ProgressControllerState>;
+    handleExit: (exitCode: number) => void;
+    handleLintFile: (input: {
+        readonly context: Rule.RuleContext;
+        readonly liveMode: ProgressLiveMode;
+    }) => void;
+    reset: () => void;
+}
 
 export type ProgressLiveMode = "file" | "generic" | "summary-only";
 
-type SpinnerCreateOptions = NonNullable<Parameters<typeof createSpinner>[1]>;
-
-type SpinnerFactory = (text?: string, opts?: SpinnerCreateOptions) => Spinner;
-
-type ProcessLike = Pick<NodeJS.Process, "cwd" | "once" | "stderr" | "stdout">;
+type ProcessLike = Pick<typeof process, "cwd" | "once" | "stderr" | "stdout">;
 
 interface ProgressControllerDependencies {
     readonly now?: () => number;
@@ -41,20 +48,14 @@ interface ProgressControllerState {
     initialLiveReportDone: boolean;
     lastRenderAt: number;
     lastResolvedSettings: NormalizedProgressSettings;
-    lintStartedAt: number;
     lintedFileCount: number;
+    lintStartedAt: number;
     spinner: Spinner;
 }
 
-export interface ProgressController {
-    getState: () => Readonly<ProgressControllerState>;
-    handleExit: (exitCode: number) => void;
-    handleLintFile: (input: {
-        readonly context: Rule.RuleContext;
-        readonly liveMode: ProgressLiveMode;
-    }) => void;
-    reset: () => void;
-}
+type SpinnerCreateOptions = NonNullable<Parameters<typeof createSpinner>[1]>;
+
+type SpinnerFactory = (text?: string, opts?: SpinnerCreateOptions) => Spinner;
 
 const spinnerPresets = {
     arc: {
@@ -140,7 +141,7 @@ const applyRuleMode = (
 const resolveWriteStream = (
     processLike: ProcessLike,
     outputStream: OutputStream
-): NodeJS.WriteStream =>
+): ProcessLike["stderr"] | ProcessLike["stdout"] =>
     outputStream === "stdout" ? processLike.stdout : processLike.stderr;
 
 const isOutputHidden = (
@@ -160,9 +161,7 @@ const isOutputHidden = (
         return false;
     }
 
-    return (
-        resolveWriteStream(processLike, settings.outputStream).isTTY !== true
-    );
+    return !resolveWriteStream(processLike, settings.outputStream).isTTY;
 };
 
 const shouldRenderLiveOutput = (
@@ -209,8 +208,8 @@ export const createProgressController = (
         initialLiveReportDone: false,
         lastRenderAt: 0,
         lastResolvedSettings: { ...defaultSettings },
-        lintStartedAt: 0,
         lintedFileCount: 0,
+        lintStartedAt: 0,
         spinner: createManagedSpinner(defaultSettings),
     });
 
@@ -231,19 +230,6 @@ export const createProgressController = (
         state.activeOutputStream = settings.outputStream;
         state.activeSpinnerStyle = settings.spinnerStyle;
         state.spinner = createManagedSpinner(settings);
-    };
-
-    const bindExitHandler = (): void => {
-        if (state.exitHandlerBound) {
-            return;
-        }
-
-        processLike.once("exit", (exitCode) => {
-            if (typeof exitCode === "number") {
-                controller.handleExit(exitCode);
-            }
-        });
-        state.exitHandlerBound = true;
     };
 
     const renderLiveOutput = (
@@ -308,42 +294,53 @@ export const createProgressController = (
         filesLinted: state.lintedFileCount,
     });
 
-    const controller: ProgressController = {
-        getState: () => state,
-        handleExit(exitCode): void {
-            if (state.lintedFileCount === 0) {
-                return;
-            }
+    const handleExit = (exitCode: number): void => {
+        if (state.lintedFileCount === 0) {
+            return;
+        }
 
-            const settings = state.lastResolvedSettings;
+        const settings = state.lastResolvedSettings;
 
-            if (
-                !shouldRenderSummary(
-                    settings,
-                    state.lintedFileCount,
-                    processLike
-                )
-            ) {
-                return;
-            }
+        if (
+            !shouldRenderSummary(settings, state.lintedFileCount, processLike)
+        ) {
+            return;
+        }
 
-            ensureSpinner(settings);
+        ensureSpinner(settings);
 
-            const summaryStats = createSummaryStats(exitCode);
+        const summaryStats = createSummaryStats(exitCode);
 
-            if (exitCode === 0) {
-                state.spinner.success({
-                    mark: settings.hidePrefix ? "" : settings.prefixMark,
-                    text: formatSuccessMessage(settings, summaryStats),
-                });
-                return;
-            }
-
-            state.spinner.error({
+        if (exitCode === 0) {
+            state.spinner.success({
                 mark: settings.hidePrefix ? "" : settings.prefixMark,
-                text: formatFailureMessage(settings, summaryStats),
+                text: formatSuccessMessage(settings, summaryStats),
             });
-        },
+            return;
+        }
+
+        state.spinner.error({
+            mark: settings.hidePrefix ? "" : settings.prefixMark,
+            text: formatFailureMessage(settings, summaryStats),
+        });
+    };
+
+    const bindExitHandler = (): void => {
+        if (state.exitHandlerBound) {
+            return;
+        }
+
+        processLike.once("exit", (exitCode) => {
+            if (typeof exitCode === "number") {
+                handleExit(exitCode);
+            }
+        });
+        state.exitHandlerBound = true;
+    };
+
+    return {
+        getState: () => state,
+        handleExit,
         handleLintFile({ context, liveMode }): void {
             if (state.lintStartedAt === 0) {
                 state.lintStartedAt = now();
@@ -387,7 +384,5 @@ export const createProgressController = (
 
             state = createInitialState();
         },
-    };
-
-    return controller;
+    } satisfies ProgressController;
 };

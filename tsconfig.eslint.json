@@ -24,6 +24,7 @@
     "include": [
         "*.cjs",
         "*.d.cts",
+        "*.d.mts",
         "*.d.ts",
         "eslint.config.mjs",
         "eslint/**/*.mjs",
