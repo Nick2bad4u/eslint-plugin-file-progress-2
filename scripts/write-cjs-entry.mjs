@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -12,8 +12,17 @@ await mkdir(distDirectoryPath, { recursive: true });
 
 await build({
     bundle: true,
-    entryPoints: [path.join(projectRootPath, "src/index.ts")],
     format: "cjs",
+    stdin: {
+        contents: [
+            'const pluginModule = require("./src/index.ts");',
+            "const plugin = pluginModule.default ?? pluginModule;",
+            "module.exports = plugin;",
+        ].join("\n"),
+        loader: "js",
+        resolveDir: projectRootPath,
+        sourcefile: "cjs-entry.cjs",
+    },
     logLevel: "info",
     outfile: path.join(distDirectoryPath, "index.cjs"),
     packages: "external",
@@ -21,16 +30,6 @@ await build({
     sourcemap: false,
     target: ["node22"],
 });
-
-const cjsEntryPath = path.join(distDirectoryPath, "index.cjs");
-const cjsEntryContent = await readFile(cjsEntryPath, "utf8");
-const cjsInteropFooter = `
-
-module.exports = module.exports.default;
-module.exports.default = module.exports;
-`;
-
-await writeFile(cjsEntryPath, `${cjsEntryContent}${cjsInteropFooter}`, "utf8");
 
 const cjsTypeDefinitionContent = `import plugin from "./index.js";
 

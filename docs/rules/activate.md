@@ -1,122 +1,159 @@
-# `file-progress/activate`
+# activate
 
-This is the single public rule exported by the plugin.
+Display live per-file lint progress in CLI output.
 
-## Purpose
+## Targeted pattern scope
 
-When enabled during an ESLint CLI run, the rule:
+This rule is intended for ESLint CLI runs where developers want visible, ongoing progress while files are being linted.
 
-- starts a spinner/progress indicator
-- updates the currently displayed file being linted
-- prints a success or failure summary when the run exits
+It activates three runtime behaviors:
 
-## Basic configuration
+- start a spinner when linting begins
+- update the current file path as the run progresses
+- print a final success or failure summary when ESLint exits
+
+## What this rule reports
+
+This rule does not report source-code violations.
+
+Instead, enabling it turns on the plugin's full live progress mode for the current ESLint run.
+
+## Why this rule exists
+
+Long ESLint runs can feel silent and uncertain.
+
+- Developers may assume the run is stalled when nothing is printed for a while.
+- Seeing the current file path makes long runs easier to trust.
+- A final completion line provides a clearer end state than a raw process exit.
+
+This rule exists to improve CLI feedback without changing lint semantics.
+
+## ❌ Incorrect
+
+```ts
+// eslint.config.ts
+import progress from "eslint-plugin-file-progress-2";
+
+export default [
+  {
+    plugins: {
+      "file-progress": progress,
+    },
+    rules: {
+      // No progress output will be shown during the run.
+      "file-progress/activate": "off",
+    },
+  },
+];
+```
+
+## ✅ Correct
+
+```ts
+// eslint.config.ts
+import progress from "eslint-plugin-file-progress-2";
+
+export default [
+  {
+    plugins: {
+      "file-progress": progress,
+    },
+    rules: {
+      // Show per-file progress while ESLint is running.
+      "file-progress/activate": "warn",
+    },
+  },
+];
+```
+
+## Behavior and migration notes
+
+- This rule reads behavior controls from `settings.progress`.
+- Use `hideFileName`, `hidePrefix`, `hideDirectoryNames`, and `detailedSuccess` when you want to refine the output style.
+- If you want a quieter live mode, use `compact`.
+- If you want only the final completion summary, use `summary-only`.
+- Do not enable multiple `file-progress/*` runtime rules at the same time; choose one output mode per config.
+
+## Additional examples
+
+### ❌ Incorrect — full per-file output when lower-noise progress is preferred
+
+```ts
+// eslint.config.ts
+import progress from "eslint-plugin-file-progress-2";
+
+export default [
+  {
+    plugins: {
+      "file-progress": progress,
+    },
+    rules: {
+      "file-progress/activate": "warn",
+    },
+  },
+];
+```
+
+### ✅ Correct — use compact mode when file names are unnecessary
+
+```ts
+// eslint.config.ts
+import progress from "eslint-plugin-file-progress-2";
+
+export default [
+  {
+    plugins: {
+      "file-progress": progress,
+    },
+    rules: {
+      "file-progress/compact": "warn",
+    },
+  },
+];
+```
+
+## ESLint flat config example
 
 ```ts
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
-    {
-        plugins: {
-            "file-progress": progress,
-        },
-        rules: {
-            "file-progress/activate": "warn",
-        },
+  {
+    plugins: {
+      "file-progress": progress,
     },
+    rules: {
+      "file-progress/activate": "warn",
+    },
+    settings: {
+      progress: {
+        detailedSuccess: true,
+        fileNameOnNewLine: true,
+        spinnerStyle: "dots",
+      },
+    },
+  },
 ];
 ```
 
-## Settings
+## When not to use it
 
-The rule reads its options from `settings.progress`.
+Do not use this rule if:
 
-```ts
-export default [
-    {
-        plugins: {
-            "file-progress": progress,
-        },
-        rules: {
-            "file-progress/activate": "warn",
-        },
-        settings: {
-            progress: {
-                hide: false,
-                hideFileName: false,
-                hidePrefix: false,
-                hideDirectoryNames: false,
-                fileNameOnNewLine: false,
-                successMessage: "Lint done...",
-                detailedSuccess: false,
-                spinnerStyle: "dots",
-                prefixMark: "•",
-                successMark: "✔",
-                failureMark: "✖",
-            },
-        },
-    },
-];
-```
+- your workflow should stay silent until the run ends
+- editor integrations reuse the same config and you do not want live progress there
+- a generic progress indicator is sufficient and file-path updates are unnecessary
 
-## Settings reference
+## Package documentation
 
-### `hide`
+This rule is part of the `eslint-plugin-file-progress-2` package and is intended for CLI-first lint workflows.
 
-Turns off progress output entirely.
+> **Rule catalog ID:** R001
 
-### `hideFileName`
-
-Shows a generic “linting project files...” message instead of per-file names.
-
-### `hidePrefix`
-
-Removes the plugin prefix from progress and summary lines.
-
-### `hideDirectoryNames`
-
-Shows only the filename segment during per-file updates.
-
-### `fileNameOnNewLine`
-
-Places the formatted file path on a second line under the progress prefix.
-
-### `successMessage`
-
-Overrides the default success message text.
-
-### `detailedSuccess`
-
-Enables a multi-line completion summary with:
-
-- duration
-- files linted
-- throughput
-- exit code
-- problems summary
-
-### `spinnerStyle`
-
-Supported values:
-
-- `line`
-- `dots`
-- `arc`
-- `bounce`
-- `clock`
-
-### `prefixMark`, `successMark`, `failureMark`
-
-Customize the symbols used in the progress prefix and completion lines.
-
-## Practical notes
-
-- `hidePrefix: true` ignores `fileNameOnNewLine` and keeps the output compact.
-- `hideDirectoryNames: true` is helpful in deep repositories where the filename matters more than the full path.
-- `recommended-ci` is a good default for shared configs because it suppresses noisy live progress when `CI` is set.
-
-## Related pages
+## Further reading
 
 - [Overview](./overview.md)
 - [Getting Started](./getting-started.md)
 - [Preset Reference](./presets/index.md)
+- [compact](./compact.md)
+- [summary-only](./summary-only.md)

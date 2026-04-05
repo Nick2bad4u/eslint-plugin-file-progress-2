@@ -6,7 +6,10 @@ It prints live progress while files are being linted and can optionally emit a r
 
 ## What the plugin includes
 
-- one public rule: `file-progress/activate`
+- three public rules:
+    - `file-progress/activate`
+    - `file-progress/compact`
+    - `file-progress/summary-only`
 - three presets:
     - `recommended`
     - `recommended-ci`
@@ -27,6 +30,12 @@ Common use cases:
 - It does **not** report lint problems itself; ESLint still does that.
 - It does **not** change lint semantics or rule severity.
 - It is **not** primarily intended for editor-integrated linting.
+
+## Choosing a rule mode
+
+- Use `file-progress/activate` when you want full per-file progress.
+- Use `file-progress/compact` when you want visible activity but do not want file-path churn.
+- Use `file-progress/summary-only` when you only care about the final completion summary.
 
 If you only want the progress output on the command line, consider enabling the rule from the ESLint CLI instead of your editor-consumed config.
 

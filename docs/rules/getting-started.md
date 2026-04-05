@@ -28,6 +28,14 @@ module.exports = [progress.configs.recommended];
 - `recommended-ci`: automatically hides progress when `CI === "true"`
 - `recommended-detailed`: enables the richer completion summary by default
 
+## Rule choices
+
+If you are not using one of the built-in presets, choose the rule that matches the output style you want:
+
+- `file-progress/activate`: full per-file progress updates
+- `file-progress/compact`: generic live progress without file names
+- `file-progress/summary-only`: final summary only
+
 ## CLI-only usage
 
 If you do not want editor integrations to see this rule, you can keep it out of your config and enable it directly from the CLI:

@@ -1,0 +1,25 @@
+{
+    "$schema": "https://www.schemastore.org/tsconfig.json",
+    "compilerOptions": {
+        "noEmit": true,
+        "tsBuildInfoFile": "./.cache/tsbuildinfo/tsconfig.vitest-typecheck.tsbuildinfo"
+    },
+    "exclude": [
+        ".cache/**",
+        "coverage/**",
+        "dist/**",
+        "docs/docusaurus/.docusaurus/**",
+        "docs/docusaurus/build/**",
+        "eslint.config.bundled_*.mjs",
+        "node_modules/**",
+        "test/fixtures/**"
+    ],
+    "extends": "./tsconfig.json",
+    "include": [
+        "src/**/*.d.ts",
+        "src/**/*.ts",
+        "test/**/*.d.ts",
+        "test/**/*.ts",
+        "vite.config.ts"
+    ]
+}

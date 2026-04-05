@@ -53,12 +53,22 @@ const sidebars: SidebarsConfig = {
                 title: "Rule Reference",
                 slug: "/",
                 description:
-                    "Documentation for the CLI progress rule shipped by eslint-plugin-file-progress-2.",
+                    "Documentation for the CLI progress rules shipped by eslint-plugin-file-progress-2.",
             },
             items: [
                 {
                     id: "activate",
                     label: "01 file-progress/activate",
+                    type: "doc",
+                },
+                {
+                    id: "compact",
+                    label: "02 file-progress/compact",
+                    type: "doc",
+                },
+                {
+                    id: "summary-only",
+                    label: "03 file-progress/summary-only",
                     type: "doc",
                 },
             ],

@@ -1,9 +1,6 @@
 # eslint-plugin-file-progress-2
 
-[![Version](https://badgen.net/npm/v/eslint-plugin-file-progress-2/latest)](https://www.npmjs.com/package/eslint-plugin-file-progress-2)
-[![License](https://badgen.net/npm/license/eslint-plugin-file-progress-2?color=orange)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/blob/master/LICENSE)
-[![Release](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions/workflows/release.yml/badge.svg)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions/workflows/release.yml)
-[![Tests](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/workflows/Tests/badge.svg)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions/workflows/test.yml)
+[![npm license.](https://flat.badgen.net/npm/license/eslint-plugin-file-progress-2?color=purple)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/blob/main/LICENSE) [![npm total downloads.](https://flat.badgen.net/npm/dt/eslint-plugin-file-progress-2?color=pink)](https://www.npmjs.com/package/eslint-plugin-file-progress-2) [![latest GitHub release.](https://flat.badgen.net/github/release/Nick2bad4u/eslint-plugin-file-progress-2?color=cyan)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/releases) [![GitHub stars.](https://flat.badgen.net/github/stars/Nick2bad4u/eslint-plugin-file-progress-2?color=yellow)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/stargazers) [![GitHub forks.](https://flat.badgen.net/github/forks/Nick2bad4u/eslint-plugin-file-progress-2?color=green)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/forks) [![GitHub open issues.](https://flat.badgen.net/github/open-issues/Nick2bad4u/eslint-plugin-file-progress-2?color=red)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/issues) [![codecov.](https://flat.badgen.net/codecov/github/Nick2bad4u/eslint-plugin-file-progress-2?color=blue)](https://codecov.io/gh/Nick2bad4u/eslint-plugin-file-progress-2)
 
 > ESLint plugin to print file progress
 

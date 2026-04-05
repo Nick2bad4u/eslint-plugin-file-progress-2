@@ -188,11 +188,11 @@ const config: Config = {
                             label: "\uea84 Repository",
                         },
                         {
-                            href: `https://nick2bad4u.github.io/eslint-plugin-typefest/eslint-inspector/`,
+                            href: `https://nick2bad4u.github.io/eslint-plugin-file-progress-2/eslint-inspector/`,
                             label: "\ue7d2 ESLint Inspector",
                         },
                         {
-                            href: `https://nick2bad4u.github.io/eslint-plugin-typefest/stylelint-inspector/`,
+                            href: `https://nick2bad4u.github.io/eslint-plugin-file-progress-2/stylelint-inspector/`,
                             label: "\ue7d2 Stylelint Inspector",
                         },
                     ],

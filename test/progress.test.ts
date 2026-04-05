@@ -1,15 +1,25 @@
 import tseslintPlugin from "@typescript-eslint/eslint-plugin";
-import { ESLint, type Linter, RuleTester } from "eslint";
-import assert from "node:assert/strict";
+import tsParser from "@typescript-eslint/parser";
+import { RuleTester } from "@typescript-eslint/rule-tester";
+import { ESLint, type Linter } from "eslint";
 import { rm, writeFile } from "node:fs/promises";
 import { stripVTControlCharacters } from "node:util";
-import { test } from "vitest";
+import { expect, test } from "vitest";
 
-import plugin from "../src/index.js";
-import progressRule, {
+import {
     internals,
     type NormalizedProgressSettings,
-} from "../src/rules/progress.js";
+} from "../src/_internal/progress-runtime.js";
+import plugin from "../src/index.js";
+import compactRule from "../src/rules/compact.js";
+import progressRule from "../src/rules/progress.js";
+import summaryOnlyRule from "../src/rules/summary-only.js";
+
+RuleTester.setDefaultConfig({
+    languageOptions: {
+        parser: tsParser,
+    },
+});
 
 const tsFiles = ["src/**/*.ts", "test/**/*.ts"];
 
@@ -42,13 +52,108 @@ const makeStats = (overrides: Partial<SummaryStats> = {}): SummaryStats => ({
     ...overrides,
 });
 
+const sharedValidCases = [
+    {
+        code: 'const foo = "bar";',
+        filename: "src/file-a.js",
+    },
+    {
+        code: 'const foo = "bar";',
+        filename: "src/file-e.ts",
+    },
+] as const;
+
+const ruleTester = new RuleTester();
+
+ruleTester.run("activate", progressRule, {
+    invalid: [],
+    valid: [
+        ...sharedValidCases,
+        {
+            code: 'const foo = "bar";',
+            filename: "src/file-b.js",
+            name: "hidden progress setting",
+            settings: {
+                progress: {
+                    hide: true,
+                },
+            },
+        },
+        {
+            code: 'const foo = "bar";',
+            filename: "src/file-c.js",
+            name: "hide filename with custom success message",
+            settings: {
+                progress: {
+                    hideFileName: true,
+                    successMessage: "Lint done...",
+                },
+            },
+        },
+        {
+            code: 'const foo = "bar";',
+            filename: "src/file-d.js",
+            name: "show filename on a second line",
+            settings: {
+                progress: {
+                    fileNameOnNewLine: true,
+                },
+            },
+        },
+        {
+            code: 'const foo = "bar";',
+            filename: "src/nested/file-f.ts",
+            name: "hide prefix and keep file names",
+            settings: {
+                progress: {
+                    hidePrefix: true,
+                },
+            },
+        },
+        {
+            code: 'const foo = "bar";',
+            filename: "src/deeply/nested/file-g.ts",
+            name: "hide directory names only",
+            settings: {
+                progress: {
+                    hideDirectoryNames: true,
+                },
+            },
+        },
+        {
+            code: 'const foo = "bar";',
+            filename: "src/deeply/nested/file-h.ts",
+            name: "hide prefix and directory names together",
+            settings: {
+                progress: {
+                    fileNameOnNewLine: true,
+                    hideDirectoryNames: true,
+                    hidePrefix: true,
+                },
+            },
+        },
+    ],
+});
+
+ruleTester.run("compact", compactRule, {
+    invalid: [],
+    valid: [...sharedValidCases],
+});
+
+ruleTester.run("summary-only", summaryOnlyRule, {
+    invalid: [],
+    valid: [...sharedValidCases],
+});
+
 test("plugin exports recommended configs", () => {
-    assert.equal(plugin.meta.name, "eslint-plugin-file-progress-2");
-    assert.ok(plugin.rules.activate);
-    assert.ok(plugin.configs.recommended);
-    assert.ok(plugin.configs["recommended-ci"]);
-    assert.ok(plugin.configs["recommended-detailed"]);
-    assert.deepEqual(plugin.configs.recommended.rules, {
+    expect(plugin.meta.name).toBe("eslint-plugin-file-progress-2");
+    expect(plugin.rules.activate).toBeDefined();
+    expect(plugin.rules.compact).toBeDefined();
+    expect(plugin.rules["summary-only"]).toBeDefined();
+    expect(plugin.configs.recommended).toBeDefined();
+    expect(plugin.configs["recommended-ci"]).toBeDefined();
+    expect(plugin.configs["recommended-detailed"]).toBeDefined();
+    expect(plugin.configs.recommended.rules).toStrictEqual({
         "file-progress/activate": "warn",
     });
 
@@ -64,8 +169,8 @@ test("plugin exports recommended configs", () => {
             | { progress?: { detailedSuccess?: boolean } }
     )?.progress?.detailedSuccess;
 
-    assert.equal(typeof ciHideSetting, "boolean");
-    assert.equal(detailedSetting, true);
+    expect(typeof ciHideSetting).toBe("boolean");
+    expect(detailedSetting).toBeTruthy();
 });
 
 test("normalizeSettings handles invalid values safely", () => {
@@ -140,25 +245,24 @@ test("normalizeSettings handles invalid values safely", () => {
     ];
 
     for (const { expected, input } of cases) {
-        assert.deepEqual(internals.normalizeSettings(input), expected);
+        expect(internals.normalizeSettings(input)).toStrictEqual(expected);
     }
 });
 
 test("formatters produce readable summary text", () => {
-    assert.match(
+    expect(
         normalizePathSeparators(
             stripAnsi(
                 internals.formatFileProgress(
                     "shared/test/utils/typeGuards.debug.test.ts"
                 )
             )
-        ),
-        /shared\/test\/utils\/typeGuards\.debug\.test\.ts/v
-    );
+        )
+    ).toMatch(/shared\/test\/utils\/typeGuards\.debug\.test\.ts/v);
 
-    assert.match(internals.formatGenericProgress(), /linting project files/v);
+    expect(internals.formatGenericProgress()).toMatch(/linting project files/v);
 
-    assert.match(
+    expect(
         stripAnsi(
             internals.formatSuccessMessage(
                 makeSettings({
@@ -166,11 +270,10 @@ test("formatters produce readable summary text", () => {
                 }),
                 makeStats()
             )
-        ),
-        /eslint-plugin-file-progress-2:[\s\S]*All good/v
-    );
+        )
+    ).toMatch(/eslint-plugin-file-progress-2:[\s\S]*All good/v);
 
-    assert.match(
+    expect(
         internals.formatSuccessMessage(
             makeSettings({
                 detailedSuccess: true,
@@ -180,11 +283,12 @@ test("formatters produce readable summary text", () => {
                 durationMs: 1534,
                 filesLinted: 5,
             })
-        ),
+        )
+    ).toMatch(
         /Duration:[\s\S]*Files linted:[\s\S]*Throughput:[\s\S]*Exit code:/v
     );
 
-    assert.match(
+    expect(
         internals.formatSuccessMessage(
             makeSettings({
                 detailedSuccess: true,
@@ -196,11 +300,10 @@ test("formatters produce readable summary text", () => {
                 durationMs: 224,
                 filesLinted: 5,
             })
-        ),
-        /Problems:[\s\S]*0/v
-    );
+        )
+    ).toMatch(/Problems:[\s\S]*0/v);
 
-    assert.match(
+    expect(
         internals.formatFailureMessage(
             makeSettings({
                 detailedSuccess: true,
@@ -213,13 +316,14 @@ test("formatters produce readable summary text", () => {
                 exitCode: 2,
                 filesLinted: 5,
             })
-        ),
+        )
+    ).toMatch(
         /Lint failed\.[\s\S]*Throughput:[\s\S]*Exit code:[^2]*2[\s\S]*Problems:[\s\S]*detected/v
     );
 });
 
 test("formatFileProgress supports newline and directory controls", () => {
-    assert.match(
+    expect(
         normalizePathSeparators(
             stripAnsi(
                 internals.formatFileProgress(
@@ -229,11 +333,10 @@ test("formatFileProgress supports newline and directory controls", () => {
                     })
                 )
             )
-        ),
-        /linting[\t ]*\n[\t ]*↳[\t ]*src\/rules\/progress\.ts/v
-    );
+        )
+    ).toMatch(/linting[\t ]*\n[\t ]*↳[\t ]*src\/rules\/progress\.ts/v);
 
-    assert.match(
+    expect(
         stripAnsi(
             internals.formatFileProgress(
                 "src/rules/progress.ts",
@@ -241,9 +344,8 @@ test("formatFileProgress supports newline and directory controls", () => {
                     hideDirectoryNames: true,
                 })
             )
-        ),
-        /linting\s+progress\.ts$/v
-    );
+        )
+    ).toMatch(/linting\s+progress\.ts$/v);
 });
 
 test("hidePrefix composes with directory and summary settings", () => {
@@ -257,11 +359,10 @@ test("hidePrefix composes with directory and summary settings", () => {
         )
     );
 
-    assert.match(
-        normalizePathSeparators(prefixHiddenText),
+    expect(normalizePathSeparators(prefixHiddenText)).toMatch(
         /^src\/rules\/progress\.ts$/v
     );
-    assert.ok(!prefixHiddenText.includes("\n"));
+    expect(prefixHiddenText).not.toContain("\n");
 
     const prefixAndDirectoriesHiddenText = stripAnsi(
         internals.formatFileProgress(
@@ -274,7 +375,7 @@ test("hidePrefix composes with directory and summary settings", () => {
         )
     );
 
-    assert.equal(prefixAndDirectoriesHiddenText, "progress.ts");
+    expect(prefixAndDirectoriesHiddenText).toBe("progress.ts");
 
     const genericWithPrefixHidden = stripAnsi(
         internals.formatGenericProgress(
@@ -285,8 +386,8 @@ test("hidePrefix composes with directory and summary settings", () => {
         )
     );
 
-    assert.ok(
-        !genericWithPrefixHidden.includes("eslint-plugin-file-progress-2")
+    expect(genericWithPrefixHidden).not.toContain(
+        "eslint-plugin-file-progress-2"
     );
 
     const successWithPrefixHidden = stripAnsi(
@@ -302,106 +403,53 @@ test("hidePrefix composes with directory and summary settings", () => {
         )
     );
 
-    assert.ok(
-        !successWithPrefixHidden.includes("eslint-plugin-file-progress-2:")
+    expect(successWithPrefixHidden).not.toContain(
+        "eslint-plugin-file-progress-2:"
     );
 });
 
 test("toRelativeFilePath handles absolute paths", () => {
-    assert.match(
+    expect(
         normalizePathSeparators(
             internals.toRelativeFilePath("/repo/src/file.ts", "/repo")
-        ),
-        /^src\/file\.ts$/v
-    );
+        )
+    ).toMatch(/^src\/file\.ts$/v);
 
-    assert.match(
+    expect(
         normalizePathSeparators(
             internals.toRelativeFilePath("C:/repo/src/file.ts", "C:/repo")
-        ),
-        /^src\/file\.ts$/v
-    );
+        )
+    ).toMatch(/^src\/file\.ts$/v);
 });
 
-test("rule works with ESLint 10 RuleContext properties", () => {
-    const ruleTester = new RuleTester();
+test("helper internals handle fallback and edge branches", () => {
+    expect(
+        internals.normalizeSettings({
+            failureMark: "   ",
+            prefixMark: "   ",
+            successMark: "   ",
+        })
+    ).toStrictEqual(makeSettings());
 
-    ruleTester.run("file-progress/activate", progressRule, {
-        invalid: [],
-        valid: [
-            {
-                code: 'const foo = "bar";',
-                filename: "src/file-a.js",
-            },
-            {
-                code: 'const foo = "bar";',
-                filename: "src/file-b.js",
-                name: "hidden progress setting",
-                settings: {
-                    progress: {
-                        hide: true,
-                    },
-                },
-            },
-            {
-                code: 'const foo = "bar";',
-                filename: "src/file-c.js",
-                name: "hide filename with custom success message",
-                settings: {
-                    progress: {
-                        hideFileName: true,
-                        successMessage: "Lint done...",
-                    },
-                },
-            },
-            {
-                code: 'const foo = "bar";',
-                filename: "src/file-d.js",
-                name: "show filename on a second line",
-                settings: {
-                    progress: {
-                        fileNameOnNewLine: true,
-                    },
-                },
-            },
-            {
-                code: 'const foo = "bar";',
-                filename: "src/file-e.ts",
-            },
-            {
-                code: 'const foo = "bar";',
-                filename: "src/nested/file-f.ts",
-                name: "hide prefix and keep file names",
-                settings: {
-                    progress: {
-                        hidePrefix: true,
-                    },
-                },
-            },
-            {
-                code: 'const foo = "bar";',
-                filename: "src/deeply/nested/file-g.ts",
-                name: "hide directory names only",
-                settings: {
-                    progress: {
-                        hideDirectoryNames: true,
-                    },
-                },
-            },
-            {
-                code: 'const foo = "bar";',
-                filename: "src/deeply/nested/file-h.ts",
-                name: "hide prefix and directory names together",
-                settings: {
-                    progress: {
-                        fileNameOnNewLine: true,
-                        hideDirectoryNames: true,
-                        hidePrefix: true,
-                    },
-                },
-            },
-        ],
-    });
+    expect(internals.toRelativeFilePath("", "")).toBe("<input>");
+    expect(internals.toRelativeFilePath("<input>", "")).toBe("<input>");
+    expect(
+        normalizePathSeparators(internals.toRelativeFilePath("C:/repo", ""))
+    ).toMatch(/repo$/v);
+
+    expect(
+        stripAnsi(
+            internals.formatFileProgress(
+                "////",
+                makeSettings({
+                    hidePrefix: true,
+                })
+            )
+        )
+    ).toBe("////");
+
+    expect(internals.formatThroughput(100, 0)).toBe("0.00 files/s");
+    expect(internals.formatThroughput(0, 2)).toBe("2.00 files/s");
 });
 
 test("typescript-eslint setup lints TypeScript files with plugin rule", async () => {
@@ -449,12 +497,67 @@ test("typescript-eslint setup lints TypeScript files with plugin rule", async ()
         const [result] = await eslint.lintFiles([fixtureFilePath]);
 
         if (result === undefined) {
-            assert.fail("Expected ESLint to return a single lint result.");
+            throw new Error("Expected ESLint to return a single lint result.");
         }
 
-        assert.equal(result.fatalErrorCount, 0);
-        assert.equal(result.errorCount, 0);
+        expect(result.fatalErrorCount).toBe(0);
+        expect(result.errorCount).toBe(0);
     } finally {
         await rm(fixtureFilePath, { force: true });
     }
+});
+
+test("runtime create path covers spinner and hide branches", () => {
+    const makeContext = (
+        settings: Record<string, unknown>,
+        filename = "src/runtime-case.ts"
+    ) => ({
+        cwd: process.cwd(),
+        filename,
+        settings: {
+            progress: settings,
+        },
+    });
+
+    expect(progressRule.create(makeContext({ hide: true }))).toStrictEqual({});
+
+    expect(
+        progressRule.create(
+            makeContext({
+                hideFileName: true,
+                spinnerStyle: "arc",
+            })
+        )
+    ).toStrictEqual({});
+
+    expect(
+        progressRule.create(
+            makeContext({
+                hideFileName: true,
+                spinnerStyle: "line",
+            })
+        )
+    ).toStrictEqual({});
+
+    expect(
+        stripAnsi(
+            internals.formatFileProgress(
+                "progress",
+                makeSettings({
+                    hidePrefix: true,
+                })
+            )
+        )
+    ).toBe("progress");
+
+    expect(
+        stripAnsi(
+            internals.formatSuccessMessage(
+                makeSettings({
+                    hidePrefix: true,
+                }),
+                makeStats()
+            )
+        )
+    ).toMatch(/^✔\s+Lint complete\.$/v);
 });

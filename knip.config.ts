@@ -102,7 +102,7 @@ const knipConfig: KnipConfig = {
             project: [],
         },
         src: {
-            entry: ["src/plugin.ts"],
+            entry: ["src/index.ts"],
             project: [
                 "!src/**/*.spec.{js,ts,tsx,jsx,mts,cjs,cts,mjs}",
                 "!src/**/*.test.{js,ts,tsx,jsx,mts,cjs,cts,mjs}",
