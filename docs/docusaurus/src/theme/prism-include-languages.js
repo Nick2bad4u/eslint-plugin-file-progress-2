@@ -70,7 +70,12 @@ const addTagsToGrammarComments = (grammar) => {
 };
 
 module.exports = function prismIncludeLanguages(PrismObject) {
-    const languageNames = ["javascript", "jsx", "typescript", "tsx"];
+    const languageNames = [
+        "javascript",
+        "jsx",
+        "typescript",
+        "tsx",
+    ];
 
     for (const languageName of languageNames) {
         const grammar = PrismObject.languages[languageName];

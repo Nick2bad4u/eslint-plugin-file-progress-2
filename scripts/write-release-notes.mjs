@@ -99,7 +99,11 @@ const buildReleaseNotes = ({
     tag,
     version,
 }) => {
-    const lines = [`# ${tag}`, "", `- Package: \`${packageName}@${version}\``];
+    const lines = [
+        `# ${tag}`,
+        "",
+        `- Package: \`${packageName}@${version}\``,
+    ];
 
     if (previousTag !== undefined) {
         lines.push(`- Previous release: \`${previousTag}\``);

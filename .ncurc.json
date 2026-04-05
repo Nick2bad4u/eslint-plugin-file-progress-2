@@ -9,14 +9,25 @@
     "configFilePath": "./",
     "cooldown": "15m",
     "deep": false,
-    "dep": ["prod", "dev", "optional", "packageManager"],
+    "dep": [
+        "prod",
+        "dev",
+        "optional",
+        "packageManager"
+    ],
     "deprecated": true,
     "doctor": false,
     "doctorInstall": "npm run install --force",
     "doctorTest": "npm run test",
     "enginesNode": false,
     "errorLevel": 1,
-    "format": ["group", "dep", "ownerChanged", "time", "homepage"],
+    "format": [
+        "group",
+        "dep",
+        "ownerChanged",
+        "time",
+        "homepage"
+    ],
     "global": false,
     "install": "never",
     "interactive": true,

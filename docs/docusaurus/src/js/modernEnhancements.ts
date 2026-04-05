@@ -115,7 +115,11 @@ function getRuleNumberPrefix(
         return null;
     }
 
-    const [, numberToken, remainder] = match;
+    const [
+        ,
+        numberToken,
+        remainder,
+    ] = match;
 
     if (numberToken === undefined || remainder === undefined) {
         return null;

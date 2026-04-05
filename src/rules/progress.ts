@@ -53,11 +53,23 @@ const spinnerPresets: Record<
     { frames: string[]; interval: number }
 > = {
     arc: {
-        frames: ["◜", "◠", "◝", "◞", "◡", "◟"],
+        frames: [
+            "◜",
+            "◠",
+            "◝",
+            "◞",
+            "◡",
+            "◟",
+        ],
         interval: 90,
     },
     bounce: {
-        frames: ["▖", "▘", "▝", "▗"],
+        frames: [
+            "▖",
+            "▘",
+            "▝",
+            "▗",
+        ],
         interval: 120,
     },
     clock: {
@@ -78,11 +90,27 @@ const spinnerPresets: Record<
         interval: 120,
     },
     dots: {
-        frames: ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"],
+        frames: [
+            "⠋",
+            "⠙",
+            "⠹",
+            "⠸",
+            "⠼",
+            "⠴",
+            "⠦",
+            "⠧",
+            "⠇",
+            "⠏",
+        ],
         interval: 80,
     },
     line: {
-        frames: ["|", "/", "-", "\\"],
+        frames: [
+            "|",
+            "/",
+            "-",
+            "\\",
+        ],
         interval: 90,
     },
 };
