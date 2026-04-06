@@ -31,6 +31,7 @@ const { default: builtPlugin } = await import(builtPluginModuleUrl);
 
 /**
  * @type {readonly {
+ *     docsBadge: string;
  *     docsPath: string;
  *     name: string;
  *     optionSummary: string;
@@ -65,12 +66,19 @@ const normalizeLineEndings = (markdown, lineEnding) =>
 const isRecord = (value) => typeof value === "object" && value !== null;
 
 /**
+ * @typedef {Readonly<{
+ *     readonly configs: Readonly<Record<string, unknown>>;
+ * }>} PresetMatrixPluginLike
+ */
+
+/**
+ * @param {PresetMatrixPluginLike} plugin
  * @param {string} presetName
  *
  * @returns {string}
  */
-const getEnabledRuleName = (presetName) => {
-    const presetConfig = builtPlugin.configs[presetName];
+const getEnabledRuleName = (plugin, presetName) => {
+    const presetConfig = plugin.configs[presetName];
 
     if (!isRecord(presetConfig) || !isRecord(presetConfig["rules"])) {
         throw new TypeError(`Preset '${presetName}' is missing a rules block.`);
@@ -104,15 +112,30 @@ const createPresetDocsPath = (presetDocsPath) =>
     `./${presetDocsPath.slice("./docs/rules/presets/".length)}`;
 
 /**
+ * @param {{
+ *     docsBadge: string;
+ *     name: string;
+ * }} presetCatalogEntry
+ *
+ * @returns {string}
+ */
+const createPresetDocsLabel = (presetCatalogEntry) =>
+    `${presetCatalogEntry.docsBadge} \`${presetCatalogEntry.name}\``;
+
+/**
+ * @param {(ruleName: string) => { docsId: string }} resolveRuleCatalogEntry
  * @param {string} ruleName
  *
  * @returns {string}
  */
-const createRuleDocsPath = (ruleName) =>
-    `../${getRuleCatalogEntry(ruleName).docsId}.md`;
+const createRuleDocsPath = (resolveRuleCatalogEntry, ruleName) =>
+    `../${resolveRuleCatalogEntry(ruleName).docsId}.md`;
 
 /**
+ * @param {PresetMatrixPluginLike} plugin
+ * @param {(ruleName: string) => { docsId: string }} resolveRuleCatalogEntry
  * @param {{
+ *     docsBadge: string;
  *     docsPath: string;
  *     name: string;
  *     optionSummary: string;
@@ -122,8 +145,12 @@ const createRuleDocsPath = (ruleName) =>
  *
  * @returns {string}
  */
-const createPresetRow = (presetCatalogEntry) => {
-    const enabledRuleName = getEnabledRuleName(presetCatalogEntry.name);
+const createPresetRow = (
+    plugin,
+    resolveRuleCatalogEntry,
+    presetCatalogEntry
+) => {
+    const enabledRuleName = getEnabledRuleName(plugin, presetCatalogEntry.name);
 
     if (enabledRuleName !== presetCatalogEntry.ruleName) {
         throw new TypeError(
@@ -131,23 +158,31 @@ const createPresetRow = (presetCatalogEntry) => {
         );
     }
 
-    return `| [\`${presetCatalogEntry.name}\`](${createPresetDocsPath(presetCatalogEntry.docsPath)}) | [\`file-progress/${enabledRuleName}\`](${createRuleDocsPath(enabledRuleName)}) | ${presetCatalogEntry.optionSummary} | ${presetCatalogEntry.purpose} |`;
+    return `| [${createPresetDocsLabel(presetCatalogEntry)}](${createPresetDocsPath(presetCatalogEntry.docsPath)}) | [\`file-progress/${enabledRuleName}\`](${createRuleDocsPath(resolveRuleCatalogEntry, enabledRuleName)}) | ${presetCatalogEntry.optionSummary} | ${presetCatalogEntry.purpose} |`;
 };
 
 /**
- * @param {{ readonly configs: Readonly<Record<string, unknown>> }} plugin
+ * @param {PresetMatrixPluginLike} plugin
+ * @param {Readonly<{
+ *     getRuleCatalogEntry?: (ruleName: string) => { docsId: string };
+ *     presetCatalog?: typeof presetCatalog;
+ * }>} [input]
  *
  * @returns {string}
  */
-export const generatePresetMatrixSectionFromPlugin = (plugin) => {
-    void plugin;
+export const generatePresetMatrixSectionFromPlugin = (plugin, input = {}) => {
+    const resolvedPresetCatalog = input.presetCatalog ?? presetCatalog;
+    const resolveRuleCatalogEntry =
+        input.getRuleCatalogEntry ?? getRuleCatalogEntry;
 
     return [
         "Generated from the preset registry.",
         "",
         "| Preset | Rule | Key options | Intended use |",
         "| --- | --- | --- | --- |",
-        ...presetCatalog.map(createPresetRow),
+        ...resolvedPresetCatalog.map((presetCatalogEntry) =>
+            createPresetRow(plugin, resolveRuleCatalogEntry, presetCatalogEntry)
+        ),
     ].join("\n");
 };
 

@@ -65,6 +65,7 @@ export const fileProgressPresetNames = [
 export type FileProgressConfigName = (typeof fileProgressPresetNames)[number];
 
 export interface FileProgressPresetCatalogEntry {
+    readonly docsBadge: string;
     readonly docsId: string;
     readonly docsPath: string;
     readonly name: (typeof fileProgressPresetNames)[number];
@@ -80,6 +81,7 @@ export const fileProgressPresetCatalogByName: Readonly<
     Record<FileProgressConfigName, FileProgressPresetCatalogEntry>
 > = {
     recommended: {
+        docsBadge: "🟡",
         docsId: "presets/recommended",
         docsPath: "./docs/rules/presets/recommended.md",
         name: "recommended",
@@ -91,6 +93,7 @@ export const fileProgressPresetCatalogByName: Readonly<
         sidebarLabel: "🟡 Recommended",
     },
     "recommended-ci": {
+        docsBadge: "🟠",
         docsId: "presets/recommended-ci",
         docsPath: "./docs/rules/presets/recommended-ci.md",
         name: "recommended-ci",
@@ -102,6 +105,7 @@ export const fileProgressPresetCatalogByName: Readonly<
         sidebarLabel: "🟠 Recommended CI",
     },
     "recommended-ci-detailed": {
+        docsBadge: "🟤",
         docsId: "presets/recommended-ci-detailed",
         docsPath: "./docs/rules/presets/recommended-ci-detailed.md",
         name: "recommended-ci-detailed",
@@ -115,6 +119,7 @@ export const fileProgressPresetCatalogByName: Readonly<
         sidebarLabel: "🟤 Recommended CI Detailed",
     },
     "recommended-compact": {
+        docsBadge: "🟣",
         docsId: "presets/recommended-compact",
         docsPath: "./docs/rules/presets/recommended-compact.md",
         name: "recommended-compact",
@@ -126,6 +131,7 @@ export const fileProgressPresetCatalogByName: Readonly<
         sidebarLabel: "🟣 Recommended Compact",
     },
     "recommended-detailed": {
+        docsBadge: "🔵",
         docsId: "presets/recommended-detailed",
         docsPath: "./docs/rules/presets/recommended-detailed.md",
         name: "recommended-detailed",
@@ -137,6 +143,7 @@ export const fileProgressPresetCatalogByName: Readonly<
         sidebarLabel: "🔵 Recommended Detailed",
     },
     "recommended-summary-only": {
+        docsBadge: "⚪",
         docsId: "presets/recommended-summary-only",
         docsPath: "./docs/rules/presets/recommended-summary-only.md",
         name: "recommended-summary-only",
@@ -148,6 +155,7 @@ export const fileProgressPresetCatalogByName: Readonly<
         sidebarLabel: "⚪ Recommended Summary Only",
     },
     "recommended-tty": {
+        docsBadge: "🟢",
         docsId: "presets/recommended-tty",
         docsPath: "./docs/rules/presets/recommended-tty.md",
         name: "recommended-tty",

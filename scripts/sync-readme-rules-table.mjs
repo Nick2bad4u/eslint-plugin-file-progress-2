@@ -57,13 +57,21 @@ const normalizeLineEndings = (markdown, lineEnding) =>
 const isRecord = (value) => typeof value === "object" && value !== null;
 
 /**
+ * @typedef {Readonly<{
+ *     readonly configs: Readonly<Record<string, unknown>>;
+ *     readonly rules: Readonly<Record<string, unknown>>;
+ * }>} ReadmeRulesPluginLike
+ */
+
+/**
+ * @param {ReadmeRulesPluginLike} plugin
  * @param {string} presetName
  * @param {string} ruleName
  *
  * @returns {boolean}
  */
-const presetIncludesRule = (presetName, ruleName) => {
-    const presetConfig = builtPlugin.configs[presetName];
+const presetIncludesRule = (plugin, presetName, ruleName) => {
+    const presetConfig = plugin.configs[presetName];
 
     if (!isRecord(presetConfig) || !isRecord(presetConfig["rules"])) {
         return false;
@@ -73,14 +81,16 @@ const presetIncludesRule = (presetName, ruleName) => {
 };
 
 /**
+ * @param {ReadmeRulesPluginLike} plugin
+ * @param {typeof presetCatalog} currentPresetCatalog
  * @param {string} ruleName
  *
  * @returns {string}
  */
-const collectPresetLinks = (ruleName) => {
-    const presetLinks = presetCatalog
+const collectPresetLinks = (plugin, currentPresetCatalog, ruleName) => {
+    const presetLinks = currentPresetCatalog
         .filter((presetCatalogEntry) =>
-            presetIncludesRule(presetCatalogEntry.name, ruleName)
+            presetIncludesRule(plugin, presetCatalogEntry.name, ruleName)
         )
         .map(
             (presetCatalogEntry) =>
@@ -91,12 +101,13 @@ const collectPresetLinks = (ruleName) => {
 };
 
 /**
+ * @param {ReadmeRulesPluginLike} plugin
  * @param {string} ruleName
  *
  * @returns {string}
  */
-const getRuleDescription = (ruleName) => {
-    const ruleModule = builtPlugin.rules[ruleName];
+const getRuleDescription = (plugin, ruleName) => {
+    const ruleModule = plugin.rules[ruleName];
 
     if (
         !isRecord(ruleModule) ||
@@ -120,30 +131,36 @@ const getRuleDescription = (ruleName) => {
 };
 
 /**
+ * @param {ReadmeRulesPluginLike} plugin
+ * @param {typeof presetCatalog} currentPresetCatalog
  * @param {{ docsPath: string; name: string }} ruleCatalogEntry
  *
  * @returns {string}
  */
-const createRuleRow = (ruleCatalogEntry) =>
-    `| [\`file-progress/${ruleCatalogEntry.name}\`](${ruleCatalogEntry.docsPath}) | ${getRuleDescription(ruleCatalogEntry.name)} | ${collectPresetLinks(ruleCatalogEntry.name)} |`;
+const createRuleRow = (plugin, currentPresetCatalog, ruleCatalogEntry) =>
+    `| [\`file-progress/${ruleCatalogEntry.name}\`](${ruleCatalogEntry.docsPath}) | ${getRuleDescription(plugin, ruleCatalogEntry.name)} | ${collectPresetLinks(plugin, currentPresetCatalog, ruleCatalogEntry.name)} |`;
 
 /**
- * @param {{
- *     readonly rules: Readonly<Record<string, unknown>>;
- *     readonly configs: Readonly<Record<string, unknown>>;
- * }} plugin
+ * @param {ReadmeRulesPluginLike} plugin
+ * @param {Readonly<{
+ *     presetCatalog?: typeof presetCatalog;
+ *     ruleCatalog?: typeof ruleCatalog;
+ * }>} [input]
  *
  * @returns {string}
  */
-export const generateReadmeRulesSectionFromPlugin = (plugin) => {
-    void plugin;
+export const generateReadmeRulesSectionFromPlugin = (plugin, input = {}) => {
+    const resolvedPresetCatalog = input.presetCatalog ?? presetCatalog;
+    const resolvedRuleCatalog = input.ruleCatalog ?? ruleCatalog;
 
     return [
         "Generated from the plugin rule metadata and preset registry.",
         "",
         "| Rule | Description | Included in presets |",
         "| --- | --- | --- |",
-        ...ruleCatalog.map(createRuleRow),
+        ...resolvedRuleCatalog.map((ruleCatalogEntry) =>
+            createRuleRow(plugin, resolvedPresetCatalog, ruleCatalogEntry)
+        ),
     ].join("\n");
 };
 

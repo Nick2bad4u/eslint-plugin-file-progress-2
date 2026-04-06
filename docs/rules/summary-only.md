@@ -63,6 +63,9 @@ export default [
 
 This rule accepts the same option object as [`activate`](./activate.md).
 
+See [`activate`](./activate.md) for the full shared option reference, default
+values, and deprecated compatibility notes.
+
 Mode-specific notes:
 
 - `summary-only` never shows live progress.

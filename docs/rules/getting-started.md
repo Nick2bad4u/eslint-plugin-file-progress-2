@@ -38,6 +38,9 @@ export default [
 ];
 ```
 
+For a full option-by-option reference, default values, and deprecated fallback
+notes, read [`activate`](./activate.md).
+
 ## Preset choices
 
 - [🟡 `recommended`](./presets/recommended.md): full per-file progress

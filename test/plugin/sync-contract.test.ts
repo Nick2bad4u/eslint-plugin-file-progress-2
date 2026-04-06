@@ -9,6 +9,7 @@ import { generateReadmeRulesSectionFromPlugin } from "../../scripts/sync-readme-
 import {
     fileProgressPresetCatalog,
     fileProgressRuleCatalog,
+    getRuleCatalogEntry,
 } from "../../src/_internal/plugin-catalog.js";
 import plugin from "../../src/index.js";
 
@@ -75,9 +76,10 @@ test("readme generated rules section is in sync with plugin metadata", async () 
         "<!-- begin generated rules table -->",
         "<!-- end generated rules table -->"
     );
-    const generatedSection = generateReadmeRulesSectionFromPlugin(
-        plugin
-    ).replaceAll("\r\n", "\n");
+    const generatedSection = generateReadmeRulesSectionFromPlugin(plugin, {
+        presetCatalog: fileProgressPresetCatalog,
+        ruleCatalog: fileProgressRuleCatalog,
+    }).replaceAll("\r\n", "\n");
 
     expect(currentSection).toBe(generatedSection);
 });
@@ -89,9 +91,13 @@ test("preset matrix page is in sync with preset registry", async () => {
         "<!-- begin generated preset matrix -->",
         "<!-- end generated preset matrix -->"
     );
-    const generatedSection = generatePresetMatrixSectionFromPlugin(
-        plugin
-    ).replaceAll("\r\n", "\n");
+    const generatedSection = generatePresetMatrixSectionFromPlugin(plugin, {
+        getRuleCatalogEntry: (ruleName) =>
+            getRuleCatalogEntry(
+                ruleName as (typeof fileProgressRuleCatalog)[number]["name"]
+            ),
+        presetCatalog: fileProgressPresetCatalog,
+    }).replaceAll("\r\n", "\n");
 
     expect(currentSection).toBe(generatedSection);
 });

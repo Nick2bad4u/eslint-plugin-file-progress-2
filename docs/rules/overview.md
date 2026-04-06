@@ -55,6 +55,10 @@ The older `settings.progress` shape still works as a fallback, but it is depreca
 
 ## Notable options
 
+For the full shared option reference, including the deprecated
+`hideDirectoryNames` alias and the exact hide/summary interactions, read
+[`activate`](./activate.md).
+
 - `ttyOnly`: suppress output when the selected stream is not interactive.
 - `throttleMs`: limit how frequently the file-progress line repaints.
 - `minFilesBeforeShow`: avoid showing progress for short runs.

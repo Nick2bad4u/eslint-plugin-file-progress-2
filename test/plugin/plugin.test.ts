@@ -5,6 +5,10 @@ import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 import { expect, test } from "vitest";
 
+import {
+    getPresetCatalogEntry,
+    getRuleCatalogEntry,
+} from "../../src/_internal/plugin-catalog.js";
 import plugin from "../../src/index.js";
 
 const tsFiles = ["src/**/*.ts", "test/**/*.ts"];
@@ -77,6 +81,9 @@ test("plugin exports the expanded preset surface", () => {
             showSummaryWhenHidden: expect.any(Boolean),
         },
     ]);
+
+    expect(getRuleCatalogEntry("activate").name).toBe("activate");
+    expect(getPresetCatalogEntry("recommended").name).toBe("recommended");
 });
 
 test("built package entrypoints expose the same plugin contract", async () => {

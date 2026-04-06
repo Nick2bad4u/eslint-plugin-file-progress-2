@@ -1,10 +1,8 @@
-import { expect, test } from "vitest";
-
-// eslint-disable-next-line import-x/no-relative-packages -- Test intentionally exercises the local docs TypeDoc plugin core directly from the workspace.
 import {
     escapeMdxSyntaxInSignatureLine,
     escapeMdxSyntaxInTypeDocMarkdown,
-} from "../../docs/docusaurus/typedoc-plugins/escapeMdxMarkdownCore.mjs";
+} from "@eslint-plugin-file-progress-2/docs/typedoc-plugins/escapeMdxMarkdownCore.mjs";
+import { expect, test } from "vitest";
 
 test("escapeMdxSyntaxInSignatureLine escapes mdx-significant type syntax", () => {
     expect(

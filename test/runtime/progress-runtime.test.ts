@@ -109,6 +109,21 @@ test("normalizeSettings handles invalid values safely", () => {
                 hideDirectoryNames: true,
             },
         },
+        {
+            expected: makeSettings(),
+            input: {
+                minFilesBeforeShow: -1,
+                throttleMs: 12.5,
+            },
+        },
+        {
+            expected: makeSettings(),
+            input: {
+                outputStream: "invalid-stream",
+                prefixMark: "   ",
+                successMessage: 42,
+            },
+        },
     ];
 
     for (const { expected, input } of cases) {
@@ -133,6 +148,23 @@ test("mergeProgressSettings lets rule options override deprecated settings", () 
     expect(internals.normalizeSettings(mergedSettings)).toStrictEqual(
         makeSettings({
             outputStream: "stdout",
+        })
+    );
+
+    const mergedWithUndefinedValues = internals.mergeProgressSettings(
+        {
+            successMark: "✅",
+        },
+        {
+            successMark: undefined,
+        }
+    );
+
+    expect(
+        internals.normalizeSettings(mergedWithUndefinedValues)
+    ).toStrictEqual(
+        makeSettings({
+            successMark: "✅",
         })
     );
 });
@@ -325,10 +357,60 @@ test("formatting helpers cover generic file-only and throughput edge cases", () 
         stripAnsi(internals.formatFileProgress("progress.ts", makeSettings()))
     ).toMatch(/linting\s+progress\.ts$/v);
 
+    expect(
+        normalizePathSeparators(internals.toRelativeFilePath("/repo", "/repo"))
+    ).toBe("repo");
+
+    expect(
+        stripAnsi(
+            internals.formatFileProgress(
+                "/",
+                makeSettings({
+                    hidePrefix: true,
+                })
+            )
+        )
+    ).toBe("/");
+
+    expect(
+        stripAnsi(
+            internals.formatFileProgress(
+                "README",
+                makeSettings({
+                    hidePrefix: true,
+                })
+            )
+        )
+    ).toBe("README");
+
+    expect(
+        stripAnsi(
+            internals.formatFileProgress(
+                String.raw`src\rules\progress.ts`,
+                makeSettings({
+                    hidePrefix: true,
+                })
+            )
+        )
+    ).toMatch(/\\/v);
+
     expect(internals.formatDuration(12)).toBe("12ms");
     expect(internals.formatDuration(1200)).toBe("1.20s");
     expect(internals.formatThroughput(100, 0)).toBe("0.00 files/s");
     expect(internals.formatThroughput(0, 2)).toBe("2.00 files/s");
+
+    expect(
+        stripAnsi(
+            internals.formatFailureMessage(
+                makeSettings({
+                    hidePrefix: true,
+                }),
+                makeStats({
+                    exitCode: 1,
+                })
+            )
+        )
+    ).toMatch(/^✖ Lint failed\.$/v);
 });
 
 test("controller delays live output until minFilesBeforeShow", () => {
@@ -445,6 +527,30 @@ test("controller shows the final summary when live output is hidden", () => {
     ).toBeTruthy();
 });
 
+test("controller skips the final summary when output stays hidden", () => {
+    const { created, spinnerFactory } = createMockSpinnerFactory();
+    const controller = internals.createProgressController({
+        process: createMockProcess(),
+        spinnerFactory,
+    });
+    const spinnerRecord = getLatestSpinnerRecord(created);
+
+    controller.handleLintFile({
+        context: makeContext({
+            hide: true,
+        }),
+        liveMode: "file",
+    });
+    controller.handleExit(0);
+
+    expect(
+        spinnerRecord.events.some((event) => event.method === "success")
+    ).toBeFalsy();
+    expect(
+        spinnerRecord.events.some((event) => event.method === "error")
+    ).toBeFalsy();
+});
+
 test("controller summary-only mode suppresses live output but still reports success", () => {
     const { created, spinnerFactory } = createMockSpinnerFactory();
     const controller = internals.createProgressController({
@@ -486,6 +592,94 @@ test("controller emits an error summary for non-zero exit codes", () => {
     ).toBeTruthy();
 });
 
+test("controller honors hidePrefix in success and failure summaries", () => {
+    const successFactory = createMockSpinnerFactory();
+    const successController = internals.createProgressController({
+        process: createMockProcess(),
+        spinnerFactory: successFactory.spinnerFactory,
+    });
+    const successSpinnerRecord = getLatestSpinnerRecord(successFactory.created);
+
+    successController.handleLintFile({
+        context: makeContext({
+            hidePrefix: true,
+        }),
+        liveMode: "file",
+    });
+    successController.handleExit(0);
+
+    const successEvent = successSpinnerRecord.events.find(
+        (event) => event.method === "success"
+    );
+
+    expect(successEvent).toBeDefined();
+    expect(successEvent?.payload).toMatchObject({
+        mark: "",
+    });
+
+    const errorFactory = createMockSpinnerFactory();
+    const errorController = internals.createProgressController({
+        process: createMockProcess(),
+        spinnerFactory: errorFactory.spinnerFactory,
+    });
+    const errorSpinnerRecord = getLatestSpinnerRecord(errorFactory.created);
+
+    errorController.handleLintFile({
+        context: makeContext({
+            hidePrefix: true,
+        }),
+        liveMode: "file",
+    });
+    errorController.handleExit(2);
+
+    const errorEvent = errorSpinnerRecord.events.find(
+        (event) => event.method === "error"
+    );
+
+    expect(errorEvent).toBeDefined();
+    expect(errorEvent?.payload).toMatchObject({
+        mark: "",
+    });
+});
+
+test("controller handles zero-start timestamps and ignores non-number exit events", () => {
+    const mockProcess = createMockProcess();
+    const { created, spinnerFactory } = createMockSpinnerFactory();
+    const controller = internals.createProgressController({
+        now: () => 0,
+        process: mockProcess,
+        spinnerFactory,
+    });
+    const spinnerRecord = getLatestSpinnerRecord(created);
+
+    controller.handleLintFile({
+        context: makeContext(
+            {
+                detailedSuccess: true,
+            },
+            undefined,
+            "src/runtime-zero-time.ts"
+        ),
+        liveMode: "file",
+    });
+    mockProcess.emitExit(undefined as unknown as number);
+
+    expect(
+        spinnerRecord.events.some((event) => event.method === "success")
+    ).toBeFalsy();
+
+    controller.handleExit(0);
+
+    const successEvent = spinnerRecord.events.find(
+        (event) => event.method === "success"
+    );
+
+    expect(successEvent).toBeDefined();
+    expect(successEvent?.payload).toMatchObject({
+        text: expect.stringContaining("0ms"),
+    });
+});
+
 test("controller ignores exit when no files were linted", () => {
     const { created, spinnerFactory } = createMockSpinnerFactory();
     const controller = internals.createProgressController({
@@ -518,6 +712,21 @@ test("controller reset restores a clean state", () => {
     ).toBeTruthy();
     expect(controller.getState().lintedFileCount).toBe(0);
     expect(controller.getState().initialLiveReportDone).toBeFalsy();
+});
+
+test("controller reset does not stop a spinner that never started", () => {
+    const { created, spinnerFactory } = createMockSpinnerFactory();
+    const controller = internals.createProgressController({
+        process: createMockProcess(),
+        spinnerFactory,
+    });
+    const spinnerRecord = getLatestSpinnerRecord(created);
+
+    controller.reset();
+
+    expect(
+        spinnerRecord.events.some((event) => event.method === "stop")
+    ).toBeFalsy();
 });
 
 test("controller reuses the spinner when style and stream do not change", () => {

@@ -49,23 +49,15 @@ const terminalColumnPadding = 1;
 const terminalRowPadding = 0;
 const isCheckMode = process.argv.includes("--check");
 
+/* eslint-disable no-unsanitized/method -- Controlled repository-local build output; no user input reaches import(). */
 const { fileProgressPresetCatalog, getPresetCatalogEntry } = await import(
-    // eslint-disable-line no-unsanitized/method -- Controlled repository-local build output; no user input reaches import().
     builtCatalogModuleUrl.href
 );
 const { formatFileProgress, formatGenericProgress, formatSuccessMessage } =
-    await import(
-        // eslint-disable-line no-unsanitized/method -- Controlled repository-local build output; no user input reaches import().
-        builtFormattingModuleUrl.href
-    );
-const { normalizeSettings } = await import(
-    // eslint-disable-line no-unsanitized/method -- Controlled repository-local build output; no user input reaches import().
-    builtOptionsModuleUrl.href
-);
-const { default: builtPlugin } = await import(
-    // eslint-disable-line no-unsanitized/method -- Controlled repository-local build output; no user input reaches import().
-    builtPluginModuleUrl.href
-);
+    await import(builtFormattingModuleUrl.href);
+const { normalizeSettings } = await import(builtOptionsModuleUrl.href);
+const { default: builtPlugin } = await import(builtPluginModuleUrl.href);
+/* eslint-enable no-unsanitized/method -- Re-enable after the controlled dynamic imports. */
 
 /** @typedef {Readonly<{ time: number; type: "o"; data: string }>} CastEvent */
 
