@@ -34,7 +34,6 @@ on:
         types:
             - checks_requested
 
-# eslint-disable-next-line github-actions/no-top-level-permissions -- dependency-review-action requires top-level contents: read.
 permissions:
     contents: read
 

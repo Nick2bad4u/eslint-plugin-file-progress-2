@@ -12,6 +12,18 @@ import pc from "picocolors";
  */
 
 /**
+ * @typedef {import("eslint").Linter.RuleEntry} RuleEntry
+ */
+
+/**
+ * @typedef {Readonly<{
+ *     fileGlob?: string;
+ *     parser?: typeof tsParser;
+ *     ruleOptions?: Readonly<Record<string, unknown>>;
+ * }>} RuleConfigOptions
+ */
+
+/**
  * @typedef {Readonly<{
  *     code: string;
  *     filePath: string;
@@ -119,31 +131,34 @@ const normalizeConfigArray = (config, configName) => {
         throw new Error(`Missing plugin config: ${configName}`);
     }
 
-    return Array.isArray(config) ? config : [config];
+    if (Array.isArray(config)) {
+        return config;
+    }
+
+    return [/** @type {FlatConfig} */ (config)];
 };
 
 /**
  * @param {"activate" | "compact" | "summary-only"} ruleName
- * @param {Readonly<{
- *     fileGlob: string;
- *     parser?: typeof tsParser;
- *     ruleOptions?: Readonly<Record<string, unknown>>;
- * }>} [options]
+ * @param {RuleConfigOptions} [options]
  *
  * @returns {readonly FlatConfig[]}
  */
 const createRuleConfig = (ruleName, options = {}) => {
     const fileGlob = options.fileGlob ?? "**/*.{js,ts}";
-    const ruleEntry =
+    const ruleEntry = /** @type {RuleEntry} */ (
         options.ruleOptions === undefined
             ? "warn"
-            : ["warn", options.ruleOptions];
+            : ["warn", options.ruleOptions]
+    );
 
     return [
-        {
+        /** @type {FlatConfig} */ ({
             files: [fileGlob],
             languageOptions: {
-                ...(options.parser === undefined ? {} : { parser: options.parser }),
+                ...(options.parser === undefined
+                    ? {}
+                    : { parser: options.parser }),
                 ecmaVersion: "latest",
                 sourceType: "module",
             },
@@ -154,7 +169,7 @@ const createRuleConfig = (ruleName, options = {}) => {
             rules: {
                 [`file-progress/${ruleName}`]: ruleEntry,
             },
-        },
+        }),
     ];
 };
 
@@ -171,7 +186,9 @@ const runScenario = async ({ code, filePath, name, overrideConfig }) => {
 
     const lintResults = await eslint.lintText(code, { filePath });
     const allMessages = lintResults.flatMap((result) => result.messages);
-    const fatalMessages = allMessages.filter((message) => message.fatal === true);
+    const fatalMessages = allMessages.filter(
+        (message) => message.fatal === true
+    );
 
     if (fatalMessages.length > 0) {
         throw new Error(
@@ -181,8 +198,9 @@ const runScenario = async ({ code, filePath, name, overrideConfig }) => {
 
     if (allMessages.length > 0) {
         const formattedMessages = allMessages
-            .map((message) =>
-                `${message.ruleId ?? "<no-rule>"}: ${message.message}`
+            .map(
+                (message) =>
+                    `${message.ruleId ?? "<no-rule>"}: ${message.message}`
             )
             .join("; ");
 

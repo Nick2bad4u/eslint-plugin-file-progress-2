@@ -23,7 +23,6 @@ const maxWorkerCount =
 /** Raw flag controlling optional hanging-process reporter activation. */
 const rawHangingReporterFlag =
     process.env["FILE_PROGRESS_VITEST_HANGING_PROCESS_REPORTER"] ??
-    process.env["TYPEFEST_VITEST_HANGING_PROCESS_REPORTER"] ??
     process.env["VITEST_HANGING_PROCESS_REPORTER"] ??
     "false";
 /** Raw flag controlling optional Vitest typecheck execution. */
