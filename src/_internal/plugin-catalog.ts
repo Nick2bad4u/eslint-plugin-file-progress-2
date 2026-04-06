@@ -27,7 +27,7 @@ export const fileProgressRuleCatalogByName: Readonly<
         docsUrl: `${docsBaseUrl}/activate`,
         name: "activate",
         navbarLabel: "• file-progress/activate",
-        sidebarLabel: "01 file-progress/activate",
+        sidebarLabel: "• file-progress/activate",
     },
     compact: {
         docsId: "compact",
@@ -35,7 +35,7 @@ export const fileProgressRuleCatalogByName: Readonly<
         docsUrl: `${docsBaseUrl}/compact`,
         name: "compact",
         navbarLabel: "• file-progress/compact",
-        sidebarLabel: "02 file-progress/compact",
+        sidebarLabel: "• file-progress/compact",
     },
     "summary-only": {
         docsId: "summary-only",
@@ -43,7 +43,7 @@ export const fileProgressRuleCatalogByName: Readonly<
         docsUrl: `${docsBaseUrl}/summary-only`,
         name: "summary-only",
         navbarLabel: "• file-progress/summary-only",
-        sidebarLabel: "03 file-progress/summary-only",
+        sidebarLabel: "• file-progress/summary-only",
     },
 };
 

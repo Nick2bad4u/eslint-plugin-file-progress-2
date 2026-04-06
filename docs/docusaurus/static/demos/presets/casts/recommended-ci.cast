@@ -1,0 +1,3 @@
+{"env":{"SHELL":"demo","TERM":"xterm-256color"},"timestamp":1744070400,"version":2,"width":56,"height":4}
+[0,"o","demo> CI=true npx eslint src --config eslint.config.mjs\r\n"]
+[0.8300000000000001,"o","\r\ndemo> "]

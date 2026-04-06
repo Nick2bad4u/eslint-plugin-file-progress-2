@@ -40,21 +40,21 @@ export default [
 
 ## Preset choices
 
-- `recommended`: full per-file progress
-- `recommended-ci`: hides progress when `CI === "true"`
-- `recommended-detailed`: enables the detailed summary
-- `recommended-compact`: uses the compact live mode
-- `recommended-summary-only`: prints only the final summary
-- `recommended-tty`: enables `ttyOnly: true`
-- `recommended-ci-detailed`: keeps CI output quiet but still prints the detailed summary there
+- [🟡 `recommended`](./presets/recommended.md): full per-file progress
+- [🟠 `recommended-ci`](./presets/recommended-ci.md): hides progress when `CI === "true"`
+- [🔵 `recommended-detailed`](./presets/recommended-detailed.md): enables the detailed summary
+- [🟣 `recommended-compact`](./presets/recommended-compact.md): uses the compact live mode
+- [⚪ `recommended-summary-only`](./presets/recommended-summary-only.md): prints only the final summary
+- [🟢 `recommended-tty`](./presets/recommended-tty.md): enables `ttyOnly: true`
+- [🟤 `recommended-ci-detailed`](./presets/recommended-ci-detailed.md): keeps CI output quiet but still prints the detailed summary there
 
 ## Rule choices
 
 If you are not using one of the built-in presets, choose the rule that matches the output mode you want:
 
-- `file-progress/activate`: full per-file progress updates
-- `file-progress/compact`: generic live progress without file names
-- `file-progress/summary-only`: final summary only
+- [`file-progress/activate`](./activate.md): full per-file progress updates
+- [`file-progress/compact`](./compact.md): generic live progress without file names
+- [`file-progress/summary-only`](./summary-only.md): final summary only
 
 ## Deprecated settings fallback
 

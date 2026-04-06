@@ -4,7 +4,7 @@ Display live lint progress in the CLI without printing per-file names.
 
 ## Targeted pattern scope
 
-This rule targets the same CLI progress workflow as `activate`, but it uses a lower-noise live mode.
+This rule targets the same CLI progress workflow as [`activate`](./activate.md), but it uses a lower-noise live mode.
 
 It keeps the spinner and final summary while suppressing per-file path repainting.
 
