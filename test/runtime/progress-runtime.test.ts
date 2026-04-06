@@ -333,6 +333,11 @@ test("toRelativeFilePath handles absolute paths and edge branches", () => {
     expect(
         normalizePathSeparators(internals.toRelativeFilePath("C:/repo", ""))
     ).toMatch(/repo$/v);
+    expect(
+        normalizePathSeparators(
+            internals.toRelativeFilePath("C:/repo", "C:/repo")
+        )
+    ).toBe("repo");
     expect(internals.toRelativeFilePath("src/relative.ts", "/repo")).toBe(
         "src/relative.ts"
     );

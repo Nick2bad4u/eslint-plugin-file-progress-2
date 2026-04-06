@@ -26,7 +26,8 @@ export const toRelativeFilePath = (filename: string, cwd: string): string => {
         return filename || "<input>";
     }
 
-    const isWindowsAbsolutePath = path.win32.isAbsolute(filename);
+    const isWindowsAbsolutePath =
+        /^[A-Za-z]:[/\\]/u.test(filename) || filename.startsWith("\\");
     const isNativeAbsolutePath = path.isAbsolute(filename);
 
     if (!isNativeAbsolutePath && !isWindowsAbsolutePath) {
