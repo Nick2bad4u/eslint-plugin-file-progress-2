@@ -8,22 +8,19 @@ import { ESLint } from "eslint";
 import pc from "picocolors";
 
 /**
- * @typedef {Readonly<{
- *     expectedMaximumMessages?: number;
- *     expectedMinimumMessages: number;
- *     expectedOutputIncludes?: readonly string[];
- *     fix: boolean;
- *     fixturePath: string;
- *     name: string;
- *     ruleId: string;
- *     typed: boolean;
- * }>} Scenario
+ * @typedef {import("eslint").Linter.Config} FlatConfig
  */
 
 /**
- * @typedef {Record<string, unknown>} UnknownRecord
+ * @typedef {Readonly<{
+ *     code: string;
+ *     filePath: string;
+ *     name: string;
+ *     overrideConfig: readonly FlatConfig[];
+ * }>} Scenario
  */
 
+const expectedEslintMajorArgumentPrefix = "--expect-eslint-major=";
 const scriptsDirectoryPath = fileURLToPath(new URL(".", import.meta.url));
 const repositoryRootPath = path.resolve(scriptsDirectoryPath, "..");
 const builtPluginPath = path.resolve(repositoryRootPath, "dist/index.js");
@@ -36,45 +33,6 @@ if (!existsSync(builtPluginPath)) {
 
 // eslint-disable-next-line no-unsanitized/method -- Controlled repository-local file URL; no user input reaches import().
 const { default: plugin } = await import(pathToFileURL(builtPluginPath).href);
-
-const typedFixturePath = path.resolve(
-    repositoryRootPath,
-    "test/fixtures/typed/prefer-ts-extras-safe-cast-to.invalid.ts"
-);
-const arrayableFixturePath = path.resolve(
-    repositoryRootPath,
-    "test/fixtures/typed/prefer-type-fest-arrayable.invalid.ts"
-);
-
-const expectedEslintMajorArgumentPrefix = "--expect-eslint-major=";
-
-/**
- * @param {string} filePath
- *
- * @returns {string}
- */
-const toPosixPath = (filePath) => filePath.replaceAll("\\", "/");
-
-/**
- * @param {unknown} value
- *
- * @returns {readonly string[]}
- */
-const collectStringEntries = (value) => {
-    if (!Array.isArray(value)) {
-        return [];
-    }
-
-    return value.filter((entry) => typeof entry === "string");
-};
-
-/**
- * @param {unknown} value
- *
- * @returns {value is UnknownRecord}
- */
-const isUnknownRecord = (value) =>
-    typeof value === "object" && value !== null && !Array.isArray(value);
 
 /**
  * @param {readonly string[]} argv
@@ -146,92 +104,55 @@ const assertEslintMajor = (expectedMajor) => {
     }
 
     console.log(
-        `${pc.green("✓")}` +
-            ` ESLint runtime ${pc.bold(runtimeVersion)} detected for compatibility smoke checks.`
+        `${pc.green("✓")} ESLint runtime ${pc.bold(runtimeVersion)} detected for compatibility smoke checks.`
     );
 };
 
 /**
- * @param {string} fixturePath
- */
-const assertFixtureExists = (fixturePath) => {
-    if (!existsSync(fixturePath)) {
-        throw new Error(`Missing fixture file: ${fixturePath}`);
-    }
-};
-
-/**
- * @param {string} ruleId
- * @param {boolean} typed
- * @param {string} fixturePath
+ * @param {FlatConfig | readonly FlatConfig[] | undefined} config
+ * @param {string} configName
  *
- * @returns {import("eslint").Linter.Config[]}
+ * @returns {readonly FlatConfig[]}
  */
-const createCompatibilityConfig = (ruleId, typed, fixturePath) => {
-    const recommendedConfig = plugin.configs?.["recommended"];
-    if (!isUnknownRecord(recommendedConfig)) {
-        throw new Error(
-            "Plugin recommended config is unavailable. Compatibility smoke test cannot continue."
-        );
+const normalizeConfigArray = (config, configName) => {
+    if (config === undefined) {
+        throw new Error(`Missing plugin config: ${configName}`);
     }
 
-    const baseLanguageOptions = isUnknownRecord(
-        recommendedConfig["languageOptions"]
-    )
-        ? recommendedConfig["languageOptions"]
-        : {};
+    return Array.isArray(config) ? config : [config];
+};
 
-    const baseParserOptions = isUnknownRecord(
-        baseLanguageOptions["parserOptions"]
-    )
-        ? baseLanguageOptions["parserOptions"]
-        : {};
-    const baseProjectServiceOptions = isUnknownRecord(
-        baseParserOptions["projectService"]
-    )
-        ? baseParserOptions["projectService"]
-        : {};
-    const relativeFixturePath = toPosixPath(
-        path.relative(repositoryRootPath, fixturePath)
-    );
-    const existingAllowDefaultProject = collectStringEntries(
-        baseProjectServiceOptions["allowDefaultProject"]
-    );
+/**
+ * @param {"activate" | "compact" | "summary-only"} ruleName
+ * @param {Readonly<{
+ *     fileGlob: string;
+ *     parser?: typeof tsParser;
+ *     ruleOptions?: Readonly<Record<string, unknown>>;
+ * }>} [options]
+ *
+ * @returns {readonly FlatConfig[]}
+ */
+const createRuleConfig = (ruleName, options = {}) => {
+    const fileGlob = options.fileGlob ?? "**/*.{js,ts}";
+    const ruleEntry =
+        options.ruleOptions === undefined
+            ? "warn"
+            : ["warn", options.ruleOptions];
 
     return [
         {
-            ...recommendedConfig,
-            files: ["**/*.{ts,tsx,mts,cts}"],
+            files: [fileGlob],
             languageOptions: {
-                ...baseLanguageOptions,
-                parser: tsParser,
-                parserOptions: {
-                    ...baseParserOptions,
-                    ecmaVersion: "latest",
-                    sourceType: "module",
-                    tsconfigRootDir: repositoryRootPath,
-                    ...(typed
-                        ? {
-                              projectService: {
-                                  ...baseProjectServiceOptions,
-                                  allowDefaultProject: [
-                                      ...new Set([
-                                          ...existingAllowDefaultProject,
-                                          relativeFixturePath,
-                                      ]),
-                                  ],
-                                  defaultProject: "tsconfig.eslint.json",
-                              },
-                          }
-                        : {}),
-                },
+                ...(options.parser === undefined ? {} : { parser: options.parser }),
+                ecmaVersion: "latest",
+                sourceType: "module",
             },
-            name: `compat-smoke:${ruleId}`,
+            name: `compat-smoke:file-progress/${ruleName}`,
             plugins: {
-                typefest: plugin,
+                "file-progress": plugin,
             },
             rules: {
-                [ruleId]: "error",
+                [`file-progress/${ruleName}`]: ruleEntry,
             },
         },
     ];
@@ -240,29 +161,17 @@ const createCompatibilityConfig = (ruleId, typed, fixturePath) => {
 /**
  * @param {Scenario} scenario
  */
-const runScenario = async ({
-    expectedMaximumMessages,
-    expectedMinimumMessages,
-    expectedOutputIncludes,
-    fix,
-    fixturePath,
-    name,
-    ruleId,
-    typed,
-}) => {
+const runScenario = async ({ code, filePath, name, overrideConfig }) => {
     const eslint = new ESLint({
         cwd: repositoryRootPath,
-        fix,
         ignore: false,
-        overrideConfig: createCompatibilityConfig(ruleId, typed, fixturePath),
+        overrideConfig: [...overrideConfig],
         overrideConfigFile: true,
     });
 
-    const lintResults = await eslint.lintFiles([fixturePath]);
-
-    const fatalMessages = lintResults.flatMap((result) =>
-        result.messages.filter((message) => message.fatal === true)
-    );
+    const lintResults = await eslint.lintText(code, { filePath });
+    const allMessages = lintResults.flatMap((result) => result.messages);
+    const fatalMessages = allMessages.filter((message) => message.fatal === true);
 
     if (fatalMessages.length > 0) {
         throw new Error(
@@ -270,86 +179,69 @@ const runScenario = async ({
         );
     }
 
-    const matchingMessages = lintResults.flatMap((result) =>
-        result.messages.filter((message) => message.ruleId === ruleId)
-    );
+    if (allMessages.length > 0) {
+        const formattedMessages = allMessages
+            .map((message) =>
+                `${message.ruleId ?? "<no-rule>"}: ${message.message}`
+            )
+            .join("; ");
 
-    if (matchingMessages.length < expectedMinimumMessages) {
         throw new Error(
-            `${name}: expected at least ${expectedMinimumMessages} ${ruleId} message(s), received ${matchingMessages.length}.`
+            `${name}: expected zero lint messages, received ${allMessages.length}. ${formattedMessages}`
         );
-    }
-
-    if (
-        expectedMaximumMessages !== undefined &&
-        matchingMessages.length > expectedMaximumMessages
-    ) {
-        throw new Error(
-            `${name}: expected at most ${expectedMaximumMessages} ${ruleId} message(s), received ${matchingMessages.length}.`
-        );
-    }
-
-    if (fix) {
-        const fixedOutputs = lintResults
-            .map((result) => result.output)
-            .filter((output) => typeof output === "string");
-
-        if (fixedOutputs.length === 0) {
-            throw new Error(
-                `${name}: expected at least one fixed output when fix=true.`
-            );
-        }
-
-        const combinedOutput = fixedOutputs.join("\n");
-        for (const expectedOutputSnippet of expectedOutputIncludes ?? []) {
-            if (!combinedOutput.includes(expectedOutputSnippet)) {
-                throw new Error(
-                    `${name}: expected fixed output to include \"${expectedOutputSnippet}\".`
-                );
-            }
-        }
     }
 
     console.log(
-        `${pc.green("✓")}` +
-            ` ${pc.bold(name)} ${pc.gray("->")} ${pc.bold(ruleId)} (${typed ? "typed" : "non-typed"}, fix=${fix}) produced ${pc.magenta(
-                String(matchingMessages.length)
-            )} message(s).`
+        `${pc.green("✓")} ${pc.bold(name)} ${pc.gray("->")} completed with zero lint messages.`
     );
 };
 
 const scenarios = /** @type {const} */ ([
     {
-        expectedMinimumMessages: 1,
-        fix: false,
-        fixturePath: typedFixturePath,
-        name: "typed-detection",
-        ruleId: "typefest/prefer-ts-extras-safe-cast-to",
-        typed: true,
+        code: 'const foo = "bar";\n',
+        filePath: path.resolve(
+            repositoryRootPath,
+            "src/eslint9-compat/recommended.js"
+        ),
+        name: "recommended-preset-js",
+        overrideConfig: normalizeConfigArray(
+            plugin.configs?.["recommended"],
+            "recommended"
+        ),
     },
     {
-        expectedMaximumMessages: 0,
-        expectedMinimumMessages: 0,
-        expectedOutputIncludes: ["safeCastTo<"],
-        fix: true,
-        fixturePath: typedFixturePath,
-        name: "typed-autofix",
-        ruleId: "typefest/prefer-ts-extras-safe-cast-to",
-        typed: true,
+        code: 'const foo = "bar";\n',
+        filePath: path.resolve(
+            repositoryRootPath,
+            "src/eslint9-compat/compact.ts"
+        ),
+        name: "compact-rule-ts",
+        overrideConfig: createRuleConfig("compact", {
+            fileGlob: "**/*.ts",
+            parser: tsParser,
+            ruleOptions: {
+                hide: true,
+                minFilesBeforeShow: 3,
+                outputStream: "stdout",
+                throttleMs: 50,
+            },
+        }),
     },
     {
-        expectedMinimumMessages: 1,
-        fix: false,
-        fixturePath: arrayableFixturePath,
-        name: "non-typed-detection",
-        ruleId: "typefest/prefer-type-fest-arrayable",
-        typed: false,
+        code: 'const foo = "bar";\n',
+        filePath: path.resolve(
+            repositoryRootPath,
+            "src/eslint9-compat/summary-only.js"
+        ),
+        name: "summary-only-rule-js",
+        overrideConfig: createRuleConfig("summary-only", {
+            fileGlob: "**/*.js",
+            ruleOptions: {
+                hide: true,
+            },
+        }),
     },
 ]);
-
-for (const scenario of scenarios) {
-    assertFixtureExists(scenario.fixturePath);
-}
 
 console.log(pc.bold(pc.cyan("Running ESLint 9 compatibility smoke checks...")));
 
