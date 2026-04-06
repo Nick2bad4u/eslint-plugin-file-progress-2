@@ -375,6 +375,7 @@ export const foundationConfigs = [
             "docs/docusaurus/.docusaurus/**",
             "docs/docusaurus/build/**",
             "docs/docusaurus/static/eslint-inspector/**",
+            "docs/docusaurus/typedoc-plugins/*.d.mts",
         ],
         languageOptions: {
             parser: tseslintParser,
@@ -390,7 +391,6 @@ export const foundationConfigs = [
                         "docs/docusaurus/site-contract.config.mjs",
                         "docs/docusaurus/typedoc.local.config.mjs",
                         "docs/docusaurus/typedoc-plugins/*.mjs",
-                        "docs/docusaurus/typedoc-plugins/*.mts",
                     ],
                 },
                 sourceType: "module",
