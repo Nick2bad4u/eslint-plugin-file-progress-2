@@ -12,7 +12,7 @@ import {
     eslintReactPlugin,
     etcMisc,
     fileProgressOverridesConfig,
-    fileProgressPlugin,
+    fileProgressRecommendedCiConfig,
     githubActions,
     gitignore,
     globalIgnores,
@@ -131,7 +131,7 @@ export const foundationConfigs = [
         files: ["**/*.{js,jsx,mjs,cjs,ts,tsx,cts,mts}"],
         name: "Import-X TypeScript (code files only)",
     },
-    fileProgressPlugin.configs["recommended-ci"],
+    fileProgressRecommendedCiConfig,
     copilot.configs.all,
     sdl.configs.required,
     {

@@ -2,6 +2,7 @@
 /** @typedef {import("eslint").Linter.Config} EslintConfig */
 /** @typedef {import("eslint").ESLint.Plugin} EslintPlugin */
 /** @typedef {import("eslint").Linter.RulesRecord} EslintRulesRecord */
+/** @typedef {import("../../../src/types.js").FileProgressPlugin} FileProgressPlugin */
 
 /* eslint-disable @eslint-community/eslint-comments/disable-enable-pair -- Intentional file-wide module-boundary exception for shared config re-exports. */
 /* eslint-disable canonical/no-re-export, perfectionist/sort-named-exports, unicorn/prefer-export-from -- This shared module intentionally centralizes re-exported config dependencies for the modular ESLint config. */
@@ -14,6 +15,7 @@ import vitest from "@vitest/eslint-plugin";
 import gitignore from "eslint-config-flat-gitignore";
 import eslintConfigPrettier from "eslint-config-prettier";
 import { createTypeScriptImportResolver } from "eslint-import-resolver-typescript";
+import { existsSync } from "node:fs";
 // @ts-expect-error -- Package does not currently ship TypeScript declarations.
 import arrayFunc from "eslint-plugin-array-func";
 import pluginCanonical from "eslint-plugin-canonical";
@@ -82,8 +84,6 @@ import { fileURLToPath } from "node:url";
 import * as tomlEslintParser from "toml-eslint-parser";
 import * as yamlEslintParser from "yaml-eslint-parser";
 
-import fileProgressPlugin from "../../dist/index.js";
-
 /**
  * @remarks
  * Dogfood the built local plugin during repository lint runs.
@@ -91,6 +91,31 @@ import fileProgressPlugin from "../../dist/index.js";
  * `prelint` runs `npm run build` before ESLint loads this file, so the local
  * build is available at `./dist/index.js`.
  */
+
+const builtFileProgressPluginUrl = new URL(
+    "../../dist/index.js",
+    import.meta.url
+);
+const builtFileProgressPluginPath = fileURLToPath(builtFileProgressPluginUrl);
+
+if (!existsSync(builtFileProgressPluginPath)) {
+    throw new Error(
+        `Missing built local plugin at ${builtFileProgressPluginPath}. Run \"npm run build\" before loading the shared ESLint config.`
+    );
+}
+
+// eslint-disable-next-line no-unsanitized/method -- Controlled repository-local file URL; no user input reaches import().
+const { default: fileProgressPluginModule } = await import(
+    builtFileProgressPluginUrl.href
+);
+
+export const fileProgressPlugin = /** @type {FileProgressPlugin} */ (
+    fileProgressPluginModule
+);
+
+/** @type {EslintConfig} */
+export const fileProgressRecommendedCiConfig =
+    fileProgressPlugin.configs["recommended-ci"];
 
 // NOTE: eslint-plugin-json-schema-validator may attempt to fetch remote schemas
 // at lint time. That makes linting flaky/offline-hostile.
@@ -271,7 +296,6 @@ export {
     eslintPluginToml,
     eslintPluginUnicorn,
     eslintPluginYml,
-    fileProgressPlugin,
     gitignore,
     githubActions,
     globals,
