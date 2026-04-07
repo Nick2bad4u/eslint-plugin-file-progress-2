@@ -16,7 +16,7 @@ Notice that CI-style live output stays hidden, but the final summary still appea
 
 This demo captures a CI-like run. Live output stays hidden, but the final detailed summary is still emitted.
 
-[Recorded with VHS](https://github.com/charmbracelet/vhs#readme)
+[Recorded with Asciinema Recorder and Agg](https://docs.asciinema.org/manual/cli/)
 
 [Download the recorded cast](../../docusaurus/static/demos/presets/casts/recommended-ci-detailed.cast)
 

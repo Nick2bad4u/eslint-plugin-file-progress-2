@@ -14,7 +14,7 @@ export default [progress.configs["recommended-summary-only"]];
 
 Notice that the command is shown up front, but no live progress appears before the single final success line.
 
-[Recorded with VHS](https://github.com/charmbracelet/vhs#readme)
+[Recorded with Asciinema Recorder and Agg](https://docs.asciinema.org/manual/cli/)
 
 [Download the recorded cast](../../docusaurus/static/demos/presets/casts/recommended-summary-only.cast)
 

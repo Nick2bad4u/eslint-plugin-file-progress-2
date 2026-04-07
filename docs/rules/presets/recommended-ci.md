@@ -16,7 +16,7 @@ Notice that the full command is visible immediately, then the run stays quiet be
 
 This demo captures a CI-like run. The preset intentionally suppresses live progress output and the final summary when `CI=true`.
 
-[Recorded with VHS](https://github.com/charmbracelet/vhs#readme)
+[Recorded with Asciinema Recorder and Agg](https://docs.asciinema.org/manual/cli/)
 
 [Download the recorded cast](../../docusaurus/static/demos/presets/casts/recommended-ci.cast)
 

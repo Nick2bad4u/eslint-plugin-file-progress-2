@@ -14,7 +14,7 @@ export default [progress.configs["recommended-detailed"]];
 
 Notice that live file updates stay visible, then the final summary expands into aligned timing and throughput metrics.
 
-[Recorded with VHS](https://github.com/charmbracelet/vhs#readme)
+[Recorded with Asciinema Recorder and Agg](https://docs.asciinema.org/manual/cli/)
 
 [Download the recorded cast](../../docusaurus/static/demos/presets/casts/recommended-detailed.cast)
 

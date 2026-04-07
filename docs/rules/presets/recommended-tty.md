@@ -16,7 +16,7 @@ Notice that the full command is visible immediately, but no plugin output appear
 
 This demo intentionally records a non-interactive capture. Because this preset sets `ttyOnly: true`, the plugin stays quiet when no TTY is available.
 
-[Recorded with VHS](https://github.com/charmbracelet/vhs#readme)
+[Recorded with Asciinema Recorder and Agg](https://docs.asciinema.org/manual/cli/)
 
 [Download the recorded cast](../../docusaurus/static/demos/presets/casts/recommended-tty.cast)
 

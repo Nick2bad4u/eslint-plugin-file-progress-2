@@ -14,7 +14,7 @@ export default [progress.configs.recommended];
 
 Notice how the default preset shows each file path live and then ends with a short success line.
 
-[Recorded with VHS](https://github.com/charmbracelet/vhs#readme)
+[Recorded with Asciinema Recorder and Agg](https://docs.asciinema.org/manual/cli/)
 
 [Download the recorded cast](../../docusaurus/static/demos/presets/casts/recommended.cast)
 

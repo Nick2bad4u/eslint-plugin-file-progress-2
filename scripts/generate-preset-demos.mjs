@@ -1,6 +1,6 @@
 // @ts-check
 
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
@@ -48,6 +48,11 @@ const minimumTerminalRows = 4;
 const terminalColumnPadding = 1;
 const terminalRowPadding = 0;
 const isCheckMode = process.argv.includes("--check");
+const configuredAggBinary = globalThis.process.env["AGG_BIN"]?.trim();
+const aggBinary =
+    typeof configuredAggBinary === "string" && configuredAggBinary.length > 0
+        ? configuredAggBinary
+        : "agg";
 
 /* eslint-disable no-unsanitized/method -- Controlled repository-local build output; no user input reaches import(). */
 const { fileProgressPresetCatalog, getPresetCatalogEntry } = await import(
@@ -60,6 +65,63 @@ const { default: builtPlugin } = await import(builtPluginModuleUrl.href);
 /* eslint-enable no-unsanitized/method -- Re-enable after the controlled dynamic imports. */
 
 /** @typedef {Readonly<{ time: number; type: "o"; data: string }>} CastEvent */
+
+/**
+ * @typedef {Readonly<{ available: true; binary: string }>
+ *     | Readonly<{ available: false; binary: string; reason: string }>} GifRendererAvailability
+ */
+
+/**
+ * @returns {GifRendererAvailability}
+ */
+const resolveGifRendererAvailability = () => {
+    const probeResult = spawnSync(aggBinary, ["--version"], {
+        cwd: repositoryRootPath,
+        stdio: [
+            "ignore",
+            "pipe",
+            "pipe",
+        ],
+    });
+    const probeError = /** @type {NodeJS.ErrnoException | undefined} */ (
+        probeResult.error
+    );
+
+    if (probeError === undefined) {
+        return {
+            available: true,
+            binary: aggBinary,
+        };
+    }
+
+    if (probeError.code === "ENOENT") {
+        return {
+            available: false,
+            binary: aggBinary,
+            reason: `${aggBinary} is not available on PATH`,
+        };
+    }
+
+    throw probeError;
+};
+
+const gifRendererAvailability = resolveGifRendererAvailability();
+let hasLoggedSkippedGifVerification = false;
+
+const logSkippedGifVerification = () => {
+    if (gifRendererAvailability.available) {
+        return;
+    }
+
+    if (hasLoggedSkippedGifVerification) {
+        return;
+    }
+
+    hasLoggedSkippedGifVerification = true;
+    process.stderr.write(
+        `[generate-preset-demos] ${gifRendererAvailability.reason}. Skipping GIF binary verification in --check mode and validating cast files plus checked-in GIF presence only.\n`
+    );
+};
 
 /**
  * @param {string} data
@@ -356,9 +418,15 @@ const renderGif = async (
     rows,
     presetName
 ) => {
+    if (!gifRendererAvailability.available) {
+        throw new Error(
+            `Unable to render preset demo GIFs because ${gifRendererAvailability.reason}. Install agg or set AGG_BIN to the agg executable, then rerun \`npm run docs:demos:presets\`.`
+        );
+    }
+
     await new Promise((resolvePromise, rejectPromise) => {
         const aggProcess = spawn(
-            "agg",
+            gifRendererAvailability.binary,
             [
                 castFilePath,
                 gifFilePath,
@@ -537,6 +605,26 @@ const checkCastAndGif = async (
     );
 
     await writeFile(temporaryCastFilePath, castContent, "utf8");
+
+    const castMatches = await fileContentMatches(castFilePath, castContent);
+
+    if (!gifRendererAvailability.available) {
+        logSkippedGifVerification();
+
+        if (castMatches && existsSync(gifFilePath)) {
+            return;
+        }
+
+        const mismatches = [
+            castMatches ? null : `${presetName}.cast`,
+            existsSync(gifFilePath) ? null : `${presetName}.gif`,
+        ].filter(Boolean);
+
+        throw new Error(
+            `Preset demo assets are out of date for ${presetName}: ${mismatches.join(", ")}. GIF binary verification was skipped because ${gifRendererAvailability.reason}. Run \`npm run docs:demos:presets\` on a machine with agg available and commit the updated assets.`
+        );
+    }
+
     await renderGif(
         temporaryCastFilePath,
         temporaryGifFilePath,
@@ -544,8 +632,6 @@ const checkCastAndGif = async (
         rows,
         presetName
     );
-
-    const castMatches = await fileContentMatches(castFilePath, castContent);
     const gifMatches = await fileContentMatches(
         gifFilePath,
         await readFile(temporaryGifFilePath)

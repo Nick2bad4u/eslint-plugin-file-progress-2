@@ -14,7 +14,7 @@ export default [progress.configs["recommended-compact"]];
 
 Notice that live feedback stays on one generic progress line instead of repainting each file path.
 
-[Recorded with VHS](https://github.com/charmbracelet/vhs#readme)
+[Recorded with Asciinema Recorder and Agg](https://docs.asciinema.org/manual/cli/)
 
 [Download the recorded cast](../../docusaurus/static/demos/presets/casts/recommended-compact.cast)
 
