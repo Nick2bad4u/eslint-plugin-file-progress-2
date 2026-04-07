@@ -4,8 +4,7 @@
 /** @typedef {import("eslint").Linter.RulesRecord} EslintRulesRecord */
 /** @typedef {import("../../../src/types.js").FileProgressPlugin} FileProgressPlugin */
 
-/* eslint-disable @eslint-community/eslint-comments/disable-enable-pair -- Intentional file-wide module-boundary exception for shared config re-exports. */
-/* eslint-disable canonical/no-re-export, perfectionist/sort-named-exports, unicorn/prefer-export-from -- This shared module intentionally centralizes re-exported config dependencies for the modular ESLint config. */
+/* eslint-disable @eslint-community/eslint-comments/disable-enable-pair, no-barrel-files/no-barrel-files -- This shared module intentionally centralizes shared config dependencies and re-exports them from one module boundary. */
 
 import stylistic from "@stylistic/eslint-plugin";
 import tseslint from "@typescript-eslint/eslint-plugin";
@@ -16,13 +15,13 @@ import gitignore from "eslint-config-flat-gitignore";
 import eslintConfigPrettier from "eslint-config-prettier";
 import { createTypeScriptImportResolver } from "eslint-import-resolver-typescript";
 import { existsSync } from "node:fs";
-// @ts-expect-error -- Package does not currently ship TypeScript declarations.
+// @ts-ignore -- Package does not currently ship TypeScript declarations in this environment.
 import arrayFunc from "eslint-plugin-array-func";
 import pluginCanonical from "eslint-plugin-canonical";
 import pluginCasePolice from "eslint-plugin-case-police";
 import eslintPluginCommentLength from "eslint-plugin-comment-length";
 import copilot from "eslint-plugin-copilot";
-// @ts-expect-error -- Package does not currently ship TypeScript declarations.
+// @ts-ignore -- Package does not currently ship TypeScript declarations in this environment.
 import * as pluginCssModules from "eslint-plugin-css-modules";
 import deMorgan from "eslint-plugin-de-morgan";
 import depend from "eslint-plugin-depend";
@@ -34,33 +33,33 @@ import { importX } from "eslint-plugin-import-x";
 import jsdocPlugin from "eslint-plugin-jsdoc";
 import eslintPluginJsonc from "eslint-plugin-jsonc";
 import eslintPluginJsxA11y from "eslint-plugin-jsx-a11y";
-// @ts-expect-error -- Package does not currently ship TypeScript declarations.
+// @ts-ignore -- Package does not currently ship TypeScript declarations in this environment.
 import listeners from "eslint-plugin-listeners";
 import eslintPluginMath from "eslint-plugin-math";
 import moduleInterop from "eslint-plugin-module-interop";
 import nodePlugin from "eslint-plugin-n";
 import nitpick from "eslint-plugin-nitpick";
 import noBarrelFiles from "eslint-plugin-no-barrel-files";
-// @ts-expect-error -- Package does not currently ship TypeScript declarations.
+// @ts-ignore -- Package does not currently ship TypeScript declarations in this environment.
 import * as pluginNFDAR from "eslint-plugin-no-function-declare-after-return";
 import pluginRegexLook from "eslint-plugin-no-lookahead-lookbehind-regexp";
-// @ts-expect-error -- Package does not currently ship TypeScript declarations.
+// @ts-ignore -- Package does not currently ship TypeScript declarations in this environment.
 import pluginNoOnly from "eslint-plugin-no-only-tests";
 import noSecrets from "eslint-plugin-no-secrets";
-// @ts-expect-error -- Package does not currently ship TypeScript declarations.
+// @ts-ignore -- Package does not currently ship TypeScript declarations in this environment.
 import nounsanitized from "eslint-plugin-no-unsanitized";
-// @ts-expect-error -- Package does not currently ship TypeScript declarations.
+// @ts-ignore -- Package does not currently ship TypeScript declarations in this environment.
 import eslintPluginNoUseExtendNative from "eslint-plugin-no-use-extend-native";
 import nodeDependencies from "eslint-plugin-node-dependencies";
 import packageJson from "eslint-plugin-package-json";
 import perfectionist from "eslint-plugin-perfectionist";
 import pluginPrettier from "eslint-plugin-prettier";
-// @ts-expect-error -- Package does not currently ship TypeScript declarations.
+// @ts-ignore -- Package does not currently ship TypeScript declarations in this environment.
 import pluginPromise from "eslint-plugin-promise";
-// @ts-expect-error -- Package does not currently ship TypeScript declarations.
+// @ts-ignore -- Package does not currently ship TypeScript declarations in this environment.
 import pluginRedos from "eslint-plugin-redos";
 import pluginRegexp from "eslint-plugin-regexp";
-// @ts-expect-error -- Package does not currently ship TypeScript declarations.
+// @ts-ignore -- Package does not currently ship TypeScript declarations in this environment.
 import * as pluginJSDoc from "eslint-plugin-require-jsdoc";
 import sdl from "eslint-plugin-sdl-2";
 import pluginSecurity from "eslint-plugin-security";
@@ -70,7 +69,7 @@ import eslintPluginToml from "eslint-plugin-toml";
 import pluginTsdoc from "eslint-plugin-tsdoc";
 import tsdocRequire from "eslint-plugin-tsdoc-require-2";
 import typefest from "eslint-plugin-typefest";
-// @ts-expect-error -- Package does not currently ship TypeScript declarations.
+// @ts-ignore -- Package does not currently ship TypeScript declarations in this environment.
 import pluginUndefinedCss from "eslint-plugin-undefined-css-classes";
 import eslintPluginUnicorn from "eslint-plugin-unicorn";
 import pluginUnusedImports from "eslint-plugin-unused-imports";
@@ -89,11 +88,11 @@ import * as yamlEslintParser from "yaml-eslint-parser";
  * Dogfood the built local plugin during repository lint runs.
  *
  * `prelint` runs `npm run build` before ESLint loads this file, so the local
- * build is available at `./dist/index.js`.
+ * build is available at the repository root `./dist/index.js`.
  */
 
 const builtFileProgressPluginUrl = new URL(
-    "../../dist/index.js",
+    "../../../dist/index.js",
     import.meta.url
 );
 const builtFileProgressPluginPath = fileURLToPath(builtFileProgressPluginUrl);
@@ -167,7 +166,7 @@ export const jsonSchemaValidatorRules = enableJsonSchemaValidation
 
 const require = createRequire(import.meta.url);
 export const repositoryRootPath = fileURLToPath(
-    new URL("../../", import.meta.url)
+    new URL("../../../", import.meta.url)
 );
 const processEnvironment = globalThis.process.env;
 
