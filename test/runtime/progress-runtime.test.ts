@@ -566,6 +566,40 @@ test("controller skips the final summary when output stays hidden", () => {
     ).toBeFalsy();
 });
 
+test("controller stops an active spinner when summary output is suppressed", () => {
+    const { created, spinnerFactory } = createMockSpinnerFactory();
+    const controller = internals.createProgressController({
+        process: createMockProcess(),
+        spinnerFactory,
+    });
+    const spinnerRecord = getLatestSpinnerRecord(created);
+
+    controller.handleLintFile({
+        context: makeContext(undefined, undefined, "src/runtime-visible.ts"),
+        liveMode: "file",
+    });
+
+    controller.handleLintFile({
+        context: makeContext(
+            {
+                hide: true,
+            },
+            undefined,
+            "src/runtime-hidden.ts"
+        ),
+        liveMode: "file",
+    });
+
+    controller.handleExit(0);
+
+    expect(
+        spinnerRecord.events.some((event) => event.method === "stop")
+    ).toBeTruthy();
+    expect(
+        spinnerRecord.events.some((event) => event.method === "success")
+    ).toBeFalsy();
+});
+
 test("controller summary-only mode suppresses live output but still reports success", () => {
     const { created, spinnerFactory } = createMockSpinnerFactory();
     const controller = internals.createProgressController({
@@ -893,6 +927,34 @@ test("controller exit handler can be exercised through the process exit event", 
     expect(
         spinnerRecord.events.some((event) => event.method === "success")
     ).toBeTruthy();
+});
+
+test("controller finalizes on beforeExit and does not double-report on exit", () => {
+    const mockProcess = createMockProcess();
+    const { created, spinnerFactory } = createMockSpinnerFactory();
+    const controller = internals.createProgressController({
+        process: mockProcess,
+        spinnerFactory,
+    });
+    const spinnerRecord = getLatestSpinnerRecord(created);
+
+    controller.handleLintFile({
+        context: makeContext(
+            undefined,
+            undefined,
+            "src/runtime-before-exit.ts"
+        ),
+        liveMode: "file",
+    });
+
+    mockProcess.emitBeforeExit(0);
+    mockProcess.emitExit(0);
+
+    const successEvents = spinnerRecord.events.filter(
+        (event) => event.method === "success"
+    );
+
+    expect(successEvents).toHaveLength(1);
 });
 
 test("controller honors ttyOnly and outputStream when selecting the spinner stream", () => {

@@ -46,6 +46,7 @@ interface ProgressControllerState {
     activeOutputStream: OutputStream;
     activeSpinnerStyle: SpinnerStyle;
     exitHandlerBound: boolean;
+    finalStatusHandled: boolean;
     initialLiveReportDone: boolean;
     lastRenderAt: number;
     lastResolvedSettings: NormalizedProgressSettings;
@@ -235,6 +236,7 @@ export const createProgressController = (
         activeOutputStream: defaultSettings.outputStream,
         activeSpinnerStyle: defaultSettings.spinnerStyle,
         exitHandlerBound: false,
+        finalStatusHandled: false,
         initialLiveReportDone: false,
         lastRenderAt: 0,
         lastResolvedSettings: { ...defaultSettings },
@@ -335,6 +337,10 @@ export const createProgressController = (
     });
 
     const handleExit = (exitCode: number): void => {
+        if (state.finalStatusHandled) {
+            return;
+        }
+
         if (state.lintedFileCount === 0) {
             return;
         }
@@ -344,6 +350,11 @@ export const createProgressController = (
         if (
             !shouldRenderSummary(settings, state.lintedFileCount, processLike)
         ) {
+            if (state.spinner.isSpinning()) {
+                state.spinner.stop({ update: false });
+            }
+
+            state.finalStatusHandled = true;
             return;
         }
 
@@ -356,6 +367,7 @@ export const createProgressController = (
                 mark: settings.hidePrefix ? "" : settings.prefixMark,
                 text: formatSuccessMessage(settings, summaryStats),
             });
+            state.finalStatusHandled = true;
             return;
         }
 
@@ -363,6 +375,7 @@ export const createProgressController = (
             mark: settings.hidePrefix ? "" : settings.prefixMark,
             text: formatFailureMessage(settings, summaryStats),
         });
+        state.finalStatusHandled = true;
     };
 
     const bindExitHandler = (): void => {
@@ -375,6 +388,11 @@ export const createProgressController = (
                 handleExit(exitCode);
             }
         });
+
+        processLike.once("beforeExit", (exitCode) => {
+            handleExit(typeof exitCode === "number" ? exitCode : 0);
+        });
+
         state.exitHandlerBound = true;
     };
 

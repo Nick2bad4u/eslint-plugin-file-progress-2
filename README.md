@@ -32,6 +32,29 @@ import progress from "eslint-plugin-file-progress-2";
 export default [progress.configs.recommended];
 ```
 
+Need the `recommended` baseline with small behavior tweaks (for example
+`fileNameOnNewLine`)? Keep the preset and add a targeted override after it:
+
+```ts
+// eslint.config.mjs
+import progress from "eslint-plugin-file-progress-2";
+
+export default [
+  progress.configs.recommended,
+  {
+    rules: {
+      "file-progress/activate": [
+        "warn",
+        {
+          fileNameOnNewLine: true,
+          throttleMs: 120,
+        },
+      ],
+    },
+  },
+];
+```
+
 ## Configure a rule directly
 
 Modern ESLint usage should configure progress behavior as rule options:
@@ -59,14 +82,11 @@ export default [
 ];
 ```
 
-Useful options include:
+### Rule Options
 
-- `ttyOnly`: show progress only on interactive terminals
-- `throttleMs`: reduce repaint churn on large runs
-- `minFilesBeforeShow`: skip progress output until ESLint has seen the configured number of files
-- `showSummaryWhenHidden`: keep the final summary even when live output is hidden
-- `pathFormat`: choose between `"relative"` and `"basename"`
-- `outputStream`: send progress to `stdout` or `stderr`
+For the full option interface, defaults, and option-by-option behavior
+explanation (including `fileNameOnNewLine`, `throttleMs`, and mode handling),
+see [`file-progress/activate` Rule Options](./docs/rules/activate.md#rule-options).
 
 ## Presets
 

@@ -32,8 +32,20 @@ const demosOutputDirectoryPath = path.resolve(
     "demos",
     "presets"
 );
+const optionDemosOutputDirectoryPath = path.resolve(
+    repositoryRootPath,
+    "docs",
+    "docusaurus",
+    "static",
+    "demos",
+    "options"
+);
 const castsOutputDirectoryPath = path.resolve(
     demosOutputDirectoryPath,
+    "casts"
+);
+const optionCastsOutputDirectoryPath = path.resolve(
+    optionDemosOutputDirectoryPath,
     "casts"
 );
 const quietPreviewPresetNames = new Set([
@@ -43,11 +55,69 @@ const quietPreviewPresetNames = new Set([
     "recommended-tty",
 ]);
 const deterministicCastTimestamp = 1_744_070_400;
-const minimumTerminalColumns = 48;
-const minimumTerminalRows = 4;
-const terminalColumnPadding = 1;
-const terminalRowPadding = 0;
+const fixedTerminalColumns = 96;
+const fixedTerminalRows = 11;
+const spinnerFrameColorStart = "\u001b[36m";
+const spinnerFrameColorEnd = "\u001b[39m";
+const spinnerFramesByStyle = {
+    arc: [
+        "◜",
+        "◠",
+        "◝",
+        "◞",
+        "◡",
+        "◟",
+    ],
+    bounce: [
+        "▖",
+        "▘",
+        "▝",
+        "▗",
+    ],
+    clock: [
+        "🕛",
+        "🕐",
+        "🕑",
+        "🕒",
+        "🕓",
+        "🕔",
+        "🕕",
+        "🕖",
+        "🕗",
+        "🕘",
+        "🕙",
+        "🕚",
+    ],
+    dots: [
+        "⠋",
+        "⠙",
+        "⠹",
+        "⠸",
+        "⠼",
+        "⠴",
+        "⠦",
+        "⠧",
+        "⠇",
+        "⠏",
+    ],
+    line: [
+        "|",
+        "/",
+        "-",
+        "\\",
+    ],
+};
 const isCheckMode = process.argv.includes("--check");
+const demoTargetArgumentPrefix = "--target=";
+const requestedDemoTargetArgument = process.argv
+    .find((argument) => argument.startsWith(demoTargetArgumentPrefix))
+    ?.slice(demoTargetArgumentPrefix.length)
+    .toLowerCase();
+const requestedDemoTarget =
+    requestedDemoTargetArgument === "options" ||
+    requestedDemoTargetArgument === "all"
+        ? requestedDemoTargetArgument
+        : "presets";
 const configuredAggBinary = globalThis.process.env["AGG_BIN"]?.trim();
 const aggBinary =
     typeof configuredAggBinary === "string" && configuredAggBinary.length > 0
@@ -149,29 +219,87 @@ const pushOutputEvent = (castEvents, data, time) => {
 };
 
 /**
- * @param {readonly CastEvent[]} castEvents
+ * @param {import("../src/types.js").SpinnerStyle} spinnerStyle
+ * @param {number} iteration
  *
- * @returns {{ columns: number; rows: number }}
+ * @returns {string}
  */
-const getTerminalDimensions = (castEvents) => {
-    const transcript = stripVTControlCharacters(
-        castEvents.map((castEvent) => castEvent.data).join("")
-    );
-    const normalizedTranscript = transcript.replaceAll("\r\n", "\n");
-    const lines = normalizedTranscript.split("\n");
-    const widestLineLength = lines.reduce(
-        (maximumLength, line) => Math.max(maximumLength, line.length),
-        0
-    );
+const getSpinnerFrame = (spinnerStyle, iteration) => {
+    const frames =
+        spinnerFramesByStyle[spinnerStyle] ?? spinnerFramesByStyle.dots;
+
+    return frames.at(iteration % frames.length) ?? "⠋";
+};
+
+/**
+ * @param {import("../src/types.js").SpinnerStyle} spinnerStyle
+ * @param {number} iteration
+ *
+ * @returns {string}
+ */
+const createSpinnerPrefix = (spinnerStyle, iteration) =>
+    `${spinnerFrameColorStart}${getSpinnerFrame(spinnerStyle, iteration)}${spinnerFrameColorEnd} `;
+
+/**
+ * @param {number} renderedLineCount
+ *
+ * @returns {string}
+ */
+const createSpinnerClearSequence = (renderedLineCount) => {
+    let clearSequence = "\u001b[1G";
+
+    for (let index = 0; index < renderedLineCount; index += 1) {
+        if (index > 0) {
+            clearSequence += "\u001b[1A";
+        }
+
+        clearSequence += "\u001b[2K\u001b[1G";
+    }
+
+    return clearSequence;
+};
+
+/**
+ * @param {string} text
+ *
+ * @returns {number}
+ */
+const getRenderedLineCount = (text) => {
+    const strippedText = stripVTControlCharacters(text);
+
+    return Math.max(1, strippedText.split("\n").length);
+};
+
+/**
+ * @param {string} progressText
+ * @param {import("../src/types.js").SpinnerStyle} spinnerStyle
+ * @param {number} iteration
+ * @param {number} previousRenderedLineCount
+ *
+ * @returns {{ renderedLineCount: number; text: string }}
+ */
+const createLiveUpdateText = (
+    progressText,
+    spinnerStyle,
+    iteration,
+    previousRenderedLineCount
+) => {
+    const spinnerPrefix = createSpinnerPrefix(spinnerStyle, iteration);
+    const renderedText = `${spinnerPrefix}${progressText}`;
 
     return {
-        columns: Math.max(
-            minimumTerminalColumns,
-            widestLineLength + terminalColumnPadding
-        ),
-        rows: Math.max(minimumTerminalRows, lines.length + terminalRowPadding),
+        renderedLineCount: getRenderedLineCount(renderedText),
+        text: `${createSpinnerClearSequence(previousRenderedLineCount)}${renderedText}`,
     };
 };
+
+/**
+ * @returns {{ columns: number; rows: number }}
+ */
+const getTerminalDimensions = () => ({
+    columns: fixedTerminalColumns,
+    rows: fixedTerminalRows,
+});
 
 /**
  * @param {string} presetName
@@ -259,15 +387,9 @@ const createTypedPromptEvents = (presetName, commandText) => {
 };
 
 /**
- * @param {import("../src/types.js").ProgressMode | undefined} mode
- *
  * @returns {readonly string[]}
  */
-const getDemoFilePaths = (mode) => {
-    if (mode === "compact") {
-        return [];
-    }
-
+const getDemoFilePaths = () => {
     return [
         "src/core/file-01.js",
         "src/packages/beta/file-07.js",
@@ -297,6 +419,87 @@ const getDemoCommandText = (presetName) => {
 };
 
 /**
+ * @type {readonly Readonly<{
+ *     name: string;
+ *     settings: Record<string, unknown>;
+ * }>[]}
+ */
+const optionDemoCatalog = [
+    {
+        name: "file-name-on-new-line",
+        settings: {
+            fileNameOnNewLine: true,
+        },
+    },
+    {
+        name: "basename-path-format",
+        settings: {
+            pathFormat: "basename",
+        },
+    },
+    {
+        name: "min-files-before-show",
+        settings: {
+            minFilesBeforeShow: 3,
+        },
+    },
+    {
+        name: "detailed-success",
+        settings: {
+            detailedSuccess: true,
+        },
+    },
+    {
+        name: "spinner-style-line",
+        settings: {
+            spinnerStyle: "line",
+        },
+    },
+    {
+        name: "hide-live-show-summary",
+        settings: {
+            hide: true,
+            showSummaryWhenHidden: true,
+        },
+    },
+];
+
+/**
+ * @param {import("../src/_internal/progress-options.js").NormalizedProgressSettings} settings
+ * @param {number} lintedFileCount
+ *
+ * @returns {boolean}
+ */
+const isOutputHiddenAtFileCount = (settings, lintedFileCount) => {
+    if (settings.hide) {
+        return true;
+    }
+
+    return lintedFileCount < settings.minFilesBeforeShow;
+};
+
+/**
+ * @param {import("../src/_internal/progress-options.js").NormalizedProgressSettings} settings
+ * @param {number} lintedFileCount
+ * @param {import("../src/types.js").ProgressMode} effectiveMode
+ *
+ * @returns {boolean}
+ */
+const shouldRenderLiveOutput = (settings, lintedFileCount, effectiveMode) =>
+    effectiveMode !== "summary-only" &&
+    !isOutputHiddenAtFileCount(settings, lintedFileCount);
+
+/**
+ * @param {import("../src/_internal/progress-options.js").NormalizedProgressSettings} settings
+ * @param {number} lintedFileCount
+ *
+ * @returns {boolean}
+ */
+const shouldRenderSummary = (settings, lintedFileCount) =>
+    !isOutputHiddenAtFileCount(settings, lintedFileCount) ||
+    settings.showSummaryWhenHidden;
+
+/**
  * @param {CastEvent[]} castEvents
  * @param {string} text
  * @param {number} startTime
@@ -320,6 +523,90 @@ const pushMultilineOutput = (castEvents, text, startTime, lineDelay) => {
 };
 
 /**
+ * @param {import("../src/_internal/progress-options.js").NormalizedProgressSettings} settings
+ * @param {{
+ *     quiet?: boolean;
+ *     summaryDurationMs?: number;
+ * }} [options]
+ *
+ * @returns {readonly CastEvent[]}
+ */
+const buildOutputEventsFromSettings = (settings, options = {}) => {
+    const effectiveMode = settings.mode ?? "file";
+    const summaryDurationMs = options.summaryDurationMs ?? 12;
+
+    /** @type {CastEvent[]} */
+    const castEvents = [];
+    let currentTime = 0;
+
+    if (options.quiet) {
+        currentTime += 0.65;
+        pushOutputEvent(castEvents, "\r\ndemo> ", currentTime);
+        return castEvents;
+    }
+
+    const demoFilePaths = getDemoFilePaths();
+    let liveUpdateIteration = 0;
+    let previousLiveRenderedLineCount = 0;
+
+    for (const [index, demoFilePath] of demoFilePaths.entries()) {
+        const lintedFileCount = index + 1;
+
+        if (!shouldRenderLiveOutput(settings, lintedFileCount, effectiveMode)) {
+            continue;
+        }
+
+        currentTime += 0.34;
+
+        const shouldUseGenericLiveMode =
+            effectiveMode === "compact" || settings.hideFileName;
+        const progressText = shouldUseGenericLiveMode
+            ? formatGenericProgress(settings)
+            : formatFileProgress(demoFilePath, settings);
+
+        const liveUpdate = createLiveUpdateText(
+            progressText,
+            settings.spinnerStyle,
+            liveUpdateIteration,
+            previousLiveRenderedLineCount
+        );
+
+        pushOutputEvent(castEvents, liveUpdate.text, currentTime);
+        previousLiveRenderedLineCount = liveUpdate.renderedLineCount;
+        liveUpdateIteration += 1;
+    }
+
+    if (shouldRenderSummary(settings, demoFilePaths.length)) {
+        currentTime += 0.28;
+
+        if (previousLiveRenderedLineCount > 0) {
+            pushOutputEvent(
+                castEvents,
+                createSpinnerClearSequence(previousLiveRenderedLineCount),
+                currentTime
+            );
+        }
+
+        currentTime += 0.01;
+        currentTime = pushMultilineOutput(
+            castEvents,
+            formatSuccessMessage(settings, {
+                durationMs: summaryDurationMs,
+                exitCode: 0,
+                filesLinted: 12,
+            }),
+            currentTime,
+            0.09
+        );
+    }
+
+    currentTime += 0.34;
+    pushOutputEvent(castEvents, "demo> ", currentTime);
+
+    return castEvents;
+};
+
+/**
  * @param {string} presetName
  *
  * @returns {readonly CastEvent[]}
@@ -330,85 +617,27 @@ const buildPresetOutputEvents = (presetName) => {
     const settings = normalizeSettings(
         getPresetOptions(presetName, presetCatalogEntry.ruleName)
     );
-    const effectiveMode = settings.mode ?? "file";
-    /** @type {CastEvent[]} */
-    const castEvents = [];
-    let currentTime = 0;
-
-    if (presetName === "recommended-ci") {
-        currentTime += 0.65;
-        pushOutputEvent(castEvents, "\r\ndemo> ", currentTime);
-        return castEvents;
-    }
-
-    if (presetName === "recommended-tty") {
-        currentTime += 0.65;
-        pushOutputEvent(castEvents, "\r\ndemo> ", currentTime);
-        return castEvents;
-    }
-
-    if (effectiveMode === "summary-only") {
-        currentTime += 0.7;
-        currentTime = pushMultilineOutput(
-            castEvents,
-            formatSuccessMessage(settings, {
-                durationMs: 11,
-                exitCode: 0,
-                filesLinted: 12,
-            }),
-            currentTime,
-            0.09
-        );
-        currentTime += 0.32;
-        pushOutputEvent(castEvents, "demo> ", currentTime);
-        return castEvents;
-    }
-
-    const demoFilePaths = getDemoFilePaths(effectiveMode);
-
-    if (effectiveMode === "compact") {
-        currentTime += 0.3;
-        pushOutputEvent(
-            castEvents,
-            `${formatGenericProgress(settings)}\r\n`,
-            currentTime
-        );
-    } else {
-        for (const demoFilePath of demoFilePaths) {
-            currentTime += 0.34;
-            currentTime = pushMultilineOutput(
-                castEvents,
-                formatFileProgress(demoFilePath, settings),
-                currentTime,
-                0.07
-            );
-        }
-    }
-
-    currentTime += 0.28;
-    currentTime = pushMultilineOutput(
-        castEvents,
-        formatSuccessMessage(settings, {
-            durationMs: presetName === "recommended-detailed" ? 9 : 12,
-            exitCode: 0,
-            filesLinted: 12,
-        }),
-        currentTime,
-        0.09
-    );
-
-    currentTime += 0.34;
-    pushOutputEvent(castEvents, "demo> ", currentTime);
-
-    return castEvents;
+    return buildOutputEventsFromSettings(settings, {
+        quiet: quietPreviewPresetNames.has(presetName),
+        summaryDurationMs: presetName === "recommended-detailed" ? 9 : 12,
+    });
 };
+
+/**
+ * @param {Record<string, unknown>} rawOptionSettings
+ *
+ * @returns {readonly CastEvent[]}
+ */
+const buildOptionOutputEvents = (rawOptionSettings) =>
+    buildOutputEventsFromSettings(normalizeSettings(rawOptionSettings));
 
 /**
  * @param {string} castFilePath
  * @param {string} gifFilePath
  * @param {number} columns
  * @param {number} rows
- * @param {string} presetName
+ * @param {string} demoName
+ * @param {string} regenerateCommand
  *
  * @returns {Promise<void>}
  */
@@ -417,11 +646,12 @@ const renderGif = async (
     gifFilePath,
     columns,
     rows,
-    presetName
+    demoName,
+    regenerateCommand
 ) => {
     if (!gifRendererAvailability.available) {
         throw new Error(
-            `Unable to render preset demo GIFs because ${gifRendererAvailability.reason}. Install agg or set AGG_BIN to the agg executable, then rerun \`npm run docs:demos:presets\`.`
+            `Unable to render demo GIFs because ${gifRendererAvailability.reason}. Install agg or set AGG_BIN to the agg executable, then rerun \`${regenerateCommand}\`.`
         );
     }
 
@@ -470,7 +700,7 @@ const renderGif = async (
 
             rejectPromise(
                 new Error(
-                    `agg failed for ${presetName} with exit code ${String(exitCode)}.${stderrText.length > 0 ? `\n${stderrText}` : ""}`
+                    `agg failed for ${demoName} with exit code ${String(exitCode)}.${stderrText.length > 0 ? `\n${stderrText}` : ""}`
                 )
             );
         });
@@ -478,16 +708,14 @@ const renderGif = async (
 };
 
 /**
- * @param {string} presetName
+ * @param {string} demoName
+ * @param {string} commandText
  * @param {readonly CastEvent[]} outputEvents
  *
  * @returns {{ castContent: string; columns: number; rows: number }}
  */
-const createCastDocument = (presetName, outputEvents) => {
-    const typedPrompt = createTypedPromptEvents(
-        presetName,
-        getDemoCommandText(presetName)
-    );
+const createCastDocument = (demoName, commandText, outputEvents) => {
+    const typedPrompt = createTypedPromptEvents(demoName, commandText);
     const timeOffset = typedPrompt.lastTime + 0.18;
 
     /** @type {readonly CastEvent[]} */
@@ -498,7 +726,7 @@ const createCastDocument = (presetName, outputEvents) => {
             time: outputEvent.time + timeOffset,
         })),
     ];
-    const { columns, rows } = getTerminalDimensions(castEvents);
+    const { columns, rows } = getTerminalDimensions();
 
     const castHeader = {
         env: {
@@ -549,59 +777,84 @@ const fileContentMatches = async (actualFilePath, expectedContent) => {
 };
 
 /**
- * @param {string} presetName
- * @param {readonly CastEvent[]} outputEvents
+ * @param {Readonly<{
+ *     castDirectoryPath: string;
+ *     commandText: string;
+ *     demoDirectoryPath: string;
+ *     demoName: string;
+ *     outputEvents: readonly CastEvent[];
+ *     regenerateCommand: string;
+ * }>} input
  *
  * @returns {Promise<void>}
  */
-const writeCastAndGif = async (presetName, outputEvents) => {
-    const castFilePath = path.resolve(
-        castsOutputDirectoryPath,
-        `${presetName}.cast`
-    );
-    const gifFilePath = path.resolve(
-        demosOutputDirectoryPath,
-        `${presetName}.gif`
-    );
+const writeCastAndGif = async (input) => {
+    const {
+        castDirectoryPath,
+        commandText,
+        demoDirectoryPath,
+        demoName,
+        outputEvents,
+        regenerateCommand,
+    } = input;
+    const castFilePath = path.resolve(castDirectoryPath, `${demoName}.cast`);
+    const gifFilePath = path.resolve(demoDirectoryPath, `${demoName}.gif`);
     const { castContent, columns, rows } = createCastDocument(
-        presetName,
+        demoName,
+        commandText,
         outputEvents
     );
 
     await writeFile(castFilePath, castContent, "utf8");
-    await renderGif(castFilePath, gifFilePath, columns, rows, presetName);
+    await renderGif(
+        castFilePath,
+        gifFilePath,
+        columns,
+        rows,
+        demoName,
+        regenerateCommand
+    );
 };
 
 /**
- * @param {string} presetName
- * @param {readonly CastEvent[]} outputEvents
- * @param {string} temporaryDirectoryPath
+ * @param {Readonly<{
+ *     castDirectoryPath: string;
+ *     commandText: string;
+ *     demoDirectoryPath: string;
+ *     demoKindLabel: string;
+ *     demoName: string;
+ *     outputEvents: readonly CastEvent[];
+ *     regenerateCommand: string;
+ *     temporaryDirectoryPath: string;
+ * }>} input
  *
  * @returns {Promise<void>}
  */
-const checkCastAndGif = async (
-    presetName,
-    outputEvents,
-    temporaryDirectoryPath
-) => {
-    const castFilePath = path.resolve(
-        castsOutputDirectoryPath,
-        `${presetName}.cast`
-    );
-    const gifFilePath = path.resolve(
-        demosOutputDirectoryPath,
-        `${presetName}.gif`
-    );
+const checkCastAndGif = async (input) => {
+    const {
+        castDirectoryPath,
+        commandText,
+        demoDirectoryPath,
+        demoKindLabel,
+        demoName,
+        outputEvents,
+        regenerateCommand,
+        temporaryDirectoryPath,
+    } = input;
+
+    const castFilePath = path.resolve(castDirectoryPath, `${demoName}.cast`);
+    const gifFilePath = path.resolve(demoDirectoryPath, `${demoName}.gif`);
     const temporaryCastFilePath = path.resolve(
         temporaryDirectoryPath,
-        `${presetName}.cast`
+        `${demoKindLabel}-${demoName}.cast`
     );
     const temporaryGifFilePath = path.resolve(
         temporaryDirectoryPath,
-        `${presetName}.gif`
+        `${demoKindLabel}-${demoName}.gif`
     );
     const { castContent, columns, rows } = createCastDocument(
-        presetName,
+        demoName,
+        commandText,
         outputEvents
     );
 
@@ -617,12 +870,12 @@ const checkCastAndGif = async (
         }
 
         const mismatches = [
-            castMatches ? null : `${presetName}.cast`,
-            existsSync(gifFilePath) ? null : `${presetName}.gif`,
+            castMatches ? null : `${demoName}.cast`,
+            existsSync(gifFilePath) ? null : `${demoName}.gif`,
         ].filter(Boolean);
 
         throw new Error(
-            `Preset demo assets are out of date for ${presetName}: ${mismatches.join(", ")}. GIF binary verification was skipped because ${gifRendererAvailability.reason}. Run \`npm run docs:demos:presets\` on a machine with agg available and commit the updated assets.`
+            `${demoKindLabel} demo assets are out of date for ${demoName}: ${mismatches.join(", ")}. GIF binary verification was skipped because ${gifRendererAvailability.reason}. Run \`${regenerateCommand}\` on a machine with agg available and commit the updated assets.`
         );
     }
 
@@ -631,7 +884,8 @@ const checkCastAndGif = async (
         temporaryGifFilePath,
         columns,
         rows,
-        presetName
+        demoName,
+        regenerateCommand
     );
     const gifMatches = await fileContentMatches(
         gifFilePath,
@@ -643,35 +897,93 @@ const checkCastAndGif = async (
     }
 
     const mismatches = [
-        castMatches ? null : `${presetName}.cast`,
-        gifMatches ? null : `${presetName}.gif`,
+        castMatches ? null : `${demoName}.cast`,
+        gifMatches ? null : `${demoName}.gif`,
     ].filter(Boolean);
 
     throw new Error(
-        `Preset demo assets are out of date for ${presetName}: ${mismatches.join(", ")}. Run \`npm run docs:demos:presets\` and commit the updated files.`
+        `${demoKindLabel} demo assets are out of date for ${demoName}: ${mismatches.join(", ")}. Run \`${regenerateCommand}\` and commit the updated files.`
     );
 };
 
+/**
+ * @returns {readonly Readonly<{
+ *     castDirectoryPath: string;
+ *     commandText: string;
+ *     demoDirectoryPath: string;
+ *     demoKindLabel: string;
+ *     demoName: string;
+ *     outputEvents: readonly CastEvent[];
+ *     regenerateCommand: string;
+ * }>[]}
+ */
+const collectDemoWorkItems = () => {
+    const presetWorkItems = fileProgressPresetCatalog.map(
+        /** @param {{ name: string }} presetCatalogEntry */ (
+            presetCatalogEntry
+        ) => {
+            const name = presetCatalogEntry.name;
+
+            return {
+                castDirectoryPath: castsOutputDirectoryPath,
+                commandText: getDemoCommandText(name),
+                demoDirectoryPath: demosOutputDirectoryPath,
+                demoKindLabel: "Preset",
+                demoName: name,
+                outputEvents: buildPresetOutputEvents(name),
+                regenerateCommand: "npm run docs:demos:presets",
+            };
+        }
+    );
+
+    const optionWorkItems = optionDemoCatalog.map(
+        /** @param {{ name: string; settings: Record<string, unknown> }} optionDemo */ (
+            optionDemo
+        ) => ({
+            castDirectoryPath: optionCastsOutputDirectoryPath,
+            commandText: "npx eslint src --config eslint.config.mjs",
+            demoDirectoryPath: optionDemosOutputDirectoryPath,
+            demoKindLabel: "Option",
+            demoName: optionDemo.name,
+            outputEvents: buildOptionOutputEvents(optionDemo.settings),
+            regenerateCommand: "npm run docs:demos:options",
+        })
+    );
+
+    if (requestedDemoTarget === "all") {
+        return [...presetWorkItems, ...optionWorkItems];
+    }
+
+    if (requestedDemoTarget === "options") {
+        return optionWorkItems;
+    }
+
+    return presetWorkItems;
+};
+
 const main = async () => {
-    await ensureDirectory(castsOutputDirectoryPath);
+    if (requestedDemoTarget === "presets" || requestedDemoTarget === "all") {
+        await ensureDirectory(castsOutputDirectoryPath);
+    }
+
+    if (requestedDemoTarget === "options" || requestedDemoTarget === "all") {
+        await ensureDirectory(optionCastsOutputDirectoryPath);
+    }
 
     const temporaryDirectoryPath = isCheckMode
         ? await mkdtemp(path.join(os.tmpdir(), "file-progress-demo-check-"))
         : null;
 
-    for (const { name: presetName } of fileProgressPresetCatalog) {
-        const outputEvents = buildPresetOutputEvents(presetName);
-
+    for (const workItem of collectDemoWorkItems()) {
         if (temporaryDirectoryPath !== null) {
-            await checkCastAndGif(
-                presetName,
-                outputEvents,
-                temporaryDirectoryPath
-            );
+            await checkCastAndGif({
+                ...workItem,
+                temporaryDirectoryPath,
+            });
             continue;
         }
 
-        await writeCastAndGif(presetName, outputEvents);
+        await writeCastAndGif(workItem);
     }
 };
 

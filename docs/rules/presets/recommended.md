@@ -18,6 +18,39 @@ Notice how the default preset shows each file path live and then ends with a sho
 
 [Download the recorded cast](../../docusaurus/static/demos/presets/casts/recommended.cast)
 
+## Recommended + option overrides
+
+If you like the `recommended` baseline but want to tune specific behavior, keep
+the preset and layer a rule override after it.
+
+```ts
+import progress from "eslint-plugin-file-progress-2";
+
+export default [
+  progress.configs.recommended,
+  {
+    rules: {
+      "file-progress/activate": [
+        "warn",
+        {
+          fileNameOnNewLine: true,
+          pathFormat: "basename",
+          throttleMs: 120,
+        },
+      ],
+    },
+  },
+];
+```
+
+With `fileNameOnNewLine: true`, the live output format changes from a single
+line into a two-line layout like this:
+
+```txt
+eslint-plugin-file-progress-2 • linting
+  ↳ file-07.js
+```
+
 ## What it enables
 
 - registers the `file-progress` plugin

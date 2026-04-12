@@ -64,6 +64,33 @@ export default [
 
 ## Behavior and migration notes
 
+### Rule Options
+
+Use the reference and demos below to choose the right output behavior.
+
+### Option demo gallery
+
+These focused demos show how common option tweaks change terminal output.
+
+- `fileNameOnNewLine`
+  - [GIF preview](../docusaurus/static/demos/options/file-name-on-new-line.gif)
+  - [Cast download](../docusaurus/static/demos/options/casts/file-name-on-new-line.cast)
+- `pathFormat: "basename"`
+  - [GIF preview](../docusaurus/static/demos/options/basename-path-format.gif)
+  - [Cast download](../docusaurus/static/demos/options/casts/basename-path-format.cast)
+- `minFilesBeforeShow: 3`
+  - [GIF preview](../docusaurus/static/demos/options/min-files-before-show.gif)
+  - [Cast download](../docusaurus/static/demos/options/casts/min-files-before-show.cast)
+- `detailedSuccess: true`
+  - [GIF preview](../docusaurus/static/demos/options/detailed-success.gif)
+  - [Cast download](../docusaurus/static/demos/options/casts/detailed-success.cast)
+- `spinnerStyle: "line"`
+  - [GIF preview](../docusaurus/static/demos/options/spinner-style-line.gif)
+  - [Cast download](../docusaurus/static/demos/options/casts/spinner-style-line.cast)
+- `hide: true` + `showSummaryWhenHidden: true`
+  - [GIF preview](../docusaurus/static/demos/options/hide-live-show-summary.gif)
+  - [Cast download](../docusaurus/static/demos/options/casts/hide-live-show-summary.cast)
+
 This rule accepts one optional options object:
 
 ```ts

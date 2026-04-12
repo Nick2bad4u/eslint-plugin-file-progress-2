@@ -34,6 +34,7 @@ export const makeStats = (
 
 export interface MockProcess {
     readonly cwd: () => string;
+    readonly emitBeforeExit: (exitCode: number) => boolean;
     readonly emitExit: (exitCode: number) => boolean;
     readonly once: NodeJS.Process["once"];
     readonly stderr: MockWriteStream<2>;
@@ -225,6 +226,8 @@ export const createMockProcess = (
 
     return {
         cwd: () => "/repo",
+        emitBeforeExit: (exitCode: number) =>
+            emitter.emit("beforeExit", exitCode),
         emitExit: (exitCode: number) => emitter.emit("exit", exitCode),
         once: emitter.once.bind(emitter) as NodeJS.Process["once"],
         stderr,
