@@ -62,6 +62,7 @@ const IGNORED_DIRECTORIES = new Set([
     ".docusaurus",
     "build",
     "dist",
+    "temp",
     ".vite",
     "coverage",
     ".stryker-tmp",
