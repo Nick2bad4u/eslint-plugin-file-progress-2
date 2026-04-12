@@ -139,7 +139,7 @@ const normalizeConfigArray = (config, configName) => {
 };
 
 /**
- * @param {"activate" | "compact" | "summary-only"} ruleName
+ * @param {"activate"} ruleName
  * @param {RuleConfigOptions} [options]
  *
  * @returns {readonly FlatConfig[]}
@@ -172,6 +172,14 @@ const createRuleConfig = (ruleName, options = {}) => {
         }),
     ];
 };
+
+/**
+ * @param {string} configName
+ *
+ * @returns {readonly FlatConfig[]}
+ */
+const createPresetConfig = (configName) =>
+    normalizeConfigArray(plugin.configs?.[configName], configName);
 
 /**
  * @param {Scenario} scenario
@@ -231,15 +239,34 @@ const scenarios = /** @type {const} */ ([
         code: 'const foo = "bar";\n',
         filePath: path.resolve(
             repositoryRootPath,
-            "src/eslint9-compat/compact.ts"
+            "src/eslint9-compat/recommended-compact.js"
         ),
-        name: "compact-rule-ts",
-        overrideConfig: createRuleConfig("compact", {
+        name: "recommended-compact-preset-js",
+        overrideConfig: createPresetConfig("recommended-compact"),
+    },
+    {
+        code: 'const foo = "bar";\n',
+        filePath: path.resolve(
+            repositoryRootPath,
+            "src/eslint9-compat/recommended-summary-only.js"
+        ),
+        name: "recommended-summary-only-preset-js",
+        overrideConfig: createPresetConfig("recommended-summary-only"),
+    },
+    {
+        code: 'const foo = "bar";\n',
+        filePath: path.resolve(
+            repositoryRootPath,
+            "src/eslint9-compat/activate-compact.ts"
+        ),
+        name: "activate-rule-compact-mode-ts",
+        overrideConfig: createRuleConfig("activate", {
             fileGlob: "**/*.ts",
             parser: tsParser,
             ruleOptions: {
                 hide: true,
                 minFilesBeforeShow: 3,
+                mode: "compact",
                 outputStream: "stdout",
                 throttleMs: 50,
             },
@@ -249,13 +276,13 @@ const scenarios = /** @type {const} */ ([
         code: 'const foo = "bar";\n',
         filePath: path.resolve(
             repositoryRootPath,
-            "src/eslint9-compat/summary-only.js"
+            "src/eslint9-compat/activate-summary-only.js"
         ),
-        name: "summary-only-rule-js",
-        overrideConfig: createRuleConfig("summary-only", {
-            fileGlob: "**/*.js",
+        name: "activate-rule-summary-only-mode-js",
+        overrideConfig: createRuleConfig("activate", {
             ruleOptions: {
                 hide: true,
+                mode: "summary-only",
             },
         }),
     },
