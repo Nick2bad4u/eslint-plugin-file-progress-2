@@ -1,8 +1,9 @@
 import type { Rule } from "eslint";
 
 import { createSpinner, type Spinner } from "nanospinner";
+import { isDefined } from "ts-extras";
 
-import type { OutputStream, SpinnerStyle } from "../types.js";
+import type { OutputStream, ProgressMode, SpinnerStyle } from "../types.js";
 
 import {
     formatFailureMessage,
@@ -124,6 +125,12 @@ const spinnerPresets = {
     { readonly frames: readonly string[]; readonly interval: number }
 >;
 
+const modeToLiveMode = {
+    compact: "generic",
+    file: "file",
+    "summary-only": "summary-only",
+} as const satisfies Record<ProgressMode, ProgressLiveMode>;
+
 const applyRuleMode = (
     settings: NormalizedProgressSettings,
     liveMode: ProgressLiveMode
@@ -136,6 +143,29 @@ const applyRuleMode = (
     }
 
     return settings;
+};
+
+const resolveLiveModeFromProgressMode = (
+    mode: ProgressMode | undefined
+): ProgressLiveMode | undefined => {
+    if (isDefined(mode)) {
+        return modeToLiveMode[mode];
+    }
+
+    return undefined;
+};
+
+const resolveEffectiveLiveMode = (
+    settings: NormalizedProgressSettings,
+    liveMode: ProgressLiveMode
+): ProgressLiveMode => {
+    const modeFromSettings = resolveLiveModeFromProgressMode(settings.mode);
+
+    if (isDefined(modeFromSettings)) {
+        return modeFromSettings;
+    }
+
+    return liveMode;
 };
 
 const resolveWriteStream = (
@@ -274,16 +304,26 @@ export const createProgressController = (
     const resolveSettings = (
         context: Rule.RuleContext,
         liveMode: ProgressLiveMode
-    ): NormalizedProgressSettings =>
-        applyRuleMode(
-            normalizeSettings(
-                mergeProgressSettings(
-                    getLegacyProgressSettings(context.settings),
-                    getRuleOptionSettings(context)
-                )
-            ),
+    ): {
+        readonly effectiveLiveMode: ProgressLiveMode;
+        readonly settings: NormalizedProgressSettings;
+    } => {
+        const normalizedSettings = normalizeSettings(
+            mergeProgressSettings(
+                getLegacyProgressSettings(context.settings),
+                getRuleOptionSettings(context)
+            )
+        );
+        const effectiveLiveMode = resolveEffectiveLiveMode(
+            normalizedSettings,
             liveMode
         );
+
+        return {
+            effectiveLiveMode,
+            settings: applyRuleMode(normalizedSettings, effectiveLiveMode),
+        };
+    };
 
     const createSummaryStats = (exitCode: number): LintSummaryStats => ({
         durationMs:
@@ -348,7 +388,10 @@ export const createProgressController = (
 
             state.lintedFileCount += 1;
 
-            const settings = resolveSettings(context, liveMode);
+            const { effectiveLiveMode, settings } = resolveSettings(
+                context,
+                liveMode
+            );
             state.lastResolvedSettings = settings;
 
             bindExitHandler();
@@ -361,7 +404,7 @@ export const createProgressController = (
             const shouldShowLiveOutput = shouldRenderLiveOutput(
                 settings,
                 state.lintedFileCount,
-                liveMode,
+                effectiveLiveMode,
                 processLike
             );
 
@@ -375,7 +418,7 @@ export const createProgressController = (
                 return;
             }
 
-            renderLiveOutput(context, settings, liveMode);
+            renderLiveOutput(context, settings, effectiveLiveMode);
         },
         reset(): void {
             if (state.spinner.isSpinning()) {

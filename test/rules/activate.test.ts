@@ -103,5 +103,27 @@ ruleTester.run("activate", getPluginRule("activate"), {
                 },
             ],
         },
+        {
+            code: 'const foo = "bar";',
+            filename: "src/deeply/nested/file-k.ts",
+            name: "activate accepts canonical mode overrides",
+            options: [
+                {
+                    mode: "compact",
+                    outputStream: "stdout",
+                },
+            ],
+        },
+        {
+            code: 'const foo = "bar";',
+            filename: "src/deeply/nested/file-l.ts",
+            name: "activate accepts summary-only mode",
+            options: [
+                {
+                    mode: "summary-only",
+                    showSummaryWhenHidden: true,
+                },
+            ],
+        },
     ],
 });

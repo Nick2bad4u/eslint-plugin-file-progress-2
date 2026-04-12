@@ -20,8 +20,6 @@ export interface FileProgressPlugin extends Except<
     };
     rules: {
         activate: FileProgressRuleModule;
-        compact: FileProgressRuleModule;
-        "summary-only": FileProgressRuleModule;
     };
 }
 
@@ -42,6 +40,8 @@ export type FileProgressRuleModule = Except<Rule.RuleModule, "meta"> & {
 export type FileProgressRuleName = CatalogFileProgressRuleName;
 
 export type OutputStream = "stderr" | "stdout";
+
+export type ProgressMode = "compact" | "file" | "summary-only";
 
 export type ProgressPathFormat = "basename" | "relative";
 
@@ -69,6 +69,7 @@ export interface ProgressSettings {
     hideFileName?: boolean;
     hidePrefix?: boolean;
     minFilesBeforeShow?: number;
+    mode?: ProgressMode;
     outputStream?: OutputStream;
     pathFormat?: ProgressPathFormat;
     prefixMark?: string;

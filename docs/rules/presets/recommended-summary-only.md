@@ -21,6 +21,7 @@ Notice that the command is shown up front, but no live progress appears before t
 ## What it changes
 
 - registers the `file-progress` plugin
-- enables [`file-progress/summary-only`](../../rules/summary-only.md) at `warn`
+- enables [`file-progress/activate`](../../rules/activate.md) at `warn`
+- sets `mode: "summary-only"`
 
 Choose this preset when deterministic output matters more than live feedback.

@@ -16,9 +16,7 @@ import {
     fileProgressPresetCatalog,
     fileProgressRuleCatalog,
 } from "./_internal/plugin-catalog.js";
-import compactRule from "./rules/compact.js";
 import progressRule from "./rules/progress.js";
-import summaryOnlyRule from "./rules/summary-only.js";
 
 const isCi = globalThis.process.env["CI"] === "true";
 
@@ -46,8 +44,6 @@ const createCatalogRecord = <
 
 const ruleModulesByName = {
     activate: progressRule,
-    compact: compactRule,
-    "summary-only": summaryOnlyRule,
 } satisfies FileProgressPlugin["rules"];
 
 const pluginCore = {
@@ -88,11 +84,15 @@ const presetOptionsByName: Readonly<
         hide: isCi,
         showSummaryWhenHidden: isCi,
     },
-    "recommended-compact": undefined,
+    "recommended-compact": {
+        mode: "compact",
+    },
     "recommended-detailed": {
         detailedSuccess: true,
     },
-    "recommended-summary-only": undefined,
+    "recommended-summary-only": {
+        mode: "summary-only",
+    },
     "recommended-tty": {
         ttyOnly: true,
     },

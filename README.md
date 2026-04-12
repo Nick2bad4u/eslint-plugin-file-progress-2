@@ -89,6 +89,32 @@ import progress from "eslint-plugin-file-progress-2";
 export default [progress.configs["recommended-compact"]];
 ```
 
+## Migration note
+
+`file-progress/compact` and `file-progress/summary-only` were removed from the
+public rule surface.
+
+If you previously configured either rule directly, migrate to
+`file-progress/activate` with `mode` instead:
+
+```ts
+rules: {
+  "file-progress/activate": ["warn", { mode: "compact" }],
+}
+```
+
+```ts
+rules: {
+  "file-progress/activate": ["warn", { mode: "summary-only" }],
+}
+```
+
+The preset names `recommended-compact` and `recommended-summary-only` still
+exist. They now enable `file-progress/activate` with the matching `mode`.
+
+This is a breaking API change. If you publish it, it should ship in a major
+release rather than a minor release.
+
 ## Deprecated configuration fallback
 
 `settings.progress` still works as a backwards-compatible fallback, but it is now deprecated.
@@ -120,9 +146,7 @@ Generated from the plugin rule metadata and preset registry.
 
 | Rule | Description | Included in presets |
 | --- | --- | --- |
-| [`file-progress/activate`](./docs/rules/activate.md) | Display live per-file lint progress in CLI output. | [`recommended`](./docs/rules/presets/recommended.md), [`recommended-ci`](./docs/rules/presets/recommended-ci.md), [`recommended-detailed`](./docs/rules/presets/recommended-detailed.md), [`recommended-tty`](./docs/rules/presets/recommended-tty.md), [`recommended-ci-detailed`](./docs/rules/presets/recommended-ci-detailed.md) |
-| [`file-progress/compact`](./docs/rules/compact.md) | Display compact lint progress in CLI output without showing file names. | [`recommended-compact`](./docs/rules/presets/recommended-compact.md) |
-| [`file-progress/summary-only`](./docs/rules/summary-only.md) | Display only the final lint completion summary in CLI output. | [`recommended-summary-only`](./docs/rules/presets/recommended-summary-only.md) |
+| [`file-progress/activate`](./docs/rules/activate.md) | Display live per-file lint progress in CLI output. | [`recommended`](./docs/rules/presets/recommended.md), [`recommended-ci`](./docs/rules/presets/recommended-ci.md), [`recommended-detailed`](./docs/rules/presets/recommended-detailed.md), [`recommended-compact`](./docs/rules/presets/recommended-compact.md), [`recommended-summary-only`](./docs/rules/presets/recommended-summary-only.md), [`recommended-tty`](./docs/rules/presets/recommended-tty.md), [`recommended-ci-detailed`](./docs/rules/presets/recommended-ci-detailed.md) |
 <!-- end generated rules table -->
 
 ## CLI-only usage

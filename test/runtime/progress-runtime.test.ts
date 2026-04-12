@@ -87,6 +87,7 @@ test("normalizeSettings handles invalid values safely", () => {
             expected: makeSettings({
                 fileNameOnNewLine: true,
                 minFilesBeforeShow: 5,
+                mode: "compact",
                 outputStream: "stdout",
                 showSummaryWhenHidden: true,
                 throttleMs: 125,
@@ -95,6 +96,7 @@ test("normalizeSettings handles invalid values safely", () => {
             input: {
                 fileNameOnNewLine: true,
                 minFilesBeforeShow: 5,
+                mode: "compact",
                 outputStream: "stdout",
                 showSummaryWhenHidden: true,
                 throttleMs: 125,
@@ -119,6 +121,7 @@ test("normalizeSettings handles invalid values safely", () => {
         {
             expected: makeSettings(),
             input: {
+                mode: "not-a-mode",
                 outputStream: "invalid-stream",
                 prefixMark: "   ",
                 successMessage: 42,
@@ -347,7 +350,6 @@ test("createProgressRule fills in optional factory defaults", () => {
     const customRule = createProgressRule({
         description: "Custom progress rule.",
         liveMode: "summary-only",
-        ruleId: "activate",
         url: "https://example.invalid/custom-progress-rule",
     });
 
@@ -427,15 +429,23 @@ test("controller delays live output until minFilesBeforeShow", () => {
     const spinnerRecord = getLatestSpinnerRecord(created);
 
     controller.handleLintFile({
-        context: makeContext({
-            minFilesBeforeShow: 3,
-        }),
+        context: makeContext(
+            {
+                minFilesBeforeShow: 3,
+            },
+            undefined,
+            "src/runtime-case-1.ts"
+        ),
         liveMode: "file",
     });
     controller.handleLintFile({
-        context: makeContext({
-            minFilesBeforeShow: 3,
-        }),
+        context: makeContext(
+            {
+                minFilesBeforeShow: 3,
+            },
+            undefined,
+            "src/runtime-case-2.ts"
+        ),
         liveMode: "file",
     });
 
@@ -565,8 +575,15 @@ test("controller summary-only mode suppresses live output but still reports succ
     const spinnerRecord = getLatestSpinnerRecord(created);
 
     controller.handleLintFile({
-        context: makeContext(undefined, undefined, "src/summary-only.ts"),
-        liveMode: "summary-only",
+        context: makeContext(
+            {
+                mode: "summary-only",
+                showSummaryWhenHidden: true,
+            },
+            undefined,
+            "src/summary-only.ts"
+        ),
+        liveMode: "file",
     });
     controller.handleExit(0);
 
@@ -576,6 +593,60 @@ test("controller summary-only mode suppresses live output but still reports succ
     expect(
         spinnerRecord.events.some((event) => event.method === "success")
     ).toBeTruthy();
+});
+
+test("controller mode compact switches activate to generic live output", () => {
+    const stdout = createMockWriteStream({
+        fd: 1,
+        isTTY: true,
+    });
+    const mockProcess = createMockProcess({
+        stdout,
+    });
+    const { created, spinnerFactory } = createMockSpinnerFactory();
+    const controller = internals.createProgressController({
+        process: mockProcess,
+        spinnerFactory,
+    });
+
+    controller.handleLintFile({
+        context: makeContext(
+            {
+                mode: "compact",
+                outputStream: "stdout",
+                spinnerStyle: "arc",
+            },
+            undefined,
+            "src/runtime-shared-rule.ts"
+        ),
+        liveMode: "file",
+    });
+
+    expect(controller.getState().lintedFileCount).toBe(1);
+
+    const spinnerRecord = getLatestSpinnerRecord(created);
+    const updateTexts = spinnerRecord.events
+        .filter((event) => event.method === "update")
+        .flatMap((event) => {
+            if (
+                typeof event.payload !== "object" ||
+                event.payload === null ||
+                !("text" in event.payload) ||
+                typeof event.payload.text !== "string"
+            ) {
+                return [];
+            }
+
+            return [normalizePathSeparators(stripAnsi(event.payload.text))];
+        });
+
+    expect(spinnerRecord.options?.stream).toBe(stdout);
+    expect(
+        updateTexts.some((text) => text.includes("linting project files"))
+    ).toBeTruthy();
+    expect(
+        updateTexts.some((text) => text.includes("src/runtime-shared-rule.ts"))
+    ).toBeFalsy();
 });
 
 test("controller emits an error summary for non-zero exit codes", () => {

@@ -53,11 +53,34 @@ notes, read [`activate`](./activate.md).
 
 ## Rule choices
 
-If you are not using one of the built-in presets, choose the rule that matches the output mode you want:
+If you are not using one of the built-in presets, configure the single public
+rule with the mode you want:
 
-- [`file-progress/activate`](./activate.md): full per-file progress updates
-- [`file-progress/compact`](./compact.md): generic live progress without file names
-- [`file-progress/summary-only`](./summary-only.md): final summary only
+- [`file-progress/activate`](./activate.md) with `mode: "file"`: full per-file progress updates
+- [`file-progress/activate`](./activate.md) with `mode: "compact"`: generic live progress without file names
+- [`file-progress/activate`](./activate.md) with `mode: "summary-only"`: final summary only
+
+## Migration from older configs
+
+The old `file-progress/compact` and `file-progress/summary-only` rule IDs were
+removed.
+
+Use `file-progress/activate` with `mode` instead:
+
+```ts
+rules: {
+  "file-progress/activate": ["warn", { mode: "compact" }],
+}
+```
+
+```ts
+rules: {
+  "file-progress/activate": ["warn", { mode: "summary-only" }],
+}
+```
+
+The `recommended-compact` and `recommended-summary-only` presets still exist and
+now map to those `mode` values automatically.
 
 ## Deprecated settings fallback
 

@@ -259,12 +259,12 @@ const createTypedPromptEvents = (presetName, commandText) => {
 };
 
 /**
- * @param {string} presetName
+ * @param {import("../src/types.js").ProgressMode | undefined} mode
  *
  * @returns {readonly string[]}
  */
-const getDemoFilePaths = (presetName) => {
-    if (presetName === "recommended-compact") {
+const getDemoFilePaths = (mode) => {
+    if (mode === "compact") {
         return [];
     }
 
@@ -330,6 +330,7 @@ const buildPresetOutputEvents = (presetName) => {
     const settings = normalizeSettings(
         getPresetOptions(presetName, presetCatalogEntry.ruleName)
     );
+    const effectiveMode = settings.mode ?? "file";
     /** @type {CastEvent[]} */
     const castEvents = [];
     let currentTime = 0;
@@ -346,7 +347,7 @@ const buildPresetOutputEvents = (presetName) => {
         return castEvents;
     }
 
-    if (presetCatalogEntry.ruleName === "summary-only") {
+    if (effectiveMode === "summary-only") {
         currentTime += 0.7;
         currentTime = pushMultilineOutput(
             castEvents,
@@ -363,9 +364,9 @@ const buildPresetOutputEvents = (presetName) => {
         return castEvents;
     }
 
-    const demoFilePaths = getDemoFilePaths(presetName);
+    const demoFilePaths = getDemoFilePaths(effectiveMode);
 
-    if (presetCatalogEntry.ruleName === "compact") {
+    if (effectiveMode === "compact") {
         currentTime += 0.3;
         pushOutputEvent(
             castEvents,

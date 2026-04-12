@@ -1,11 +1,7 @@
 const docsBaseUrl =
     "https://nick2bad4u.github.io/eslint-plugin-file-progress-2/docs/rules";
 
-export const fileProgressRuleNames = [
-    "activate",
-    "compact",
-    "summary-only",
-] as const;
+export const fileProgressRuleNames = ["activate"] as const;
 
 export interface FileProgressRuleCatalogEntry {
     readonly docsId: string;
@@ -28,22 +24,6 @@ export const fileProgressRuleCatalogByName: Readonly<
         name: "activate",
         navbarLabel: "• file-progress/activate",
         sidebarLabel: "• file-progress/activate",
-    },
-    compact: {
-        docsId: "compact",
-        docsPath: "./docs/rules/compact.md",
-        docsUrl: `${docsBaseUrl}/compact`,
-        name: "compact",
-        navbarLabel: "• file-progress/compact",
-        sidebarLabel: "• file-progress/compact",
-    },
-    "summary-only": {
-        docsId: "summary-only",
-        docsPath: "./docs/rules/summary-only.md",
-        docsUrl: `${docsBaseUrl}/summary-only`,
-        name: "summary-only",
-        navbarLabel: "• file-progress/summary-only",
-        sidebarLabel: "• file-progress/summary-only",
     },
 };
 
@@ -124,9 +104,9 @@ export const fileProgressPresetCatalogByName: Readonly<
         docsPath: "./docs/rules/presets/recommended-compact.md",
         name: "recommended-compact",
         navbarLabel: "🟣 Recommended Compact",
-        optionSummary: "defaults",
+        optionSummary: '`mode: "compact"`',
         purpose: "Use compact live mode without per-file paths.",
-        ruleName: "compact",
+        ruleName: "activate",
         sidebarClassName: "sb-preset-recommended-compact",
         sidebarLabel: "🟣 Recommended Compact",
     },
@@ -148,9 +128,9 @@ export const fileProgressPresetCatalogByName: Readonly<
         docsPath: "./docs/rules/presets/recommended-summary-only.md",
         name: "recommended-summary-only",
         navbarLabel: "⚪ Recommended Summary Only",
-        optionSummary: "defaults",
+        optionSummary: '`mode: "summary-only"`',
         purpose: "Print only the final summary line.",
-        ruleName: "summary-only",
+        ruleName: "activate",
         sidebarClassName: "sb-preset-recommended-summary-only",
         sidebarLabel: "⚪ Recommended Summary Only",
     },

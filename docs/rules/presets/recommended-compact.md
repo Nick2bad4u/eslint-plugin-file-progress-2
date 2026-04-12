@@ -21,6 +21,7 @@ Notice that live feedback stays on one generic progress line instead of repainti
 ## What it changes
 
 - registers the `file-progress` plugin
-- enables [`file-progress/compact`](../../rules/compact.md) at `warn`
+- enables [`file-progress/activate`](../../rules/activate.md) at `warn`
+- sets `mode: "compact"`
 
 This is the lowest-noise live mode the plugin ships with.

@@ -12,6 +12,7 @@ import {
 
 import type {
     OutputStream,
+    ProgressMode,
     ProgressPathFormat,
     ProgressRuleOptions,
     SpinnerStyle,
@@ -25,6 +26,7 @@ export interface NormalizedProgressSettings {
     readonly hideFileName: boolean;
     readonly hidePrefix: boolean;
     readonly minFilesBeforeShow: number;
+    readonly mode: ProgressMode | undefined;
     readonly outputStream: OutputStream;
     readonly pathFormat: ProgressPathFormat;
     readonly prefixMark: string;
@@ -46,6 +48,11 @@ const spinnerStyles = [
     "clock",
     "dots",
     "line",
+] as const;
+const progressModes = [
+    "file",
+    "compact",
+    "summary-only",
 ] as const;
 const outputStreams = ["stderr", "stdout"] as const;
 const pathFormats = ["relative", "basename"] as const;
@@ -79,6 +86,9 @@ export const progressOptionsSchema: RuleSchema = [
             minFilesBeforeShow: {
                 minimum: 0,
                 type: "integer",
+            },
+            mode: {
+                enum: progressModes,
             },
             outputStream: {
                 enum: outputStreams,
@@ -125,6 +135,7 @@ export const defaultSettings: Readonly<NormalizedProgressSettings> =
         hideFileName: false,
         hidePrefix: false,
         minFilesBeforeShow: 0,
+        mode: undefined,
         outputStream: "stderr",
         pathFormat: "relative",
         prefixMark: "•",
@@ -144,6 +155,9 @@ const isSpinnerStyle = (value: string): value is SpinnerStyle =>
 
 const isOutputStream = (value: string): value is OutputStream =>
     arrayIncludes(outputStreams, value as OutputStream);
+
+const isProgressMode = (value: string): value is ProgressMode =>
+    arrayIncludes(progressModes, value as ProgressMode);
 
 const isProgressPathFormat = (value: string): value is ProgressPathFormat =>
     arrayIncludes(pathFormats, value as ProgressPathFormat);
@@ -247,6 +261,16 @@ export const resolveOutputStream = (rawStream: unknown): OutputStream => {
     return isOutputStream(rawStream) ? rawStream : defaultSettings.outputStream;
 };
 
+export const resolveProgressMode = (
+    rawMode: unknown
+): ProgressMode | undefined => {
+    if (typeof rawMode !== "string") {
+        return defaultSettings.mode;
+    }
+
+    return isProgressMode(rawMode) ? rawMode : defaultSettings.mode;
+};
+
 export const resolvePathFormat = (
     rawPathFormat: unknown,
     rawHideDirectoryNames: unknown
@@ -286,6 +310,7 @@ export const normalizeSettings = (raw: unknown): NormalizedProgressSettings => {
         minFilesBeforeShow:
             getNonNegativeIntegerSetting(raw, "minFilesBeforeShow") ??
             defaultSettings.minFilesBeforeShow,
+        mode: resolveProgressMode(getStringSetting(raw, "mode")),
         outputStream: resolveOutputStream(
             getStringSetting(raw, "outputStream")
         ),

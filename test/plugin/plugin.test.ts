@@ -31,8 +31,13 @@ test("plugin exports the expanded preset surface", () => {
     expect(plugin.meta.name).toBe("eslint-plugin-file-progress-2");
     expect(plugin.meta.namespace).toBe("file-progress");
     expect(plugin.rules.activate).toBeDefined();
-    expect(plugin.rules.compact).toBeDefined();
-    expect(plugin.rules["summary-only"]).toBeDefined();
+    expect(Object.keys(plugin.rules)).toStrictEqual(["activate"]);
+    expect(
+        Object.hasOwn(plugin.rules as Record<string, unknown>, "compact")
+    ).toBeFalsy();
+    expect(
+        Object.hasOwn(plugin.rules as Record<string, unknown>, "summary-only")
+    ).toBeFalsy();
     expect(plugin.configs.recommended).toBeDefined();
     expect(plugin.configs["recommended-ci"]).toBeDefined();
     expect(plugin.configs["recommended-ci-detailed"]).toBeDefined();
@@ -58,15 +63,25 @@ test("plugin exports the expanded preset surface", () => {
         plugin.configs["recommended-compact"].rules as
             | Record<string, unknown>
             | undefined
-    )?.["file-progress/compact"];
+    )?.["file-progress/activate"];
     const recommendedSummaryOnlyRuleEntry = (
         plugin.configs["recommended-summary-only"].rules as
             | Record<string, unknown>
             | undefined
-    )?.["file-progress/summary-only"];
+    )?.["file-progress/activate"];
 
-    expect(recommendedCompactRuleEntry).toBe("warn");
-    expect(recommendedSummaryOnlyRuleEntry).toBe("warn");
+    expect(recommendedCompactRuleEntry).toStrictEqual([
+        "warn",
+        {
+            mode: "compact",
+        },
+    ]);
+    expect(recommendedSummaryOnlyRuleEntry).toStrictEqual([
+        "warn",
+        {
+            mode: "summary-only",
+        },
+    ]);
     expect(recommendedCiRuleEntry).toStrictEqual([
         "warn",
         {

@@ -78,6 +78,7 @@ interface ProgressRuleOptions {
   hideDirectoryNames?: boolean;
   hideFileName?: boolean;
   hidePrefix?: boolean;
+  mode?: "file" | "compact" | "summary-only";
   minFilesBeforeShow?: number;
   outputStream?: "stderr" | "stdout";
   pathFormat?: "relative" | "basename";
@@ -117,11 +118,18 @@ Default values:
 `hideDirectoryNames` has no standalone default value. It is a deprecated alias
 that only matters when `pathFormat` is not set.
 
+`mode` also has no standalone literal default in the options object. When it is
+omitted, `activate` stays in its normal per-file live mode.
+
 ### How option resolution works
 
 - Rule options are the primary API.
 - Deprecated `settings.progress` is still read as a fallback.
 - If both are present, rule options win.
+- `mode` is the canonical way to select file, compact, or summary-only output
+  behavior from this single rule.
+- Older `file-progress/compact` and `file-progress/summary-only` configs should
+  migrate to `file-progress/activate` with `mode`.
 - Unknown or invalid values fall back to the built-in defaults.
 - Empty strings for marks and messages are trimmed. Blank values fall back to the
   default text or symbol.
@@ -173,8 +181,8 @@ that only matters when `pathFormat` is not set.
 - Switches `activate` from file-specific live progress to a generic
   `linting project files...` line.
 - The final success or failure summary still works normally.
-- If this is the behavior you always want, [`compact`](./compact.md) is the
-  clearer rule choice.
+- If this is the behavior you always want, prefer `mode: "compact"` so the
+  intent is explicit in config.
 
 #### `hidePrefix`
 
@@ -183,6 +191,13 @@ that only matters when `pathFormat` is not set.
 - It leaves `successMark`, `failureMark`, and the message text intact.
 - It also suppresses the final spinner mark that would otherwise use
   `prefixMark`.
+
+#### `mode`
+
+- Selects the effective live-output behavior from one canonical rule entry.
+- `file` keeps per-file live updates, `compact` uses the generic spinner line,
+  and `summary-only` suppresses live updates and keeps only the final summary.
+- This is the supported way to choose between the plugin's output modes.
 
 #### `minFilesBeforeShow`
 
@@ -264,9 +279,10 @@ that only matters when `pathFormat` is not set.
 
 - Prefer rule options over `settings.progress` in all new configs.
 - If you want generic live output without per-file paths, prefer
-  [`compact`](./compact.md) over `activate` plus `hideFileName: true`.
-- If you only want the final summary, prefer
-  [`summary-only`](./summary-only.md) over `activate` plus heavy hiding options.
+  `mode: "compact"` over `hideFileName: true` because it communicates intent
+  directly.
+- If you only want the final summary, prefer `mode: "summary-only"` over
+  combining `hide`, `showSummaryWhenHidden`, and other heavy overrides.
 - `outputStream`, `ttyOnly`, `hide`, `minFilesBeforeShow`, and
   `showSummaryWhenHidden` are the options that most strongly change whether the
   plugin is visible at all.
@@ -394,8 +410,6 @@ export default [
 
 Do not use this rule if:
 
-- you want the quietest possible output mode
-- a single final summary line is enough for the workflow
 - editor integrations share the same config and should never show live progress
 
 ## Package documentation
@@ -408,6 +422,4 @@ This rule is part of the `eslint-plugin-file-progress-2` package.
 
 - [Overview](./overview.md)
 - [Getting Started](./getting-started.md)
-- [compact](./compact.md)
-- [summary-only](./summary-only.md)
 - [Preset reference](./presets/index.md)

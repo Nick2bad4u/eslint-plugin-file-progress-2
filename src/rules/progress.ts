@@ -10,7 +10,6 @@ const progressRule: FileProgressRuleModule = createProgressRule({
     description: "Display live per-file lint progress in CLI output.",
     liveMode: "file",
     recommended: true,
-    ruleId: "activate",
     url: docsUrl,
 });
 

@@ -58,7 +58,6 @@ interface CreateProgressRuleOptions {
     readonly description: string;
     readonly liveMode: ProgressLiveMode;
     readonly recommended?: boolean;
-    readonly ruleId: "activate" | "compact" | "summary-only";
     readonly url: string;
 }
 

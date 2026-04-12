@@ -6,10 +6,8 @@ It does not lint code semantics. It only changes how ESLint reports progress in 
 
 ## What the plugin includes
 
-- three public rules:
+- one public rule:
   - [1. `file-progress/activate`](./activate.md)
-  - [2. `file-progress/compact`](./compact.md)
-  - [3. `file-progress/summary-only`](./summary-only.md)
 - seven presets:
   - [🟡 `recommended`](./presets/recommended.md)
   - [🟠 `recommended-ci`](./presets/recommended-ci.md)
@@ -49,9 +47,9 @@ The older `settings.progress` shape still works as a fallback, but it is depreca
 
 ## Mode selection
 
-- Use [`file-progress/activate`](./activate.md) when you want full per-file progress.
-- Use [`file-progress/compact`](./compact.md) when you want a live spinner without file-path churn.
-- Use [`file-progress/summary-only`](./summary-only.md) when you only want the final completion summary.
+- Use [`file-progress/activate`](./activate.md) with `mode: "file"` when you want full per-file progress.
+- Use [`file-progress/activate`](./activate.md) with `mode: "compact"` when you want a live spinner without file-path churn.
+- Use [`file-progress/activate`](./activate.md) with `mode: "summary-only"` when you only want the final completion summary.
 
 ## Notable options
 
