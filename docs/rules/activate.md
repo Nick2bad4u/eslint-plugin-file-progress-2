@@ -66,30 +66,8 @@ export default [
 
 ### Rule Options
 
-Use the reference and demos below to choose the right output behavior.
-
-### Option demo gallery
-
-These focused demos show how common option tweaks change terminal output.
-
-- `fileNameOnNewLine`
-  - [GIF preview](../docusaurus/static/demos/options/file-name-on-new-line.gif)
-  - [Cast download](../docusaurus/static/demos/options/casts/file-name-on-new-line.cast)
-- `pathFormat: "basename"`
-  - [GIF preview](../docusaurus/static/demos/options/basename-path-format.gif)
-  - [Cast download](../docusaurus/static/demos/options/casts/basename-path-format.cast)
-- `minFilesBeforeShow: 3`
-  - [GIF preview](../docusaurus/static/demos/options/min-files-before-show.gif)
-  - [Cast download](../docusaurus/static/demos/options/casts/min-files-before-show.cast)
-- `detailedSuccess: true`
-  - [GIF preview](../docusaurus/static/demos/options/detailed-success.gif)
-  - [Cast download](../docusaurus/static/demos/options/casts/detailed-success.cast)
-- `spinnerStyle: "line"`
-  - [GIF preview](../docusaurus/static/demos/options/spinner-style-line.gif)
-  - [Cast download](../docusaurus/static/demos/options/casts/spinner-style-line.cast)
-- `hide: true` + `showSummaryWhenHidden: true`
-  - [GIF preview](../docusaurus/static/demos/options/hide-live-show-summary.gif)
-  - [Cast download](../docusaurus/static/demos/options/casts/hide-live-show-summary.cast)
+Use the inline GIF preview under each option section below for quick visual
+comparison.
 
 This rule accepts one optional options object:
 
@@ -169,6 +147,8 @@ omitted, `activate` stays in its normal per-file live mode.
 
 #### `detailedSuccess`
 
+![Demo for detailedSuccess.](../docusaurus/static/demos/options/detailed-success.gif)
+
 - Adds duration, file count, throughput, exit code, and problem status to the
   final summary.
 - Despite the name, it also expands the failure summary. The same flag controls
@@ -178,12 +158,16 @@ omitted, `activate` stays in its normal per-file live mode.
 
 #### `failureMark`
 
+![Demo for failureMark.](../docusaurus/static/demos/options/failure-mark.gif)
+
 - Changes the symbol inside the failure summary text.
 - It does not affect live spinner frames or success output.
 - No matching `failureMessage` option exists. The failure message text remains
   `Lint failed.`.
 
 #### `fileNameOnNewLine`
+
+![Demo for fileNameOnNewLine.](../docusaurus/static/demos/options/file-name-on-new-line.gif)
 
 - Splits the live `activate` output into two lines: the plugin prefix first, the
   current file path on the next line.
@@ -192,6 +176,8 @@ omitted, `activate` stays in its normal per-file live mode.
 
 #### `hide`
 
+![Demo for hide.](../docusaurus/static/demos/options/hide.gif)
+
 - Hides live output and the final summary.
 - If you set only `hide: true`, users will see no plugin output at all.
 - Combine it with `showSummaryWhenHidden: true` when you want quiet live output
@@ -199,11 +185,15 @@ omitted, `activate` stays in its normal per-file live mode.
 
 #### `hideDirectoryNames` (deprecated)
 
+![Demo for hideDirectoryNames.](../docusaurus/static/demos/options/hide-directory-names.gif)
+
 - Legacy alias for basename-only path display.
 - It is only consulted when `pathFormat` is not set.
 - Prefer `pathFormat: "basename"` in new configs so the intent is explicit.
 
 #### `hideFileName`
+
+![Demo for hideFileName.](../docusaurus/static/demos/options/hide-file-name.gif)
 
 - Switches `activate` from file-specific live progress to a generic
   `linting project files...` line.
@@ -213,6 +203,8 @@ omitted, `activate` stays in its normal per-file live mode.
 
 #### `hidePrefix`
 
+![Demo for hidePrefix.](../docusaurus/static/demos/options/hide-prefix.gif)
+
 - Removes the `eslint-plugin-file-progress-2` label from live output and from
   the summary label.
 - It leaves `successMark`, `failureMark`, and the message text intact.
@@ -221,12 +213,18 @@ omitted, `activate` stays in its normal per-file live mode.
 
 #### `mode`
 
+![Demo for mode compact.](../docusaurus/static/demos/options/mode-compact.gif)
+
+![Demo for mode summary-only.](../docusaurus/static/demos/options/mode-summary-only.gif)
+
 - Selects the effective live-output behavior from one canonical rule entry.
 - `file` keeps per-file live updates, `compact` uses the generic spinner line,
   and `summary-only` suppresses live updates and keeps only the final summary.
 - This is the supported way to choose between the plugin's output modes.
 
 #### `minFilesBeforeShow`
+
+![Demo for minFilesBeforeShow.](../docusaurus/static/demos/options/min-files-before-show.gif)
 
 - Suppresses output until at least `N` files have been seen.
 - If the whole run finishes below that threshold, the final summary is also
@@ -236,6 +234,8 @@ omitted, `activate` stays in its normal per-file live mode.
 
 #### `outputStream`
 
+![Demo for outputStream.](../docusaurus/static/demos/options/output-stream-stdout.gif)
+
 - Sends progress output to `stderr` (default) or `stdout`.
 - `ttyOnly` checks interactivity on the chosen stream, not on both streams.
 - Use `stderr` when you want to keep `stdout` cleaner for piping or
@@ -244,12 +244,16 @@ omitted, `activate` stays in its normal per-file live mode.
 
 #### `pathFormat`
 
+![Demo for pathFormat.](../docusaurus/static/demos/options/path-format-basename.gif)
+
 - `relative` shows the path relative to ESLint's current working directory.
 - `basename` strips directory segments and shows only the file name.
 - It has no visible effect when file names are hidden, because there is no path
   left to format.
 
 #### `prefixMark`
+
+![Demo for prefixMark.](../docusaurus/static/demos/options/prefix-mark.gif)
 
 - Changes the small marker used in the live prefix when the plugin label is
   visible.
@@ -260,12 +264,16 @@ omitted, `activate` stays in its normal per-file live mode.
 
 #### `showSummaryWhenHidden`
 
+![Demo for showSummaryWhenHidden.](../docusaurus/static/demos/options/show-summary-when-hidden.gif)
+
 - Allows the final summary to print even when live output is hidden by `hide`,
   `ttyOnly`, or `minFilesBeforeShow`.
 - It never re-enables live updates. It only affects the end-of-run summary.
 - This is the most useful companion option for CI and non-TTY workflows.
 
 #### `spinnerStyle`
+
+![Demo for spinnerStyle.](../docusaurus/static/demos/options/spinner-style-line.gif)
 
 - Chooses the live animation frames.
 - It only affects live output. It has no visible effect in `summary-only` mode
@@ -274,6 +282,8 @@ omitted, `activate` stays in its normal per-file live mode.
 
 #### `successMark`
 
+![Demo for successMark.](../docusaurus/static/demos/options/success-mark.gif)
+
 - Changes the symbol inside the success summary text.
 - It does not affect failure output or live spinner frames.
 - This is most noticeable when `hidePrefix` or `detailedSuccess` makes the
@@ -281,11 +291,15 @@ omitted, `activate` stays in its normal per-file live mode.
 
 #### `successMessage`
 
+![Demo for successMessage.](../docusaurus/static/demos/options/custom-success-message.gif)
+
 - Changes the success text after `successMark`.
 - Blank strings are trimmed and fall back to `Lint complete.`.
 - It does not affect failure summaries.
 
 #### `throttleMs`
+
+![Demo for throttleMs.](../docusaurus/static/demos/options/throttle-ms.gif)
 
 - Rate-limits how often the current file path is repainted after the first live
   update.
@@ -295,6 +309,8 @@ omitted, `activate` stays in its normal per-file live mode.
   too much terminal churn.
 
 #### `ttyOnly`
+
+![Demo for ttyOnly.](../docusaurus/static/demos/options/tty-only.gif)
 
 - Suppresses output when the selected `outputStream` is not interactive.
 - With the default `outputStream: "stderr"`, piping only `stdout` does not hide
@@ -313,6 +329,31 @@ omitted, `activate` stays in its normal per-file live mode.
 - `outputStream`, `ttyOnly`, `hide`, `minFilesBeforeShow`, and
   `showSummaryWhenHidden` are the options that most strongly change whether the
   plugin is visible at all.
+
+<details>
+<summary><small>Download option demo casts</small></summary>
+
+- [`detailedSuccess`](../docusaurus/static/demos/options/casts/detailed-success.cast)
+- [`failureMark`](../docusaurus/static/demos/options/casts/failure-mark.cast)
+- [`fileNameOnNewLine`](../docusaurus/static/demos/options/casts/file-name-on-new-line.cast)
+- [`hide`](../docusaurus/static/demos/options/casts/hide.cast)
+- [`hideDirectoryNames`](../docusaurus/static/demos/options/casts/hide-directory-names.cast)
+- [`hideFileName`](../docusaurus/static/demos/options/casts/hide-file-name.cast)
+- [`hidePrefix`](../docusaurus/static/demos/options/casts/hide-prefix.cast)
+- [`mode: "compact"`](../docusaurus/static/demos/options/casts/mode-compact.cast)
+- [`mode: "summary-only"`](../docusaurus/static/demos/options/casts/mode-summary-only.cast)
+- [`minFilesBeforeShow`](../docusaurus/static/demos/options/casts/min-files-before-show.cast)
+- [`outputStream: "stdout"`](../docusaurus/static/demos/options/casts/output-stream-stdout.cast)
+- [`pathFormat: "basename"`](../docusaurus/static/demos/options/casts/path-format-basename.cast)
+- [`prefixMark`](../docusaurus/static/demos/options/casts/prefix-mark.cast)
+- [`showSummaryWhenHidden`](../docusaurus/static/demos/options/casts/show-summary-when-hidden.cast)
+- [`spinnerStyle: "line"`](../docusaurus/static/demos/options/casts/spinner-style-line.cast)
+- [`successMark`](../docusaurus/static/demos/options/casts/success-mark.cast)
+- [`successMessage`](../docusaurus/static/demos/options/casts/custom-success-message.cast)
+- [`throttleMs`](../docusaurus/static/demos/options/casts/throttle-ms.cast)
+- [`ttyOnly`](../docusaurus/static/demos/options/casts/tty-only.cast)
+
+</details>
 
 ## Additional examples
 

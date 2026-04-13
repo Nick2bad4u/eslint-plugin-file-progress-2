@@ -9,11 +9,22 @@
 ## Demo
 
 - Who likes a silent console ¯\\_(ツ)_/¯
+- But who doesn't like a little feedback while waiting for a long lint to finish?
+    -  *(Especially when it shows which file is being linted right now!)*
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/Nick2bad4u/eslint-plugin-file-progress-2/refs/heads/master/assets/progress-2.gif" alt="Progress Demo" width="100%">
-  <img src="https://raw.githubusercontent.com/Nick2bad4u/eslint-plugin-file-progress-2/refs/heads/master/assets/summary-msg.png" alt="Detailed summary demo" width="100%">
+  <p>Live per-file progress output from the `recommended` preset.</p>
+  <img src="./docs/docusaurus/static/demos/presets/recommended.gif" alt="Recommended preset demo" width="100%">
 </div>
+<div align="center">
+  <p>Live per-file progress output from the `recommended-detailed` preset.</p>
+  <img src="./docs/docusaurus/static/demos/presets/recommended-detailed.gif" alt="Recommended detailed preset demo" width="100%">
+</div>
+
+- This page shows the default recommended preset options:
+    -  [✅ `recommended` preset page](./docs/rules/presets/recommended.md)
+- But there are alot of ways to customize the output, and this page has a demo of every single rule option in action:
+    -  [⭐ `activate` rule page](./docs/rules/activate.md#rule-options)
 
 ## Installation
 
@@ -84,9 +95,8 @@ export default [
 
 ### Rule Options
 
-For the full option interface, defaults, and option-by-option behavior
-explanation (including `fileNameOnNewLine`, `throttleMs`, and mode handling),
-see [`file-progress/activate` Rule Options](./docs/rules/activate.md#rule-options).
+- For the full option interface, defaults, example usage gifs, and option-by-option behavior explanation:
+    - [⭐ `activate` Rule Page](./docs/rules/activate.md#rule-options)
 
 ## Presets
 

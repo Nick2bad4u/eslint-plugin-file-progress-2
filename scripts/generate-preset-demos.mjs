@@ -128,8 +128,12 @@ const aggBinary =
 const { fileProgressPresetCatalog, getPresetCatalogEntry } = await import(
     builtCatalogModuleUrl.href
 );
-const { formatFileProgress, formatGenericProgress, formatSuccessMessage } =
-    await import(builtFormattingModuleUrl.href);
+const {
+    formatFailureMessage,
+    formatFileProgress,
+    formatGenericProgress,
+    formatSuccessMessage,
+} = await import(builtFormattingModuleUrl.href);
 const { normalizeSettings } = await import(builtOptionsModuleUrl.href);
 const { default: builtPlugin } = await import(builtPluginModuleUrl.href);
 /* eslint-enable no-unsanitized/method -- Re-enable after the controlled dynamic imports. */
@@ -422,9 +426,23 @@ const getDemoCommandText = (presetName) => {
  * @type {readonly Readonly<{
  *     name: string;
  *     settings: Record<string, unknown>;
+ *     summaryExitCode?: 0 | 1;
  * }>[]}
  */
 const optionDemoCatalog = [
+    {
+        name: "detailed-success",
+        settings: {
+            detailedSuccess: true,
+        },
+    },
+    {
+        name: "failure-mark",
+        settings: {
+            failureMark: "‼",
+        },
+        summaryExitCode: 1,
+    },
     {
         name: "file-name-on-new-line",
         settings: {
@@ -432,9 +450,39 @@ const optionDemoCatalog = [
         },
     },
     {
-        name: "basename-path-format",
+        name: "hide",
         settings: {
-            pathFormat: "basename",
+            hide: true,
+        },
+    },
+    {
+        name: "hide-directory-names",
+        settings: {
+            hideDirectoryNames: true,
+        },
+    },
+    {
+        name: "hide-file-name",
+        settings: {
+            hideFileName: true,
+        },
+    },
+    {
+        name: "hide-prefix",
+        settings: {
+            hidePrefix: true,
+        },
+    },
+    {
+        name: "mode-compact",
+        settings: {
+            mode: "compact",
+        },
+    },
+    {
+        name: "mode-summary-only",
+        settings: {
+            mode: "summary-only",
         },
     },
     {
@@ -444,15 +492,58 @@ const optionDemoCatalog = [
         },
     },
     {
-        name: "detailed-success",
+        name: "output-stream-stdout",
         settings: {
-            detailedSuccess: true,
+            outputStream: "stdout",
+        },
+    },
+    {
+        name: "path-format-basename",
+        settings: {
+            pathFormat: "basename",
+        },
+    },
+    {
+        name: "prefix-mark",
+        settings: {
+            prefixMark: "→",
+        },
+    },
+    {
+        name: "show-summary-when-hidden",
+        settings: {
+            hide: true,
+            showSummaryWhenHidden: true,
         },
     },
     {
         name: "spinner-style-line",
         settings: {
             spinnerStyle: "line",
+        },
+    },
+    {
+        name: "success-mark",
+        settings: {
+            successMark: "✅",
+        },
+    },
+    {
+        name: "custom-success-message",
+        settings: {
+            successMessage: "Lint finished with no issues.",
+        },
+    },
+    {
+        name: "throttle-ms",
+        settings: {
+            throttleMs: 250,
+        },
+    },
+    {
+        name: "tty-only",
+        settings: {
+            ttyOnly: true,
         },
     },
     {
@@ -526,6 +617,7 @@ const pushMultilineOutput = (castEvents, text, startTime, lineDelay) => {
  * @param {import("../src/_internal/progress-options.js").NormalizedProgressSettings} settings
  * @param {{
  *     quiet?: boolean;
+ *     summaryExitCode?: 0 | 1;
  *     summaryDurationMs?: number;
  * }} [options]
  *
@@ -533,6 +625,7 @@ const pushMultilineOutput = (castEvents, text, startTime, lineDelay) => {
  */
 const buildOutputEventsFromSettings = (settings, options = {}) => {
     const effectiveMode = settings.mode ?? "file";
+    const summaryExitCode = options.summaryExitCode ?? 0;
     const summaryDurationMs = options.summaryDurationMs ?? 12;
 
     /** @type {CastEvent[]} */
@@ -588,13 +681,22 @@ const buildOutputEventsFromSettings = (settings, options = {}) => {
         }
 
         currentTime += 0.01;
+        const summaryMessage =
+            summaryExitCode === 0
+                ? formatSuccessMessage(settings, {
+                      durationMs: summaryDurationMs,
+                      exitCode: summaryExitCode,
+                      filesLinted: 12,
+                  })
+                : formatFailureMessage(settings, {
+                      durationMs: summaryDurationMs,
+                      exitCode: summaryExitCode,
+                      filesLinted: 12,
+                  });
+
         currentTime = pushMultilineOutput(
             castEvents,
-            formatSuccessMessage(settings, {
-                durationMs: summaryDurationMs,
-                exitCode: 0,
-                filesLinted: 12,
-            }),
+            summaryMessage,
             currentTime,
             0.09
         );
@@ -625,11 +727,14 @@ const buildPresetOutputEvents = (presetName) => {
 
 /**
  * @param {Record<string, unknown>} rawOptionSettings
+ * @param {0 | 1 | undefined} summaryExitCode
  *
  * @returns {readonly CastEvent[]}
  */
-const buildOptionOutputEvents = (rawOptionSettings) =>
-    buildOutputEventsFromSettings(normalizeSettings(rawOptionSettings));
+const buildOptionOutputEvents = (rawOptionSettings, summaryExitCode) =>
+    buildOutputEventsFromSettings(normalizeSettings(rawOptionSettings), {
+        summaryExitCode,
+    });
 
 /**
  * @param {string} castFilePath
@@ -937,15 +1042,20 @@ const collectDemoWorkItems = () => {
     );
 
     const optionWorkItems = optionDemoCatalog.map(
-        /** @param {{ name: string; settings: Record<string, unknown> }} optionDemo */ (
-            optionDemo
-        ) => ({
+        /** @param {{
+    name: string;
+    settings: Record<string, unknown>;
+    summaryExitCode?: 0 | 1;
+}} optionDemo */ (optionDemo) => ({
             castDirectoryPath: optionCastsOutputDirectoryPath,
             commandText: "npx eslint src --config eslint.config.mjs",
             demoDirectoryPath: optionDemosOutputDirectoryPath,
             demoKindLabel: "Option",
             demoName: optionDemo.name,
-            outputEvents: buildOptionOutputEvents(optionDemo.settings),
+            outputEvents: buildOptionOutputEvents(
+                optionDemo.settings,
+                optionDemo.summaryExitCode
+            ),
             regenerateCommand: "npm run docs:demos:options",
         })
     );
