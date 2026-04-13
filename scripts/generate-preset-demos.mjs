@@ -733,7 +733,7 @@ const buildPresetOutputEvents = (presetName) => {
  */
 const buildOptionOutputEvents = (rawOptionSettings, summaryExitCode) =>
     buildOutputEventsFromSettings(normalizeSettings(rawOptionSettings), {
-        summaryExitCode,
+        ...(summaryExitCode === undefined ? {} : { summaryExitCode }),
     });
 
 /**
@@ -1042,11 +1042,14 @@ const collectDemoWorkItems = () => {
     );
 
     const optionWorkItems = optionDemoCatalog.map(
-        /** @param {{
-    name: string;
-    settings: Record<string, unknown>;
-    summaryExitCode?: 0 | 1;
-}} optionDemo */ (optionDemo) => ({
+        /**
+         * @param {{
+         *     name: string;
+         *     settings: Record<string, unknown>;
+         *     summaryExitCode?: 0 | 1;
+         * }} optionDemo
+         */
+        (optionDemo) => ({
             castDirectoryPath: optionCastsOutputDirectoryPath,
             commandText: "npx eslint src --config eslint.config.mjs",
             demoDirectoryPath: optionDemosOutputDirectoryPath,
