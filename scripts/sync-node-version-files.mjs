@@ -58,6 +58,40 @@ const normalizeNodeVersion = (version) => {
 const isRecord = (value) => typeof value === "object" && value !== null;
 
 /**
+ * Parse the `--version` argument (either `--version=x.y.z` or `--version
+ * x.y.z`).
+ *
+ * @param {string} argument - Current argument string.
+ * @param {readonly string[]} argumentList - Full argument list.
+ * @param {number} index - Current index into argumentList.
+ *
+ * @returns {{ version: string; consumed: number } | null}
+ */
+const parseVersionArgument = (argument, argumentList, index) => {
+    if (argument.startsWith("--version=")) {
+        return {
+            version: normalizeNodeVersion(argument.slice("--version=".length)),
+            consumed: 0,
+        };
+    }
+
+    if (argument === "--version") {
+        const nextArgument = argumentList[index + 1];
+
+        if (typeof nextArgument !== "string") {
+            throw new TypeError("Expected a version after --version.");
+        }
+
+        return {
+            version: normalizeNodeVersion(nextArgument),
+            consumed: 1,
+        };
+    }
+
+    return null;
+};
+
+/**
  * Parse command-line arguments.
  *
  * Supported options:
@@ -101,22 +135,15 @@ const parseArguments = (argumentList) => {
             continue;
         }
 
-        if (argument === "--version") {
-            const nextArgument = argumentList[index + 1];
+        const versionResult = parseVersionArgument(
+            argument,
+            argumentList,
+            index
+        );
 
-            if (typeof nextArgument !== "string") {
-                throw new TypeError("Expected a version after --version.");
-            }
-
-            explicitVersion = normalizeNodeVersion(nextArgument);
-            index += 1;
-            continue;
-        }
-
-        if (argument.startsWith("--version=")) {
-            explicitVersion = normalizeNodeVersion(
-                argument.slice("--version=".length)
-            );
+        if (versionResult !== null) {
+            explicitVersion = versionResult.version;
+            index += versionResult.consumed;
             continue;
         }
 

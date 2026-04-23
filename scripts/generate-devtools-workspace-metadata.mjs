@@ -125,10 +125,7 @@ try {
         "Pass --regenerate to assign a new UUID (note: that disconnects any previously connected DevTools workspace for this checkout)."
     );
 } catch (error) {
-    const message =
-        error instanceof Error
-            ? error.message
-            : String(error ?? "Unknown error");
+    const message = error instanceof Error ? error.message : String(error);
 
     console.error(message);
     process.exitCode = 1;

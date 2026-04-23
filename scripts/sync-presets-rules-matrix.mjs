@@ -56,7 +56,7 @@ const detectLineEnding = (markdown) =>
  * @returns {string}
  */
 const normalizeLineEndings = (markdown, lineEnding) =>
-    markdown.replace(/\r?\n/gv, lineEnding);
+    markdown.replaceAll(/\r?\n/gv, lineEnding);
 
 /**
  * @param {unknown} value

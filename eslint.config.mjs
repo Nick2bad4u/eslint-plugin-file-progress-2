@@ -742,7 +742,10 @@ export default defineConfig([
                         "docs/docusaurus/typedoc-plugins/prefixDocLinksCore.d.mts",
                         "docs/docusaurus/typedoc-plugins/prefixDocLinksCore.mjs",
                     ],
-                    defaultProject: "docs/docusaurus/tsconfig.eslint.json",
+                    defaultProject: path.join(
+                        import.meta.dirname,
+                        "docs/docusaurus/tsconfig.eslint.json"
+                    ),
                     maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 10,
                 },
                 sourceType: "module",

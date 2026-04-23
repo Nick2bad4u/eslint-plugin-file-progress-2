@@ -154,46 +154,40 @@ function findInlineLinkClosingParen(input, startIndex) {
 }
 
 /**
- * Splits a Markdown inline link payload into destination + remainder.
+ * Scans a core payload string for a `<...>` angle-bracket destination and
+ * returns the position of the closing `>`, or `-1` if unclosed.
  *
- * The payload is the text inside `(...)` for an inline link.
+ * @param {string} core
  *
- * - Destination may be `<...>` or a raw destination.
- * - Remainder (if any) includes the title and its leading whitespace.
- *
- * @param {string} payload
- *
- * @returns {{ destination: string; remainder: string }}
+ * @returns {number}
  */
-function splitInlineLinkDestination(payload) {
-    const core = payload.trim();
-    if (core.length === 0) {
-        return { destination: "", remainder: "" };
-    }
+function findAngleBracketDestinationEnd(core) {
+    let i = 1;
+    while (i < core.length) {
+        const ch = core.charAt(i);
 
-    // Destination in angle brackets: <...>
-    if (core.startsWith("<")) {
-        let i = 1;
-        while (i < core.length) {
-            const ch = core.charAt(i);
-
-            if (ch === "\\") {
-                i += 2;
-            } else if (ch === ">") {
-                return {
-                    destination: core.slice(0, i + 1),
-                    remainder: core.slice(i + 1),
-                };
-            } else {
-                i += 1;
-            }
+        if (ch === "\\") {
+            i += 2;
+        } else if (ch === ">") {
+            return i;
+        } else {
+            i += 1;
         }
-
-        // Unclosed `<...`; treat whole thing as destination.
-        return { destination: core, remainder: "" };
     }
 
-    // Raw destination: ends at first whitespace at depth 0.
+    return -1;
+}
+
+/**
+ * Scans a core payload string for the end of a raw (non-angle-bracket) link
+ * destination and returns the index of the first whitespace at depth 0, or
+ * `core.length` if no such character exists.
+ *
+ * @param {string} core
+ *
+ * @returns {number}
+ */
+function findRawDestinationEnd(core) {
     let depth = 0;
     let i = 0;
     while (i < core.length) {
@@ -221,17 +215,56 @@ function splitInlineLinkDestination(payload) {
             }
             default: {
                 if (depth === 0 && /\s/u.test(ch)) {
-                    return {
-                        destination: core.slice(0, i),
-                        remainder: core.slice(i),
-                    };
+                    return i;
                 }
                 i += 1;
             }
         }
     }
 
-    return { destination: core, remainder: "" };
+    return core.length;
+}
+
+/**
+ * Splits a Markdown inline link payload into destination + remainder.
+ *
+ * The payload is the text inside `(...)` for an inline link.
+ *
+ * - Destination may be `<...>` or a raw destination.
+ * - Remainder (if any) includes the title and its leading whitespace.
+ *
+ * @param {string} payload
+ *
+ * @returns {{ destination: string; remainder: string }}
+ */
+function splitInlineLinkDestination(payload) {
+    const core = payload.trim();
+    if (core.length === 0) {
+        return { destination: "", remainder: "" };
+    }
+
+    // Destination in angle brackets: <...>
+    if (core.startsWith("<")) {
+        const closeIndex = findAngleBracketDestinationEnd(core);
+
+        if (closeIndex === -1) {
+            // Unclosed `<...`; treat whole thing as destination.
+            return { destination: core, remainder: "" };
+        }
+
+        return {
+            destination: core.slice(0, closeIndex + 1),
+            remainder: core.slice(closeIndex + 1),
+        };
+    }
+
+    // Raw destination: ends at first whitespace at depth 0.
+    const endIndex = findRawDestinationEnd(core);
+
+    return {
+        destination: core.slice(0, endIndex),
+        remainder: core.slice(endIndex),
+    };
 }
 
 /**
@@ -273,6 +306,76 @@ function prefixInlineLinkPayload(payload) {
 }
 
 /**
+ * Counts how many consecutive times `char` repeats starting at `startIndex`
+ * within `str`.
+ *
+ * @param {string} str
+ * @param {number} startIndex
+ * @param {string} char
+ *
+ * @returns {number}
+ */
+function countCharRun(str, startIndex, char) {
+    let count = 0;
+    while (
+        startIndex + count < str.length &&
+        str.charAt(startIndex + count) === char
+    ) {
+        count += 1;
+    }
+    return count;
+}
+
+/**
+ * Updates backtick code-span tracking state.
+ *
+ * @param {null | number} codeSpanLength - Currently-open code-span run length,
+ *   or null.
+ * @param {number} tickRun - Incoming run length.
+ *
+ * @returns {null | number} - Updated code-span tracking state.
+ */
+function updateCodeSpanState(codeSpanLength, tickRun) {
+    if (codeSpanLength === null) {
+        return tickRun;
+    }
+
+    if (tickRun === codeSpanLength) {
+        return null;
+    }
+
+    return codeSpanLength;
+}
+
+/**
+ * Processes a potential inline link `](` at position `i` in `line`.
+ *
+ * @param {string} line
+ * @param {number} i - Current position (points at `]`).
+ *
+ * @returns {{ text: string; newI: number }}
+ */
+function processInlineLinkAt(line, i) {
+    const labelOpen = findInlineLinkLabelOpenBracket(line, i);
+
+    if (labelOpen === -1) {
+        return { text: line.charAt(i), newI: i + 1 };
+    }
+
+    const urlStart = i + 2;
+    const end = findInlineLinkClosingParen(line, urlStart);
+
+    if (end === -1) {
+        return { text: line.charAt(i), newI: i + 1 };
+    }
+
+    const payload = line.slice(urlStart, end);
+    const rewrittenPayload = prefixInlineLinkPayload(payload);
+
+    return { text: `](${rewrittenPayload})`, newI: end + 1 };
+}
+
+/**
  * Prefixes bare Markdown-file link targets on a single line, avoiding
  * modifications inside inline code spans.
  *
@@ -285,33 +388,12 @@ function prefixInlineMarkdownLinksInLine(line) {
     /** @type {null | number} */
     let codeSpanLength = null;
 
-    /**
-     * Counts how many times `char` repeats starting at `startIndex`.
-     *
-     * @param {number} startIndex
-     * @param {string} char
-     */
-    const countRun = (startIndex, char) => {
-        let count = 0;
-        while (
-            startIndex + count < line.length &&
-            line.charAt(startIndex + count) === char
-        ) {
-            count += 1;
-        }
-        return count;
-    };
-
     while (i < line.length) {
         // Inline code spans (backticks). Track the opening run length and only close on the same length.
-        const tickRun = line.charAt(i) === "`" ? countRun(i, "`") : 0;
-        if (tickRun > 0) {
-            if (codeSpanLength === null) {
-                codeSpanLength = tickRun;
-            } else if (tickRun === codeSpanLength) {
-                codeSpanLength = null;
-            }
+        const tickRun = line.charAt(i) === "`" ? countCharRun(line, i, "`") : 0;
 
+        if (tickRun > 0) {
+            codeSpanLength = updateCodeSpanState(codeSpanLength, tickRun);
             out += line.slice(i, i + tickRun);
             i += tickRun;
         } else if (
@@ -320,26 +402,9 @@ function prefixInlineMarkdownLinksInLine(line) {
             line.charAt(i + 1) === "("
         ) {
             // Ensure this is actually a `[label](` sequence, not random text containing `](`.
-            const labelOpen = findInlineLinkLabelOpenBracket(line, i);
-
-            if (labelOpen === -1) {
-                out += line.charAt(i);
-                i += 1;
-            } else {
-                const urlStart = i + 2;
-                const end = findInlineLinkClosingParen(line, urlStart);
-
-                if (end === -1) {
-                    out += line.charAt(i);
-                    i += 1;
-                } else {
-                    const payload = line.slice(urlStart, end);
-                    const rewrittenPayload = prefixInlineLinkPayload(payload);
-
-                    out += `](${rewrittenPayload})`;
-                    i = end + 1;
-                }
-            }
+            const { text, newI } = processInlineLinkAt(line, i);
+            out += text;
+            i = newI;
         } else {
             out += line.charAt(i);
             i += 1;
@@ -347,6 +412,48 @@ function prefixInlineMarkdownLinksInLine(line) {
     }
 
     return out;
+}
+
+/**
+ * Extracts the fence marker character and run length from a regex match.
+ *
+ * @param {RegExpExecArray} fenceMatch
+ *
+ * @returns {{ marker: "`" | "~"; length: number }}
+ */
+function getFenceInfo(fenceMatch) {
+    const [matchText] = fenceMatch;
+    const run = matchText.trimStart();
+    const { groups } = fenceMatch;
+    const typedGroups =
+        /** @type {undefined | { marker: string | undefined }} */ (groups);
+    const markerChar = typedGroups?.marker ?? run.charAt(0);
+    /** @type {"`" | "~"} */
+    const marker = markerChar === "`" ? "`" : "~";
+
+    return { length: run.length, marker };
+}
+
+/**
+ * Updates fence tracking state after encountering a fence delimiter line.
+ *
+ * @param {null | FenceState} fenceState
+ * @param {{ marker: "`" | "~"; length: number }} fenceInfo
+ *
+ * @returns {null | FenceState}
+ */
+function updateFenceState(fenceState, fenceInfo) {
+    const { marker, length } = fenceInfo;
+
+    if (fenceState === null) {
+        return { length, marker };
+    }
+
+    if (marker === fenceState.marker && length >= fenceState.length) {
+        return null;
+    }
+
+    return fenceState;
 }
 
 /**
@@ -372,29 +479,7 @@ export function prefixBareMarkdownFileLinksInMarkdown(input) {
         // Only treat runs of a single marker character as fences.
         const fenceMatch = /^\s*(?<marker>[`~])\k<marker>{2,}/u.exec(line);
         if (fenceMatch) {
-            const [matchText] = fenceMatch;
-            const run = matchText.trimStart();
-            const { groups } = fenceMatch;
-            const typedGroups =
-                /** @type {undefined | { marker: string | undefined }} */ (
-                    groups
-                );
-            const markerChar = typedGroups?.marker ?? run.charAt(0);
-            /** @type {"`" | "~"} */
-            let marker = "~";
-            if (markerChar === "`") {
-                marker = "`";
-            }
-            const { length } = run;
-
-            if (fenceState === null) {
-                fenceState = { length, marker };
-            } else if (
-                marker === fenceState.marker &&
-                length >= fenceState.length
-            ) {
-                fenceState = null;
-            }
+            fenceState = updateFenceState(fenceState, getFenceInfo(fenceMatch));
 
             return line;
         }

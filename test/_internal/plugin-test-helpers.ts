@@ -5,7 +5,6 @@ import type { FileProgressRuleName } from "../../src/types.js";
 import plugin from "../../src/index.js";
 
 type CompatibleRuleModule = Parameters<RuleTester["run"]>[1];
-type PluginRuleModule = (typeof plugin.rules)[FileProgressRuleName];
 
 export const getPluginRule = (
     ruleName: FileProgressRuleName
@@ -16,5 +15,5 @@ export const getPluginRule = (
         throw new Error(`Missing plugin rule: ${ruleName}`);
     }
 
-    return ruleModule as CompatibleRuleModule & PluginRuleModule;
+    return ruleModule as unknown as CompatibleRuleModule;
 };

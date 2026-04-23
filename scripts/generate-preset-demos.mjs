@@ -345,13 +345,17 @@ const createTypedPromptEvents = (presetName, commandText) => {
     /** @type {CastEvent[]} */
     const castEvents = [];
     const promptText = "demo> ";
-    const prefilledCommandPrefix = commandText.startsWith("CI=true npx eslint ")
-        ? "CI=true npx eslint "
-        : commandText.startsWith("npx eslint ")
-          ? "npx eslint "
-          : commandText.startsWith("CI=true ")
-            ? "CI=true npx "
-            : "npx ";
+
+    let prefilledCommandPrefix = "npx ";
+
+    if (commandText.startsWith("CI=true npx eslint ")) {
+        prefilledCommandPrefix = "CI=true npx eslint ";
+    } else if (commandText.startsWith("npx eslint ")) {
+        prefilledCommandPrefix = "npx eslint ";
+    } else if (commandText.startsWith("CI=true ")) {
+        prefilledCommandPrefix = "CI=true npx ";
+    }
+
     const typedCommandRemainder = commandText.startsWith(prefilledCommandPrefix)
         ? commandText.slice(prefilledCommandPrefix.length)
         : commandText;
@@ -805,7 +809,9 @@ const renderGif = async (
 
             rejectPromise(
                 new Error(
-                    `agg failed for ${demoName} with exit code ${String(exitCode)}.${stderrText.length > 0 ? `\n${stderrText}` : ""}`
+                    `agg failed for ${demoName} with exit code ${String(exitCode)}.${
+                        stderrText.length > 0 ? "\n" + stderrText : ""
+                    }`
                 )
             );
         });

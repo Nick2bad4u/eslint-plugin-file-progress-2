@@ -12,7 +12,9 @@ const typedocCliPath = resolve(
     "typedoc"
 );
 const windowsSystemRoot =
-    process.env["SystemRoot"] ?? process.env["WINDIR"] ?? "C:\\Windows";
+    process.env["SystemRoot"] ??
+    process.env["WINDIR"] ??
+    String.raw`C:\Windows`;
 const substExecutablePath = resolve(windowsSystemRoot, "System32", "subst.exe");
 
 /**
@@ -151,13 +153,17 @@ function getSubstMappings() {
             continue;
         }
 
-        const driveLetterCode = driveLetter.charCodeAt(0);
+        const driveLetterCode = driveLetter.codePointAt(0);
+
+        if (driveLetterCode === undefined) {
+            continue;
+        }
 
         if (driveLetterCode < 65 || driveLetterCode > 90) {
             continue;
         }
 
-        if (!line.startsWith(":\\: => ", 1)) {
+        if (!line.startsWith(String.raw`:\: => `, 1)) {
             continue;
         }
 

@@ -83,8 +83,6 @@ const EXTERNAL_PROTOCOLS = [
     "file:",
 ];
 
-const LEADING_BANG = /^!/;
-
 /**
  * Truncate safely keeping last `max` codepoints
  *
@@ -320,7 +318,7 @@ async function checkFile(markdownPath, issues, issueSet, metrics) {
     for (const match of matches) {
         const fullMatch = match[0];
         const link = match[1];
-        if (LEADING_BANG.test(fullMatch)) {
+        if (fullMatch.startsWith("!")) {
             metrics.imageLinksIgnored++;
             continue;
         }

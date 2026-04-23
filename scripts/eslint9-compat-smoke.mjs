@@ -39,7 +39,7 @@ const builtPluginPath = path.resolve(repositoryRootPath, "dist/index.js");
 
 if (!existsSync(builtPluginPath)) {
     throw new Error(
-        `Missing built plugin entry at ${builtPluginPath}. Run \"npm run build\" before executing this smoke test.`
+        `Missing built plugin entry at ${builtPluginPath}. Run "npm run build" before executing this smoke test.`
     );
 }
 
@@ -88,7 +88,7 @@ const assertEslintMajor = (expectedMajor) => {
     const runtimeVersion = ESLint.version;
 
     if (typeof runtimeVersion !== "string" || runtimeVersion.length === 0) {
-        throw new Error(
+        throw new TypeError(
             `Unable to determine ESLint runtime version: ${String(runtimeVersion)}`
         );
     }
@@ -96,7 +96,7 @@ const assertEslintMajor = (expectedMajor) => {
     const [runtimeMajorText] = runtimeVersion.split(".", 1);
 
     if (runtimeMajorText === undefined || runtimeMajorText.length === 0) {
-        throw new Error(
+        throw new TypeError(
             `Unable to parse ESLint runtime version: ${runtimeVersion}`
         );
     }
@@ -104,7 +104,7 @@ const assertEslintMajor = (expectedMajor) => {
     const runtimeMajor = Number.parseInt(runtimeMajorText, 10);
 
     if (Number.isNaN(runtimeMajor)) {
-        throw new Error(
+        throw new TypeError(
             `Unable to parse ESLint runtime version: ${runtimeVersion}`
         );
     }

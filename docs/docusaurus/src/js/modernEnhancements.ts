@@ -178,6 +178,78 @@ function isSidebarLinkTokenized(link: HTMLAnchorElement): boolean {
 }
 
 /**
+ * Processes a single sidebar link element for runtime kind prefixing.
+ *
+ * @param link - Sidebar anchor element.
+ * @param linkLabel - The visible text label for this link.
+ * @param mutations - Mutation tracking array to push into.
+ *
+ * @returns `true` if the link was handled and the caller should skip other
+ *   checks.
+ */
+function processRuntimeSidebarLink(
+    link: HTMLAnchorElement,
+    linkLabel: string,
+    mutations: SidebarLabelMutation[]
+): boolean {
+    if (!isRuntimeSidebarLink(link)) {
+        return false;
+    }
+
+    const runtimePrefix = getRuntimeSidebarKindPrefix(linkLabel);
+
+    if (runtimePrefix === null) {
+        return true;
+    }
+
+    const remainderText = linkLabel.slice(runtimePrefix.length).trimStart();
+
+    if (remainderText.length > 0) {
+        mutations.push({ element: link, originalLabel: linkLabel });
+
+        setSidebarLeadingToken({
+            link,
+            remainderText,
+            separator: "",
+            tokenClassName: "sb-inline-runtime-kind",
+            tokenText: `${runtimePrefix}\u00A0`,
+        });
+    }
+
+    return true;
+}
+
+/**
+ * Processes a single sidebar link element for rule-number prefixing.
+ *
+ * @param link - Sidebar anchor element.
+ * @param linkLabel - The visible text label for this link.
+ * @param mutations - Mutation tracking array to push into.
+ */
+function processNumberedRuleSidebarLink(
+    link: HTMLAnchorElement,
+    linkLabel: string,
+    mutations: SidebarLabelMutation[]
+): void {
+    if (!isNumberedRuleSidebarLink(link)) {
+        return;
+    }
+
+    const ruleNumberPrefix = getRuleNumberPrefix(linkLabel);
+
+    if (ruleNumberPrefix !== null) {
+        mutations.push({ element: link, originalLabel: linkLabel });
+
+        setSidebarLeadingToken({
+            link,
+            remainderText: ruleNumberPrefix.remainder,
+            tokenClassName: "sb-inline-rule-number",
+            tokenText: ruleNumberPrefix.numberToken,
+        });
+    }
+}
+
+/**
  * Enhance sidebar readability by tinting leading label tokens.
  *
  * @returns Cleanup callback that restores original labels.
@@ -197,49 +269,14 @@ function applySidebarLabelTokenColoring(): CleanupFunction {
                 continue;
             }
 
-            if (isRuntimeSidebarLink(link)) {
-                const runtimePrefix = getRuntimeSidebarKindPrefix(linkLabel);
+            const handledAsRuntime = processRuntimeSidebarLink(
+                link,
+                linkLabel,
+                mutations
+            );
 
-                if (runtimePrefix !== null) {
-                    const remainderText = linkLabel
-                        .slice(runtimePrefix.length)
-                        .trimStart();
-
-                    if (remainderText.length > 0) {
-                        mutations.push({
-                            element: link,
-                            originalLabel: linkLabel,
-                        });
-
-                        setSidebarLeadingToken({
-                            link,
-                            remainderText,
-                            separator: "",
-                            tokenClassName: "sb-inline-runtime-kind",
-                            tokenText: `${runtimePrefix}\u00A0`,
-                        });
-                    }
-
-                    continue;
-                }
-            }
-
-            if (isNumberedRuleSidebarLink(link)) {
-                const ruleNumberPrefix = getRuleNumberPrefix(linkLabel);
-
-                if (ruleNumberPrefix !== null) {
-                    mutations.push({
-                        element: link,
-                        originalLabel: linkLabel,
-                    });
-
-                    setSidebarLeadingToken({
-                        link,
-                        remainderText: ruleNumberPrefix.remainder,
-                        tokenClassName: "sb-inline-rule-number",
-                        tokenText: ruleNumberPrefix.numberToken,
-                    });
-                }
+            if (!handledAsRuntime) {
+                processNumberedRuleSidebarLink(link, linkLabel, mutations);
             }
         }
     };
@@ -543,10 +580,7 @@ function initializeEnhancements(): CleanupFunction {
     };
 }
 
-if (
-    typeof globalThis.window !== "undefined" &&
-    typeof globalThis.document !== "undefined"
-) {
+if (globalThis.window !== undefined && globalThis.document !== undefined) {
     const browserWindow = globalThis.window;
 
     initializeEnhancements();
