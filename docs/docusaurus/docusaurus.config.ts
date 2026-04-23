@@ -2,7 +2,7 @@ import { themes as prismThemes } from "prism-react-renderer";
 
 import type { Options as DocsPluginOptions } from "@docusaurus/plugin-content-docs";
 import type * as Preset from "@docusaurus/preset-classic";
-import type { Config } from "@docusaurus/types";
+import type { Config, PluginModule } from "@docusaurus/types";
 
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
@@ -12,22 +12,37 @@ import {
     fileProgressRuleCatalog,
 } from "../../src/_internal/plugin-catalog.js";
 
+/** GitHub organization used for edit links and project metadata. */
 const organizationName = "Nick2bad4u";
+/** Repository name used for edit links and project metadata. */
 const projectName = "eslint-plugin-file-progress-2";
+/** Public origin for the published documentation site. */
 const siteOrigin = "https://nick2bad4u.github.io";
+/** Route base path where docs site is deployed (GitHub Pages project path). */
 const baseUrl = process.env["DOCUSAURUS_BASE_URL"] ?? `/${projectName}/`;
+/** Canonical public site URL including the GitHub Pages project path. */
 const siteUrl = `${siteOrigin}${baseUrl}`;
+/** Canonical deployed docs root URL used for absolute project tool links. */
+const deployedDocsRootUrl = `https://nick2bad4u.github.io${baseUrl}`;
+/** Opt-in flag for experimental Docusaurus performance features. */
 const enableExperimentalFaster =
     process.env["DOCUSAURUS_ENABLE_EXPERIMENTAL"] === "true";
+/** Global site description used for SEO and social cards. */
 const siteDescription =
     "CLI-first documentation for eslint-plugin-file-progress-2, including setup guides, preset docs, rule reference, API pages, and maintainer notes.";
+/** Social preview image path relative to the static directory. */
 const socialCardImagePath = "img/logo.png";
+/** Absolute social preview image URL. */
 const socialCardImageUrl = new URL(socialCardImagePath, siteUrl).toString();
+/** Client module path for runtime DOM enhancement bootstrap script. */
 const modernEnhancementsClientModule = fileURLToPath(
     new URL("src/js/modernEnhancements.ts", import.meta.url)
 );
+/** PWA theme-color meta value for Chromium-based browsers. */
 const pwaThemeColor = "#6f63eb";
+/** Windows tile color for pinned-site metadata. */
 const pwaTileColor = "#6f63eb";
+/** Safari pinned-tab mask icon color. */
 const pwaMaskIconColor = "#8142a4";
 const footerCopyright =
     `© ${new Date().getFullYear()} ` +
@@ -40,8 +55,10 @@ const removeHeadAttrFlagKey = [
     "gacyPostBuildHeadAttribute",
 ].join("");
 
+/** Local require helper rooted at the docs workspace config file location. */
 const requireFromDocsWorkspace = createRequire(import.meta.url);
 
+/** Resolve an optional module specifier without throwing when absent. */
 const resolveOptionalModule = (moduleSpecifier: string): string | undefined => {
     try {
         return requireFromDocsWorkspace.resolve(moduleSpecifier);
@@ -57,7 +74,17 @@ const vscodeLanguageServerTypesEsmEntry = resolveOptionalModule(
     "vscode-languageserver-types/lib/esm/main.js"
 );
 
-const suppressKnownWebpackWarningsPlugin = () => ({
+/**
+ * Alias VS Code language-service packages to their ESM entries when they are
+ * present.
+ *
+ * @remarks
+ * Some transitive editor-style dependencies resolve the UMD build of
+ * `vscode-languageserver-types`, which causes noisy webpack critical-dependency
+ * warnings inside Docusaurus. This plugin only activates when those optional
+ * packages are actually installed in the current workspace.
+ */
+const suppressKnownWebpackWarningsPlugin: PluginModule = () => ({
     configureWebpack() {
         return {
             ignoreWarnings: [
@@ -98,22 +125,11 @@ const suppressKnownWebpackWarningsPlugin = () => ({
     name: "suppress-known-webpack-warnings",
 });
 
-const additionalFutureV4Flags: Readonly<Record<string, boolean>> = {
-    mdx1CompatDisabledByDefault: true,
-    siteStorageNamespacing: true,
-};
-
-const additionalFutureFlags: Readonly<Record<string, unknown>> = {
-    experimental_storage: {
-        namespace: true,
-        type: "localStorage",
-    },
-};
-
+/** Docusaurus future flags, including optional experimental fast path. */
 const futureConfig = {
     ...(enableExperimentalFaster
         ? {
-              experimental_faster: {
+              faster: {
                   mdxCrossCompilerCache: true,
                   rspackBundler: true,
                   rspackPersistentCache: true,
@@ -121,12 +137,17 @@ const futureConfig = {
               },
           }
         : {}),
-    ...additionalFutureFlags,
     v4: {
-        ...additionalFutureV4Flags,
         [removeHeadAttrFlagKey]: true,
-        removeLegacyPostBuildHeadAttribute: true,
+        // NOTE: Enabling cascade layers currently breaks our production CSS output
+        // (CssMinimizer parsing errors -> large chunks of CSS dropped), which
+        // makes many Infima (--ifm-*) variables undefined across the site.
+        // Re-enable only after verifying the build output CSS is valid.
         useCssCascadeLayers: false,
+        siteStorageNamespacing: true,
+        fasterByDefault: true,
+        removeLegacyPostBuildHeadAttribute: true,
+        mdx1CompatDisabledByDefault: true,
     },
 } satisfies Config["future"];
 
@@ -135,38 +156,39 @@ const config = {
     baseUrlIssueBanner: true,
     clientModules: [modernEnhancementsClientModule],
     deploymentBranch: "gh-pages",
-    favicon: "img/favicon.ico",
+    favicon: "img/favicon.svg",
     future: futureConfig,
+    storage: {
+        namespace: true,
+        type: "localStorage",
+    },
     headTags: [
+        // Preconnect to GitHub for faster resource loading
         {
-            attributes: {
-                href: siteOrigin,
-                rel: "preconnect",
-            },
+            attributes: { href: siteOrigin, rel: "preconnect" },
             tagName: "link",
         },
         {
-            attributes: {
-                href: "https://github.com",
-                rel: "preconnect",
-            },
+            attributes: { href: "https://github.com", rel: "preconnect" },
             tagName: "link",
         },
+        // JSON-LD structured data for rich search results
         {
-            attributes: {
-                type: "application/ld+json",
-            },
+            attributes: { type: "application/ld+json" },
             innerHTML: JSON.stringify({
                 "@context": "https://schema.org",
-                "@type": "WebSite",
+                "@type": "SoftwareApplication",
+                applicationCategory: "DeveloperApplication",
+                author: {
+                    "@type": "Person",
+                    name: organizationName,
+                    url: `https://github.com/${organizationName}`,
+                },
                 description: siteDescription,
                 image: socialCardImageUrl,
+                license: "https://opensource.org/licenses/MIT",
                 name: projectName,
-                publisher: {
-                    "@type": "Person",
-                    name: "Nick2bad4u",
-                    url: "https://github.com/Nick2bad4u",
-                },
+                operatingSystem: "Any",
                 url: siteUrl,
             }),
             tagName: "script",
@@ -227,7 +249,7 @@ const config = {
                         tagName: "meta",
                     },
                     {
-                        href: `${baseUrl}img/logo-192x192.png`,
+                        href: `${baseUrl}img/apple-touch-icon.png`,
                         rel: "apple-touch-icon",
                         tagName: "link",
                     },
@@ -238,7 +260,7 @@ const config = {
                         tagName: "link",
                     },
                     {
-                        content: `${baseUrl}img/logo-192x192.png`,
+                        content: `${baseUrl}img/web-app-manifest-192x192.png`,
                         name: "msapplication-TileImage",
                         tagName: "meta",
                     },
@@ -310,6 +332,27 @@ const config = {
                     ignorePatterns: ["/tests/**"],
                     lastmod: "datetime",
                 },
+                svgr: {
+                    svgrConfig: {
+                        dimensions: false,
+                        expandProps: "start",
+                        icon: true,
+                        memo: true,
+                        native: false,
+                        prettier: true,
+                        replaceAttrValues: {
+                            "#000": "currentColor",
+                            "#000000": "currentColor",
+                        },
+                        svgo: true,
+                        svgoConfig: {
+                            plugins: [{ active: false, name: "removeViewBox" }],
+                        },
+                        svgProps: { focusable: "false", role: "img" },
+                        titleProp: true,
+                        typescript: true,
+                    },
+                },
                 theme: {
                     customCss: "./src/css/custom.css",
                 },
@@ -360,11 +403,11 @@ const config = {
                             label: "\uea84 Repository",
                         },
                         {
-                            href: `https://nick2bad4u.github.io/eslint-plugin-file-progress-2/eslint-inspector/`,
+                            href: `${deployedDocsRootUrl}eslint-inspector/`,
                             label: "\ue7d2 ESLint Inspector",
                         },
                         {
-                            href: `https://nick2bad4u.github.io/eslint-plugin-file-progress-2/stylelint-inspector/`,
+                            href: `${deployedDocsRootUrl}stylelint-inspector/`,
                             label: "\ue7d2 Stylelint Inspector",
                         },
                     ],
@@ -407,6 +450,10 @@ const config = {
                 content:
                     "eslint, eslint-plugin, file-progress, progress output, flat config, cli, typescript",
                 name: "keywords",
+            },
+            {
+                content: siteDescription,
+                name: "description",
             },
             {
                 content: "summary_large_image",
@@ -544,8 +591,11 @@ const config = {
         },
         zoom: {
             background: {
-                dark: "rgb(50 50 50)",
-                light: "rgb(255 255 255)",
+                dark: "rgb(50, 50, 50)",
+                light: "rgb(255, 255, 255)",
+            },
+            config: {
+                // Options you can specify via https://github.com/francoischalifour/medium-zoom#usage
             },
             selector: ".markdown > img",
         },
@@ -555,15 +605,27 @@ const config = {
         [
             "@easyops-cn/docusaurus-search-local",
             {
+                docsDir: "site-docs",
+                docsRouteBasePath: "docs",
+                explicitSearchResultPath: false,
+                forceIgnoreNoIndex: true,
+                fuzzyMatchingDistance: 1,
                 hashed: true,
+                hideSearchBarWithNoSearchContext: false,
                 highlightSearchTermsOnTargetPage: true,
                 indexBlog: false,
                 indexDocs: true,
                 indexPages: false,
                 language: ["en"],
+                removeDefaultStemmer: true,
+                removeDefaultStopWordFilter: false,
                 searchBarPosition: "left",
                 searchBarShortcut: true,
+                searchBarShortcutHint: true,
+                searchBarShortcutKeymap: "ctrl+k",
+                searchResultContextMaxLength: 96,
                 searchResultLimits: 8,
+                useAllContextsWithNoSearchContext: false,
             },
         ],
     ],
