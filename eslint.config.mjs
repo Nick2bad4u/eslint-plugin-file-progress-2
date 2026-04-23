@@ -730,12 +730,24 @@ export default defineConfig([
             parserOptions: {
                 ecmaVersion: "latest",
                 jsDocParsingMode: "all",
-                project: [
-                    path.join(
+                projectService: {
+                    allowDefaultProject: [
+                        "docs/docusaurus/typedoc.local.config.mjs",
+                        "docs/docusaurus/typedoc-plugins/escapeMdxMarkdown.mjs",
+                        "docs/docusaurus/typedoc-plugins/escapeMdxMarkdownCore.mjs",
+                        "docs/docusaurus/typedoc-plugins/hashToBangLinks.mjs",
+                        "docs/docusaurus/typedoc-plugins/hashToBangLinksCore.d.mts",
+                        "docs/docusaurus/typedoc-plugins/hashToBangLinksCore.mjs",
+                        "docs/docusaurus/typedoc-plugins/prefixDocLinks.mjs",
+                        "docs/docusaurus/typedoc-plugins/prefixDocLinksCore.d.mts",
+                        "docs/docusaurus/typedoc-plugins/prefixDocLinksCore.mjs",
+                    ],
+                    defaultProject: path.join(
                         import.meta.dirname,
                         "docs/docusaurus/tsconfig.eslint.json"
                     ),
-                ],
+                    maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 20,
+                },
                 sourceType: "module",
                 tsconfigRootDir: import.meta.dirname,
                 warnOnUnsupportedTypeScriptVersion: true,
