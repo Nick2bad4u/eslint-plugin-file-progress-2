@@ -18,6 +18,9 @@ import type {
     SpinnerStyle,
 } from "../types.js";
 
+/**
+ * Fully normalized progress settings used at runtime.
+ */
 export interface NormalizedProgressSettings {
     readonly detailedSuccess: boolean;
     readonly failureMark: string;
@@ -57,6 +60,9 @@ const progressModes = [
 const outputStreams = ["stderr", "stdout"] as const;
 const pathFormats = ["relative", "basename"] as const;
 
+/**
+ * JSON schema describing the public rule options.
+ */
 export const progressOptionsSchema: RuleSchema = [
     {
         additionalProperties: false,
@@ -126,6 +132,9 @@ export const progressOptionsSchema: RuleSchema = [
     },
 ] as const satisfies RuleSchema;
 
+/**
+ * Default runtime settings used when callers omit all options.
+ */
 export const defaultSettings: Readonly<NormalizedProgressSettings> =
     Object.freeze({
         detailedSuccess: false,
@@ -163,13 +172,13 @@ const isProgressPathFormat = (value: string): value is ProgressPathFormat =>
     arrayIncludes(pathFormats, value as ProgressPathFormat);
 
 const getBooleanSetting = (
-    rawSettings: UnknownRecord,
+    rawSettings: Readonly<UnknownRecord>,
     settingKey: ProgressSettingKey
 ): boolean =>
     keyIn(rawSettings, settingKey) && rawSettings[settingKey] === true;
 
 const getNonNegativeIntegerSetting = (
-    rawSettings: UnknownRecord,
+    rawSettings: Readonly<UnknownRecord>,
     settingKey: ProgressSettingKey
 ): number | undefined => {
     if (!keyIn(rawSettings, settingKey)) {
@@ -190,7 +199,7 @@ const getNonNegativeIntegerSetting = (
 };
 
 const getStringSetting = (
-    rawSettings: UnknownRecord,
+    rawSettings: Readonly<UnknownRecord>,
     settingKey: ProgressSettingKey
 ): string | undefined => {
     if (!keyIn(rawSettings, settingKey)) {
@@ -202,8 +211,15 @@ const getStringSetting = (
     return typeof settingValue === "string" ? settingValue : undefined;
 };
 
+/**
+ * Reads the legacy shared `settings.progress` configuration, when present.
+ *
+ * @param settings - ESLint shared settings object.
+ *
+ * @returns Legacy progress settings value.
+ */
 export const getLegacyProgressSettings = (
-    settings: Rule.RuleContext["settings"]
+    settings: Readonly<Rule.RuleContext["settings"]>
 ): unknown => {
     if (!isRecord(settings) || !keyIn(settings, "progress")) {
         return undefined;
@@ -212,9 +228,25 @@ export const getLegacyProgressSettings = (
     return settings["progress"];
 };
 
-export const getRuleOptionSettings = (context: Rule.RuleContext): unknown =>
-    arrayFirst(context.options);
+/**
+ * Reads the first rule option object from the current rule context.
+ *
+ * @param context - ESLint rule context.
+ *
+ * @returns Raw rule option payload.
+ */
+export const getRuleOptionSettings = (
+    context: Readonly<Rule.RuleContext>
+): unknown => arrayFirst(context.options);
 
+/**
+ * Merges multiple raw settings objects into a single record.
+ *
+ * @param sources - Candidate settings sources ordered from lowest to highest
+ *   precedence.
+ *
+ * @returns Merged settings record.
+ */
 export const mergeProgressSettings = (
     ...sources: Readonly<UnknownArray>
 ): Readonly<UnknownRecord> => {
@@ -245,6 +277,13 @@ const resolveMark = (rawMark: unknown, fallbackMark: string): string => {
     return trimmedMark.length > 0 ? trimmedMark : fallbackMark;
 };
 
+/**
+ * Resolves a raw spinner style to a supported runtime value.
+ *
+ * @param rawStyle - Raw spinner style value.
+ *
+ * @returns Supported spinner style.
+ */
 export const resolveSpinnerStyle = (rawStyle: unknown): SpinnerStyle => {
     if (typeof rawStyle !== "string") {
         return defaultSettings.spinnerStyle;
@@ -253,6 +292,13 @@ export const resolveSpinnerStyle = (rawStyle: unknown): SpinnerStyle => {
     return isSpinnerStyle(rawStyle) ? rawStyle : defaultSettings.spinnerStyle;
 };
 
+/**
+ * Resolves a raw output stream value to a supported runtime value.
+ *
+ * @param rawStream - Raw output stream value.
+ *
+ * @returns Supported output stream.
+ */
 export const resolveOutputStream = (rawStream: unknown): OutputStream => {
     if (typeof rawStream !== "string") {
         return defaultSettings.outputStream;
@@ -261,6 +307,13 @@ export const resolveOutputStream = (rawStream: unknown): OutputStream => {
     return isOutputStream(rawStream) ? rawStream : defaultSettings.outputStream;
 };
 
+/**
+ * Resolves a raw progress mode to a supported runtime value.
+ *
+ * @param rawMode - Raw progress mode value.
+ *
+ * @returns Supported progress mode, if any.
+ */
 export const resolveProgressMode = (
     rawMode: unknown
 ): ProgressMode | undefined => {
@@ -271,6 +324,14 @@ export const resolveProgressMode = (
     return isProgressMode(rawMode) ? rawMode : defaultSettings.mode;
 };
 
+/**
+ * Resolves the path format, honoring the legacy `hideDirectoryNames` alias.
+ *
+ * @param rawPathFormat - Raw path format value.
+ * @param rawHideDirectoryNames - Legacy compatibility toggle.
+ *
+ * @returns Supported path format.
+ */
 export const resolvePathFormat = (
     rawPathFormat: unknown,
     rawHideDirectoryNames: unknown
@@ -287,6 +348,13 @@ export const resolvePathFormat = (
         : defaultSettings.pathFormat;
 };
 
+/**
+ * Normalizes raw rule or shared settings into the runtime settings shape.
+ *
+ * @param raw - Raw settings value.
+ *
+ * @returns Fully normalized settings object.
+ */
 export const normalizeSettings = (raw: unknown): NormalizedProgressSettings => {
     if (!isRecord(raw)) {
         return { ...defaultSettings };

@@ -2,7 +2,7 @@ import { constants as fsConstants } from "node:fs";
 import { access, readFile } from "node:fs/promises";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { generatePresetMatrixSectionFromPlugin } from "../../scripts/sync-presets-rules-matrix.mjs";
 import { generateReadmeRulesSectionFromPlugin } from "../../scripts/sync-readme-rules-table.mjs";
@@ -45,59 +45,67 @@ const extractMarkedSection = (
         .replaceAll("\r\n", "\n");
 };
 
-test("catalog entries resolve to existing docs and plugin registrations", async () => {
-    for (const ruleCatalogEntry of fileProgressRuleCatalog) {
-        await access(
-            path.resolve(repositoryRootPath, ruleCatalogEntry.docsPath),
-            fsConstants.F_OK
+describe("sync contracts", () => {
+    it("catalog entries resolve to existing docs and plugin registrations", async () => {
+        expect.hasAssertions();
+
+        for (const ruleCatalogEntry of fileProgressRuleCatalog) {
+            await access(
+                path.resolve(repositoryRootPath, ruleCatalogEntry.docsPath),
+                fsConstants.F_OK
+            );
+
+            expect(plugin.rules[ruleCatalogEntry.name]).toBeDefined();
+            expect(plugin.rules[ruleCatalogEntry.name].meta.docs.url).toBe(
+                ruleCatalogEntry.docsUrl
+            );
+        }
+
+        for (const presetCatalogEntry of fileProgressPresetCatalog) {
+            await access(
+                path.resolve(repositoryRootPath, presetCatalogEntry.docsPath),
+                fsConstants.F_OK
+            );
+
+            expect(plugin.configs[presetCatalogEntry.name]).toBeDefined();
+            expect(presetCatalogEntry.ruleName in plugin.rules).toBeTruthy();
+        }
+    });
+
+    it("readme generated rules section is in sync with plugin metadata", async () => {
+        expect.hasAssertions();
+
+        const readmeMarkdown = await readTextFile(readmeFilePath);
+        const currentSection = extractMarkedSection(
+            readmeMarkdown,
+            "<!-- begin generated rules table -->",
+            "<!-- end generated rules table -->"
         );
+        const generatedSection = generateReadmeRulesSectionFromPlugin(plugin, {
+            presetCatalog: fileProgressPresetCatalog,
+            ruleCatalog: fileProgressRuleCatalog,
+        }).replaceAll("\r\n", "\n");
 
-        expect(plugin.rules[ruleCatalogEntry.name]).toBeDefined();
-        expect(plugin.rules[ruleCatalogEntry.name].meta.docs.url).toBe(
-            ruleCatalogEntry.docsUrl
+        expect(currentSection).toBe(generatedSection);
+    });
+
+    it("preset matrix page is in sync with preset registry", async () => {
+        expect.hasAssertions();
+
+        const presetsIndexMarkdown = await readTextFile(presetsIndexFilePath);
+        const currentSection = extractMarkedSection(
+            presetsIndexMarkdown,
+            "<!-- begin generated preset matrix -->",
+            "<!-- end generated preset matrix -->"
         );
-    }
+        const generatedSection = generatePresetMatrixSectionFromPlugin(plugin, {
+            getRuleCatalogEntry: (ruleName) =>
+                getRuleCatalogEntry(
+                    ruleName as (typeof fileProgressRuleCatalog)[number]["name"]
+                ),
+            presetCatalog: fileProgressPresetCatalog,
+        }).replaceAll("\r\n", "\n");
 
-    for (const presetCatalogEntry of fileProgressPresetCatalog) {
-        await access(
-            path.resolve(repositoryRootPath, presetCatalogEntry.docsPath),
-            fsConstants.F_OK
-        );
-
-        expect(plugin.configs[presetCatalogEntry.name]).toBeDefined();
-        expect(presetCatalogEntry.ruleName in plugin.rules).toBeTruthy();
-    }
-});
-
-test("readme generated rules section is in sync with plugin metadata", async () => {
-    const readmeMarkdown = await readTextFile(readmeFilePath);
-    const currentSection = extractMarkedSection(
-        readmeMarkdown,
-        "<!-- begin generated rules table -->",
-        "<!-- end generated rules table -->"
-    );
-    const generatedSection = generateReadmeRulesSectionFromPlugin(plugin, {
-        presetCatalog: fileProgressPresetCatalog,
-        ruleCatalog: fileProgressRuleCatalog,
-    }).replaceAll("\r\n", "\n");
-
-    expect(currentSection).toBe(generatedSection);
-});
-
-test("preset matrix page is in sync with preset registry", async () => {
-    const presetsIndexMarkdown = await readTextFile(presetsIndexFilePath);
-    const currentSection = extractMarkedSection(
-        presetsIndexMarkdown,
-        "<!-- begin generated preset matrix -->",
-        "<!-- end generated preset matrix -->"
-    );
-    const generatedSection = generatePresetMatrixSectionFromPlugin(plugin, {
-        getRuleCatalogEntry: (ruleName) =>
-            getRuleCatalogEntry(
-                ruleName as (typeof fileProgressRuleCatalog)[number]["name"]
-            ),
-        presetCatalog: fileProgressPresetCatalog,
-    }).replaceAll("\r\n", "\n");
-
-    expect(currentSection).toBe(generatedSection);
+        expect(currentSection).toBe(generatedSection);
+    });
 });

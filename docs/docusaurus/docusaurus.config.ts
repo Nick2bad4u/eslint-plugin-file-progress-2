@@ -4,6 +4,9 @@ import type { Options as DocsPluginOptions } from "@docusaurus/plugin-content-do
 import type * as Preset from "@docusaurus/preset-classic";
 import type { Config } from "@docusaurus/types";
 
+import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
+
 import {
     fileProgressPresetCatalog,
     fileProgressRuleCatalog,
@@ -14,20 +17,141 @@ const projectName = "eslint-plugin-file-progress-2";
 const siteOrigin = "https://nick2bad4u.github.io";
 const baseUrl = process.env["DOCUSAURUS_BASE_URL"] ?? `/${projectName}/`;
 const siteUrl = `${siteOrigin}${baseUrl}`;
+const enableExperimentalFaster =
+    process.env["DOCUSAURUS_ENABLE_EXPERIMENTAL"] === "true";
 const siteDescription =
     "CLI-first documentation for eslint-plugin-file-progress-2, including setup guides, preset docs, rule reference, API pages, and maintainer notes.";
 const socialCardImagePath = "img/logo.png";
 const socialCardImageUrl = new URL(socialCardImagePath, siteUrl).toString();
+const modernEnhancementsClientModule = fileURLToPath(
+    new URL("src/js/modernEnhancements.ts", import.meta.url)
+);
+const pwaThemeColor = "#6f63eb";
+const pwaTileColor = "#6f63eb";
+const pwaMaskIconColor = "#8142a4";
 const footerCopyright =
     `© ${new Date().getFullYear()} ` +
     '<a href="https://github.com/Nick2bad4u/" target="_blank" rel="noopener noreferrer">Nick2bad4u</a> 💻 Built with ' +
     '<a href="https://docusaurus.io/" target="_blank" rel="noopener noreferrer">🦖 Docusaurus</a>.';
 
-const config: Config = {
+const removeHeadAttrFlagKey = [
+    "remove",
+    "Le",
+    "gacyPostBuildHeadAttribute",
+].join("");
+
+const requireFromDocsWorkspace = createRequire(import.meta.url);
+
+const resolveOptionalModule = (moduleSpecifier: string): string | undefined => {
+    try {
+        return requireFromDocsWorkspace.resolve(moduleSpecifier);
+    } catch {
+        return undefined;
+    }
+};
+
+const vscodeCssLanguageServiceEsmEntry = resolveOptionalModule(
+    "vscode-css-languageservice/lib/esm/cssLanguageService.js"
+);
+const vscodeLanguageServerTypesEsmEntry = resolveOptionalModule(
+    "vscode-languageserver-types/lib/esm/main.js"
+);
+
+const suppressKnownWebpackWarningsPlugin = () => ({
+    configureWebpack() {
+        return {
+            ignoreWarnings: [
+                (warning: unknown) => {
+                    const warningRecord = warning as
+                        | Readonly<Record<string, unknown>>
+                        | undefined;
+                    const warningMessage = warningRecord?.["message"];
+
+                    return (
+                        typeof warningMessage === "string" &&
+                        warningMessage.includes(
+                            "Critical dependency: require function is used in a way in which dependencies cannot be statically extracted"
+                        )
+                    );
+                },
+            ],
+            resolve: {
+                alias: {
+                    ...(vscodeCssLanguageServiceEsmEntry === undefined
+                        ? {}
+                        : {
+                              "vscode-css-languageservice$":
+                                  vscodeCssLanguageServiceEsmEntry,
+                          }),
+                    ...(vscodeLanguageServerTypesEsmEntry === undefined
+                        ? {}
+                        : {
+                              "vscode-languageserver-types$":
+                                  vscodeLanguageServerTypesEsmEntry,
+                              "vscode-languageserver-types/lib/umd/main.js$":
+                                  vscodeLanguageServerTypesEsmEntry,
+                          }),
+                },
+            },
+        };
+    },
+    name: "suppress-known-webpack-warnings",
+});
+
+const additionalFutureV4Flags: Readonly<Record<string, boolean>> = {
+    mdx1CompatDisabledByDefault: true,
+    siteStorageNamespacing: true,
+};
+
+const additionalFutureFlags: Readonly<Record<string, unknown>> = {
+    experimental_storage: {
+        namespace: true,
+        type: "localStorage",
+    },
+};
+
+const futureConfig = {
+    ...(enableExperimentalFaster
+        ? {
+              experimental_faster: {
+                  mdxCrossCompilerCache: true,
+                  rspackBundler: true,
+                  rspackPersistentCache: true,
+                  ssgWorkerThreads: true,
+              },
+          }
+        : {}),
+    ...additionalFutureFlags,
+    v4: {
+        ...additionalFutureV4Flags,
+        [removeHeadAttrFlagKey]: true,
+        removeLegacyPostBuildHeadAttribute: true,
+        useCssCascadeLayers: false,
+    },
+} satisfies Config["future"];
+
+const config = {
     baseUrl,
+    baseUrlIssueBanner: true,
+    clientModules: [modernEnhancementsClientModule],
     deploymentBranch: "gh-pages",
     favicon: "img/favicon.ico",
+    future: futureConfig,
     headTags: [
+        {
+            attributes: {
+                href: siteOrigin,
+                rel: "preconnect",
+            },
+            tagName: "link",
+        },
+        {
+            attributes: {
+                href: "https://github.com",
+                rel: "preconnect",
+            },
+            tagName: "link",
+        },
         {
             attributes: {
                 type: "application/ld+json",
@@ -53,18 +177,34 @@ const config: Config = {
         locales: ["en"],
     },
     markdown: {
+        anchors: {
+            maintainCase: true,
+        },
         emoji: true,
+        format: "detect",
+        hooks: {
+            onBrokenMarkdownImages: "warn",
+            onBrokenMarkdownLinks: "warn",
+        },
         mermaid: true,
     },
+    noIndex: false,
     onBrokenAnchors: "warn",
     onBrokenLinks: "warn",
     onDuplicateRoutes: "warn",
     organizationName,
     plugins: [
+        suppressKnownWebpackWarningsPlugin,
         "docusaurus-plugin-image-zoom",
         [
             "@docusaurus/plugin-pwa",
             {
+                debug: process.env["DOCUSAURUS_PWA_DEBUG"] === "true",
+                offlineModeActivationStrategies: [
+                    "appInstalled",
+                    "standalone",
+                    "queryString",
+                ],
                 pwaHead: [
                     {
                         href: `${baseUrl}manifest.json`,
@@ -72,20 +212,40 @@ const config: Config = {
                         tagName: "link",
                     },
                     {
-                        content: "#6f63eb",
+                        content: pwaThemeColor,
                         name: "theme-color",
                         tagName: "meta",
                     },
                     {
-                        href: `${baseUrl}img/logo_192x192.png`,
+                        content: "yes",
+                        name: "apple-mobile-web-app-capable",
+                        tagName: "meta",
+                    },
+                    {
+                        content: "default",
+                        name: "apple-mobile-web-app-status-bar-style",
+                        tagName: "meta",
+                    },
+                    {
+                        href: `${baseUrl}img/logo-192x192.png`,
                         rel: "apple-touch-icon",
                         tagName: "link",
                     },
                     {
-                        color: "#8142a4",
+                        color: pwaMaskIconColor,
                         href: `${baseUrl}img/logo.svg`,
                         rel: "mask-icon",
                         tagName: "link",
+                    },
+                    {
+                        content: `${baseUrl}img/logo-192x192.png`,
+                        name: "msapplication-TileImage",
+                        tagName: "meta",
+                    },
+                    {
+                        content: pwaTileColor,
+                        name: "msapplication-TileColor",
+                        tagName: "meta",
                     },
                 ],
             },
@@ -112,6 +272,7 @@ const config: Config = {
                     breadcrumbs: true,
                     editUrl: `https://github.com/${organizationName}/${projectName}/blob/master/docs/docusaurus/`,
                     includeCurrentVersion: true,
+                    onInlineTags: "ignore",
                     path: "site-docs",
                     routeBasePath: "docs",
                     showLastUpdateAuthor: true,
@@ -136,11 +297,17 @@ const config: Config = {
                         "**/*.spec.{js,jsx,ts,tsx}",
                     ],
                     include: ["**/*.{js,jsx,ts,tsx,md,mdx}"],
+                    mdxPageComponent: "@theme/MDXPage",
                     path: "src/pages",
                     routeBasePath: "/",
+                    showLastUpdateAuthor: true,
+                    showLastUpdateTime: true,
                 },
+                debug:
+                    process.env["DOCUSAURUS_PRESET_CLASSIC_DEBUG"] === "true",
                 sitemap: {
                     filename: "sitemap.xml",
+                    ignorePatterns: ["/tests/**"],
                     lastmod: "datetime",
                 },
                 theme: {
@@ -242,19 +409,12 @@ const config: Config = {
                 name: "keywords",
             },
             {
-                content: socialCardImageUrl,
-                property: "og:image",
-            },
-            {
-                content: socialCardImageUrl,
-                name: "twitter:image",
-            },
-            {
                 content: "summary_large_image",
                 name: "twitter:card",
             },
         ],
         navbar: {
+            style: "dark",
             hideOnScroll: true,
             items: [
                 {
@@ -410,6 +570,6 @@ const config: Config = {
     title: projectName,
     trailingSlash: false,
     url: siteOrigin,
-};
+} satisfies Config;
 
 export default config;

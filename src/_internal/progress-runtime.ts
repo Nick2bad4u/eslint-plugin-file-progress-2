@@ -33,6 +33,9 @@ import {
     resolveSpinnerStyle,
 } from "./progress-options.js";
 
+/**
+ * Internal helper surface exposed for tests and docs tooling.
+ */
 export interface ProgressInternals {
     readonly createProgressController: typeof createProgressController;
     readonly defaultSettings: Readonly<NormalizedProgressSettings>;
@@ -73,7 +76,7 @@ const getSharedProgressController = (): ProgressController => {
 };
 
 const createMeta = (
-    options: CreateProgressRuleOptions
+    options: Readonly<CreateProgressRuleOptions>
 ): FileProgressRuleModule["meta"] => ({
     deprecated: false,
     docs: {
@@ -90,8 +93,15 @@ const createMeta = (
     type: "suggestion",
 });
 
+/**
+ * Creates the single runtime rule module used by this plugin.
+ *
+ * @param options - Static rule metadata and live mode wiring.
+ *
+ * @returns ESLint rule module.
+ */
 export const createProgressRule = (
-    options: CreateProgressRuleOptions
+    options: Readonly<CreateProgressRuleOptions>
 ): FileProgressRuleModule => ({
     create(context) {
         getSharedProgressController().handleLintFile({
@@ -105,6 +115,9 @@ export const createProgressRule = (
     meta: createMeta(options),
 });
 
+/**
+ * Shared internal helpers exported for tests and docs generation.
+ */
 export const internals: ProgressInternals = {
     createProgressController,
     defaultSettings,

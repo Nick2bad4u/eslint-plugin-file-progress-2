@@ -1,3 +1,4 @@
+/* eslint-disable canonical/filename-no-index -- This package intentionally uses src/index.ts as its public entrypoint. */
 import type { Linter } from "eslint";
 import type { Except } from "type-fest";
 
@@ -21,7 +22,7 @@ import progressRule from "./rules/progress.js";
 const isCi = globalThis.process.env["CI"] === "true";
 
 const createRuleEntry = (
-    options?: ProgressRuleOptions
+    options?: Readonly<ProgressRuleOptions>
 ): Linter.RuleEntry<ProgressRuleOptionsTuple> =>
     isDefined(options) ? ["warn", options] : "warn";
 
@@ -61,7 +62,7 @@ const pluginCore = {
 const createPresetConfig = (
     configName: FileProgressConfigName,
     ruleName: FileProgressRuleName,
-    options?: ProgressRuleOptions
+    options?: Readonly<ProgressRuleOptions>
 ): Linter.Config => ({
     name: `file-progress/${configName}`,
     plugins: {
@@ -106,15 +107,22 @@ const configs: FileProgressPlugin["configs"] = createCatalogRecord<
     createPresetConfig(name, ruleName, presetOptionsByName[name])
 );
 
+/**
+ * Public plugin instance exported from the package root.
+ */
 const plugin: FileProgressPlugin = {
     ...pluginCore,
     configs,
 } satisfies FileProgressPlugin;
 
+/* eslint-disable no-barrel-files/no-barrel-files, canonical/no-re-export -- The package root intentionally re-exports its public type surface. */
 export type {
     FileProgressConfigName,
     FileProgressPlugin,
     ProgressRuleOptions,
     ProgressSettings,
 } from "./types.js";
+
 export default plugin;
+/* eslint-enable no-barrel-files/no-barrel-files, canonical/no-re-export -- Re-export block is limited to the public package boundary. */
+/* eslint-enable canonical/filename-no-index -- Re-enable after the intentional public entrypoint module. */

@@ -5,7 +5,7 @@ import {
     fileProgressRuleCatalog,
 } from "../../src/_internal/plugin-catalog.js";
 
-const sidebars: SidebarsConfig = {
+const sidebars = {
     rules: [
         {
             className: "sb-doc-overview",
@@ -56,6 +56,6 @@ const sidebars: SidebarsConfig = {
             })),
         },
     ],
-};
+} satisfies SidebarsConfig;
 
 export default sidebars;

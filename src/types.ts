@@ -6,8 +6,14 @@ import type {
     FileProgressRuleName as CatalogFileProgressRuleName,
 } from "./_internal/plugin-catalog.js";
 
+/**
+ * Union of all supported preset names.
+ */
 export type FileProgressConfigName = CatalogFileProgressConfigName;
 
+/**
+ * Public plugin contract exposed from the package entrypoint.
+ */
 export interface FileProgressPlugin extends Except<
     ESLint.Plugin,
     "configs" | "meta" | "rules"
@@ -23,6 +29,9 @@ export interface FileProgressPlugin extends Except<
     };
 }
 
+/**
+ * Strongly typed metadata shape for file-progress rule modules.
+ */
 export type FileProgressRuleMetaData = Except<
     NonNullable<Rule.RuleModule["meta"]>,
     "docs" | "messages" | "schema"
@@ -32,23 +41,47 @@ export type FileProgressRuleMetaData = Except<
     schema: RuleSchema;
 };
 
+/**
+ * Strongly typed rule module contract used by the plugin runtime.
+ */
 export type FileProgressRuleModule = Except<Rule.RuleModule, "meta"> & {
     defaultOptions: ProgressRuleOptionsTuple;
     meta: FileProgressRuleMetaData;
 };
 
+/**
+ * Union of all supported public rule names.
+ */
 export type FileProgressRuleName = CatalogFileProgressRuleName;
 
+/**
+ * Writable output stream targeted by live progress output.
+ */
 export type OutputStream = "stderr" | "stdout";
 
+/**
+ * Live progress display mode.
+ */
 export type ProgressMode = "compact" | "file" | "summary-only";
 
+/**
+ * Path rendering mode used for file progress lines.
+ */
 export type ProgressPathFormat = "basename" | "relative";
 
+/**
+ * Message identifiers exposed by the rule metadata.
+ */
 export type ProgressRuleMessageIds = "status";
 
+/**
+ * Public option object accepted by the progress rule.
+ */
 export type ProgressRuleOptions = ProgressSettings;
 
+/**
+ * Tuple form used by ESLint for rule options.
+ */
 export type ProgressRuleOptionsTuple = [ProgressRuleOptions?];
 
 /**
@@ -81,6 +114,9 @@ export interface ProgressSettings {
     ttyOnly?: boolean;
 }
 
+/**
+ * Supported spinner styles for live progress output.
+ */
 export type SpinnerStyle = "arc" | "bounce" | "clock" | "dots" | "line";
 
 type ProgressRuleDocs = Readonly<{

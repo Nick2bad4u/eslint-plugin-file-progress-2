@@ -5,6 +5,9 @@ import { createProgressRule } from "../_internal/progress-runtime.js";
 
 const { docsUrl } = getRuleCatalogEntry("activate");
 
+/**
+ * Public ESLint rule module for `file-progress/activate`.
+ */
 const progressRule: FileProgressRuleModule = createProgressRule({
     defaultOptions: {},
     description: "Display live per-file lint progress in CLI output.",

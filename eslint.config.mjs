@@ -37,7 +37,6 @@ import depend from "eslint-plugin-depend";
 import docusaurus2 from "eslint-plugin-docusaurus-2";
 import eslintPluginEslintPlugin from "eslint-plugin-eslint-plugin";
 import etcMisc from "eslint-plugin-etc-misc";
-import typedocPlugin from "eslint-plugin-typedoc";
 import githubActions from "eslint-plugin-github-actions-2";
 import immutable from "eslint-plugin-immutable-2";
 import { importX } from "eslint-plugin-import-x";
@@ -72,6 +71,7 @@ import pluginTestingLibrary from "eslint-plugin-testing-library";
 import eslintPluginToml from "eslint-plugin-toml";
 import pluginTsdoc from "eslint-plugin-tsdoc";
 import tsdocRequire from "eslint-plugin-tsdoc-require-2";
+import typedocPlugin from "eslint-plugin-typedoc";
 import typefest from "eslint-plugin-typefest";
 import pluginUndefinedCss from "eslint-plugin-undefined-css-classes";
 import eslintPluginUnicorn from "eslint-plugin-unicorn";
@@ -608,6 +608,10 @@ export default defineConfig([
             "docs/docusaurus/.docusaurus/**",
             "docs/docusaurus/build/**",
             "docs/docusaurus/static/eslint-inspector/**",
+            "docs/docusaurus/typedoc.local.config.mjs",
+            "docs/docusaurus/typedoc-plugins/**/*.d.mts",
+            "docs/docusaurus/typedoc-plugins/**/*.mjs",
+            "docs/docusaurus/typedoc-plugins/**/*.mts",
         ],
         languageOptions: {
             parser: tseslintParser,
@@ -618,13 +622,7 @@ export default defineConfig([
                 },
                 ecmaVersion: "latest",
                 jsDocParsingMode: "all",
-                projectService: {
-                    allowDefaultProject: [
-                        "docs/docusaurus/typedoc.local.config.mjs",
-                        "docs/docusaurus/typedoc-plugins/*.mjs",
-                        "docs/docusaurus/typedoc-plugins/*.mts",
-                    ],
-                },
+                projectService: true,
                 sourceType: "module",
                 tsconfigRootDir: import.meta.dirname,
                 warnOnUnsupportedTypeScriptVersion: true,
@@ -721,6 +719,38 @@ export default defineConfig([
         settings: {
             ...eslintReactPlugin.configs["strict-type-checked"]?.settings,
         },
+    },
+    {
+        files: [
+            "docs/docusaurus/typedoc.local.config.mjs",
+            "docs/docusaurus/typedoc-plugins/**/*.{d.mts,mjs,mts}",
+        ],
+        languageOptions: {
+            parser: tseslintParser,
+            parserOptions: {
+                ecmaVersion: "latest",
+                jsDocParsingMode: "all",
+                projectService: {
+                    allowDefaultProject: [
+                        "docs/docusaurus/typedoc.local.config.mjs",
+                        "docs/docusaurus/typedoc-plugins/escapeMdxMarkdown.mjs",
+                        "docs/docusaurus/typedoc-plugins/escapeMdxMarkdownCore.mjs",
+                        "docs/docusaurus/typedoc-plugins/hashToBangLinks.mjs",
+                        "docs/docusaurus/typedoc-plugins/hashToBangLinksCore.d.mts",
+                        "docs/docusaurus/typedoc-plugins/hashToBangLinksCore.mjs",
+                        "docs/docusaurus/typedoc-plugins/prefixDocLinks.mjs",
+                        "docs/docusaurus/typedoc-plugins/prefixDocLinksCore.d.mts",
+                        "docs/docusaurus/typedoc-plugins/prefixDocLinksCore.mjs",
+                    ],
+                    defaultProject: "docs/docusaurus/tsconfig.eslint.json",
+                    maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 10,
+                },
+                sourceType: "module",
+                tsconfigRootDir: import.meta.dirname,
+                warnOnUnsupportedTypeScriptVersion: true,
+            },
+        },
+        name: "Docusaurus TypeDoc Tooling Files",
     },
     // #endregion
     // #region 🚢 Local Plugin Import

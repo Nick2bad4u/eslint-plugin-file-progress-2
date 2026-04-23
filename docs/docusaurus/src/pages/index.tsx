@@ -135,6 +135,11 @@ const homeCards = [
     },
 ] as const satisfies readonly HomeCard[];
 
+/**
+ * Renders the home page for the documentation site.
+ *
+ * @returns Landing page content for eslint-plugin-file-progress-2 docs.
+ */
 export default function Home() {
     const logoSrc = useBaseUrl("/img/logo.svg");
 

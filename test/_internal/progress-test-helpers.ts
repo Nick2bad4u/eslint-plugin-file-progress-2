@@ -59,6 +59,10 @@ export interface MockWriteStream<Fd extends 1 | 2 = 1 | 2>
     readonly writes: string[];
 }
 
+interface GetLatestSpinnerRecordOptions {
+    readonly created: readonly MockSpinnerRecord[];
+}
+
 type SpinnerCreateOptions = NonNullable<Parameters<typeof createSpinner>[1]>;
 
 type SpinnerMethod =
@@ -77,99 +81,97 @@ type SpinnerMethod =
     | "write";
 
 const recordEvent = (
-    events: MockSpinnerEvent[],
     method: SpinnerMethod,
     payload?: unknown
-): void => {
-    events.push(
-        payload === undefined
-            ? { method }
-            : {
-                  method,
-                  payload,
-              }
-    );
-};
+): MockSpinnerEvent =>
+    payload === undefined
+        ? { method }
+        : {
+              method,
+              payload,
+          };
 
 export const createMockSpinnerFactory = (): {
     readonly created: MockSpinnerRecord[];
     readonly spinnerFactory: (
         text?: string,
-        options?: SpinnerCreateOptions
+        options?: Readonly<SpinnerCreateOptions>
     ) => Spinner;
 } => {
     const created: MockSpinnerRecord[] = [];
 
     const spinnerFactory = (
         text = "",
-        options?: SpinnerCreateOptions
+        options?: Readonly<SpinnerCreateOptions>
     ): Spinner => {
         const events: MockSpinnerEvent[] = [];
         let spinning = false;
 
         const spinner: Spinner = {
             clear() {
-                recordEvent(events, "clear");
+                events.push(recordEvent("clear"));
                 return spinner;
             },
             error(payload) {
                 spinning = false;
-                recordEvent(events, "error", payload);
+                events.push(recordEvent("error", payload));
                 return spinner;
             },
             info(payload) {
-                recordEvent(events, "info", payload);
+                events.push(recordEvent("info", payload));
                 return spinner;
             },
             isSpinning() {
                 return spinning;
             },
             loop() {
-                recordEvent(events, "loop");
+                events.push(recordEvent("loop"));
                 return spinner;
             },
             render() {
-                recordEvent(events, "render");
+                events.push(recordEvent("render"));
                 return spinner;
             },
             reset() {
                 spinning = false;
-                recordEvent(events, "reset");
+                events.push(recordEvent("reset"));
                 return spinner;
             },
             spin() {
                 spinning = true;
-                recordEvent(events, "spin");
+                events.push(recordEvent("spin"));
                 return spinner;
             },
             start(payload) {
                 spinning = true;
-                recordEvent(events, "start", payload);
+                events.push(recordEvent("start", payload));
                 return spinner;
             },
             stop(payload) {
                 spinning = false;
-                recordEvent(events, "stop", payload);
+                events.push(recordEvent("stop", payload));
                 return spinner;
             },
             success(payload) {
                 spinning = false;
-                recordEvent(events, "success", payload);
+                events.push(recordEvent("success", payload));
                 return spinner;
             },
             update(payload) {
-                recordEvent(events, "update", payload);
+                events.push(recordEvent("update", payload));
                 return spinner;
             },
             warn(payload) {
-                recordEvent(events, "warn", payload);
+                events.push(recordEvent("warn", payload));
                 return spinner;
             },
             write(payload, clear) {
-                recordEvent(events, "write", {
-                    clear,
-                    payload,
-                });
+                events.push(
+                    recordEvent("write", {
+                        clear,
+                        payload,
+                    })
+                );
                 return spinner;
             },
         };
@@ -191,8 +193,8 @@ export const createMockSpinnerFactory = (): {
 };
 
 export const createMockWriteStream = <Fd extends 1 | 2 = 1>(
-    overrides: Partial<
-        Pick<MockWriteStream<Fd>, "columns" | "fd" | "isTTY">
+    overrides: Readonly<
+        Partial<Pick<MockWriteStream<Fd>, "columns" | "fd" | "isTTY">>
     > = {}
 ): MockWriteStream<Fd> => {
     const writes: string[] = [];
@@ -202,7 +204,7 @@ export const createMockWriteStream = <Fd extends 1 | 2 = 1>(
         columns: overrides.columns ?? 120,
         fd,
         isTTY: overrides.isTTY ?? true,
-        write(chunk: string | Uint8Array): boolean {
+        write(chunk: Readonly<Uint8Array> | string): boolean {
             writes.push(
                 typeof chunk === "string"
                     ? chunk
@@ -215,7 +217,7 @@ export const createMockWriteStream = <Fd extends 1 | 2 = 1>(
 };
 
 export const createMockProcess = (
-    streams: Partial<Pick<MockProcess, "stderr" | "stdout">> = {}
+    streams: Readonly<Partial<Pick<MockProcess, "stderr" | "stdout">>> = {}
 ): MockProcess => {
     // eslint-disable-next-line unicorn/prefer-event-target -- Node.js process.once semantics are EventEmitter-based, so the mock matches that API directly.
     const emitter = new EventEmitter();
@@ -236,8 +238,9 @@ export const createMockProcess = (
 };
 
 export const getLatestSpinnerRecord = (
-    created: readonly MockSpinnerRecord[]
+    options: Readonly<GetLatestSpinnerRecordOptions>
 ): MockSpinnerRecord => {
+    const { created } = options;
     const latestRecord = created.at(-1);
 
     if (latestRecord === undefined) {

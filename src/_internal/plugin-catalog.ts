@@ -1,8 +1,14 @@
 const docsBaseUrl =
     "https://nick2bad4u.github.io/eslint-plugin-file-progress-2/docs/rules";
 
+/**
+ * Canonical list of public rule names exported by the plugin.
+ */
 export const fileProgressRuleNames = ["activate"] as const;
 
+/**
+ * Metadata describing a public rule doc page and navigation labels.
+ */
 export interface FileProgressRuleCatalogEntry {
     readonly docsId: string;
     readonly docsPath: string;
@@ -12,8 +18,14 @@ export interface FileProgressRuleCatalogEntry {
     readonly sidebarLabel: string;
 }
 
+/**
+ * Union of all public rule names.
+ */
 export type FileProgressRuleName = (typeof fileProgressRuleNames)[number];
 
+/**
+ * Lookup table of rule metadata keyed by public rule name.
+ */
 export const fileProgressRuleCatalogByName: Readonly<
     Record<FileProgressRuleName, FileProgressRuleCatalogEntry>
 > = {
@@ -27,11 +39,17 @@ export const fileProgressRuleCatalogByName: Readonly<
     },
 };
 
+/**
+ * Ordered rule catalog used for docs, navigation, and registry wiring.
+ */
 export const fileProgressRuleCatalog: readonly FileProgressRuleCatalogEntry[] =
     fileProgressRuleNames.map(
         (ruleName) => fileProgressRuleCatalogByName[ruleName]
     );
 
+/**
+ * Canonical list of public preset names exported by the plugin.
+ */
 export const fileProgressPresetNames = [
     "recommended",
     "recommended-ci",
@@ -42,8 +60,14 @@ export const fileProgressPresetNames = [
     "recommended-ci-detailed",
 ] as const;
 
+/**
+ * Union of all supported preset names.
+ */
 export type FileProgressConfigName = (typeof fileProgressPresetNames)[number];
 
+/**
+ * Metadata describing a preset doc page and related navigation labels.
+ */
 export interface FileProgressPresetCatalogEntry {
     readonly docsBadge: string;
     readonly docsId: string;
@@ -57,6 +81,9 @@ export interface FileProgressPresetCatalogEntry {
     readonly sidebarLabel: string;
 }
 
+/**
+ * Lookup table of preset metadata keyed by public preset name.
+ */
 export const fileProgressPresetCatalogByName: Readonly<
     Record<FileProgressConfigName, FileProgressPresetCatalogEntry>
 > = {
@@ -148,15 +175,32 @@ export const fileProgressPresetCatalogByName: Readonly<
     },
 };
 
+/**
+ * Ordered preset catalog used for docs, navigation, and registry wiring.
+ */
 export const fileProgressPresetCatalog: readonly FileProgressPresetCatalogEntry[] =
     fileProgressPresetNames.map(
         (presetName) => fileProgressPresetCatalogByName[presetName]
     );
 
+/**
+ * Gets catalog metadata for a single public rule.
+ *
+ * @param ruleName - Public rule name.
+ *
+ * @returns Rule catalog entry.
+ */
 export const getRuleCatalogEntry = (
     ruleName: FileProgressRuleName
 ): FileProgressRuleCatalogEntry => fileProgressRuleCatalogByName[ruleName];
 
+/**
+ * Gets catalog metadata for a single public preset.
+ *
+ * @param presetName - Public preset name.
+ *
+ * @returns Preset catalog entry.
+ */
 export const getPresetCatalogEntry = (
     presetName: FileProgressConfigName
 ): FileProgressPresetCatalogEntry =>

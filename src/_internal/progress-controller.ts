@@ -22,16 +22,22 @@ import {
     normalizeSettings,
 } from "./progress-options.js";
 
+/**
+ * Stateful coordinator for live progress output and final summaries.
+ */
 export interface ProgressController {
     getState: () => Readonly<ProgressControllerState>;
     handleExit: (exitCode: number) => void;
     handleLintFile: (input: {
-        readonly context: Rule.RuleContext;
+        readonly context: Readonly<Rule.RuleContext>;
         readonly liveMode: ProgressLiveMode;
     }) => void;
     reset: () => void;
 }
 
+/**
+ * Internal live-rendering mode used by the progress controller.
+ */
 export type ProgressLiveMode = "file" | "generic" | "summary-only";
 
 type ProcessLike = Pick<typeof process, "cwd" | "once" | "stderr" | "stdout">;
@@ -57,7 +63,10 @@ interface ProgressControllerState {
 
 type SpinnerCreateOptions = NonNullable<Parameters<typeof createSpinner>[1]>;
 
-type SpinnerFactory = (text?: string, opts?: SpinnerCreateOptions) => Spinner;
+type SpinnerFactory = (
+    text?: string,
+    opts?: Readonly<SpinnerCreateOptions>
+) => Spinner;
 
 const spinnerPresets = {
     arc: {
@@ -133,7 +142,7 @@ const modeToLiveMode = {
 } as const satisfies Record<ProgressMode, ProgressLiveMode>;
 
 const applyRuleMode = (
-    settings: NormalizedProgressSettings,
+    settings: Readonly<NormalizedProgressSettings>,
     liveMode: ProgressLiveMode
 ): NormalizedProgressSettings => {
     if (liveMode === "generic") {
@@ -170,15 +179,15 @@ const resolveEffectiveLiveMode = (
 };
 
 const resolveWriteStream = (
-    processLike: ProcessLike,
+    processLike: Readonly<ProcessLike>,
     outputStream: OutputStream
 ): ProcessLike["stderr"] | ProcessLike["stdout"] =>
     outputStream === "stdout" ? processLike.stdout : processLike.stderr;
 
 const isOutputHidden = (
-    settings: NormalizedProgressSettings,
+    settings: Readonly<NormalizedProgressSettings>,
     lintedFileCount: number,
-    processLike: ProcessLike
+    processLike: Readonly<ProcessLike>
 ): boolean => {
     if (settings.hide) {
         return true;
@@ -196,31 +205,39 @@ const isOutputHidden = (
 };
 
 const shouldRenderLiveOutput = (
-    settings: NormalizedProgressSettings,
+    settings: Readonly<NormalizedProgressSettings>,
     lintedFileCount: number,
     liveMode: ProgressLiveMode,
-    processLike: ProcessLike
+    processLike: Readonly<ProcessLike>
 ): boolean =>
     liveMode !== "summary-only" &&
     !isOutputHidden(settings, lintedFileCount, processLike);
 
 const shouldRenderSummary = (
-    settings: NormalizedProgressSettings,
+    settings: Readonly<NormalizedProgressSettings>,
     lintedFileCount: number,
-    processLike: ProcessLike
+    processLike: Readonly<ProcessLike>
 ): boolean =>
     !isOutputHidden(settings, lintedFileCount, processLike) ||
     settings.showSummaryWhenHidden;
 
+/**
+ * Creates a progress controller for coordinating shared CLI progress output.
+ *
+ * @param dependencies - Optional process, clock, and spinner overrides for
+ *   tests.
+ *
+ * @returns Progress controller instance.
+ */
 export const createProgressController = (
-    dependencies: ProgressControllerDependencies = {}
+    dependencies: Readonly<ProgressControllerDependencies> = {}
 ): ProgressController => {
     const now = dependencies.now ?? Date.now;
     const processLike = dependencies.process ?? process;
     const spinnerFactory = dependencies.spinnerFactory ?? createSpinner;
 
     const createManagedSpinner = (
-        settings: NormalizedProgressSettings
+        settings: Readonly<NormalizedProgressSettings>
     ): Spinner => {
         const spinnerPreset = spinnerPresets[settings.spinnerStyle];
 
@@ -265,8 +282,8 @@ export const createProgressController = (
     };
 
     const renderLiveOutput = (
-        context: Rule.RuleContext,
-        settings: NormalizedProgressSettings,
+        context: Readonly<Rule.RuleContext>,
+        settings: Readonly<NormalizedProgressSettings>,
         liveMode: ProgressLiveMode
     ): void => {
         if (liveMode === "generic" || settings.hideFileName) {
@@ -304,7 +321,7 @@ export const createProgressController = (
     };
 
     const resolveSettings = (
-        context: Rule.RuleContext,
+        context: Readonly<Rule.RuleContext>,
         liveMode: ProgressLiveMode
     ): {
         readonly effectiveLiveMode: ProgressLiveMode;

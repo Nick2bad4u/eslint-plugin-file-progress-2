@@ -4,6 +4,9 @@ import { arrayAt, arrayJoin, isEmpty, stringSplit } from "ts-extras";
 
 import type { NormalizedProgressSettings } from "./progress-options.js";
 
+/**
+ * Aggregated metrics used when formatting the final lint summary.
+ */
 export interface LintSummaryStats {
     readonly durationMs: number;
     readonly exitCode: number;
@@ -21,6 +24,15 @@ const formatSummaryLabel = (settings: NormalizedProgressSettings): string => {
     return `${pc.bold(pc.cyan("eslint-plugin-file-progress-2"))}${pc.dim(":")}`;
 };
 
+/**
+ * Converts an absolute lint target path into a repository-relative display
+ * path.
+ *
+ * @param filename - Raw filename reported by ESLint.
+ * @param cwd - Working directory used for relative path resolution.
+ *
+ * @returns A path suitable for terminal display.
+ */
 export const toRelativeFilePath = (filename: string, cwd: string): string => {
     if (!filename || filename === "<input>") {
         return filename || "<input>";
@@ -102,6 +114,14 @@ const formatPathSegments = (
     return `${arrayJoin(formattedDirectories, pc.dim(separator))}${pc.dim(separator)}${formattedFile}`;
 };
 
+/**
+ * Formats a per-file live progress line for interactive CLI output.
+ *
+ * @param relativeFilePath - Relative file path being linted.
+ * @param settings - Effective progress settings.
+ *
+ * @returns Rendered progress line.
+ */
 export const formatFileProgress = (
     relativeFilePath: string,
     settings: NormalizedProgressSettings
@@ -124,6 +144,13 @@ export const formatFileProgress = (
     return `${lintingPrefix}\n${pc.dim("  ↳")} ${formattedPath}`;
 };
 
+/**
+ * Formats a generic live progress line when file names are hidden.
+ *
+ * @param settings - Effective progress settings.
+ *
+ * @returns Rendered progress line.
+ */
 export const formatGenericProgress = (
     settings: NormalizedProgressSettings
 ): string => {
@@ -134,6 +161,13 @@ export const formatGenericProgress = (
     return `${formatPluginPrefix(settings)} ${pc.dim("linting project files...")}`;
 };
 
+/**
+ * Formats a duration in milliseconds for summary output.
+ *
+ * @param durationMs - Elapsed duration in milliseconds.
+ *
+ * @returns Human-readable duration string.
+ */
 export const formatDuration = (durationMs: number): string => {
     if (durationMs < 1000) {
         return `${durationMs}ms`;
@@ -142,6 +176,14 @@ export const formatDuration = (durationMs: number): string => {
     return `${(durationMs / 1000).toFixed(2)}s`;
 };
 
+/**
+ * Formats the effective lint throughput for summary output.
+ *
+ * @param durationMs - Elapsed duration in milliseconds.
+ * @param filesLinted - Number of linted files.
+ *
+ * @returns Human-readable throughput string.
+ */
 export const formatThroughput = (
     durationMs: number,
     filesLinted: number
@@ -157,6 +199,14 @@ export const formatThroughput = (
     return `${(filesLinted / (durationMs / 1000)).toFixed(2)} files/s`;
 };
 
+/**
+ * Formats the final success summary message.
+ *
+ * @param settings - Effective progress settings.
+ * @param stats - Final lint summary metrics.
+ *
+ * @returns Rendered success summary.
+ */
 export const formatSuccessMessage = (
     settings: NormalizedProgressSettings,
     stats: LintSummaryStats
@@ -183,6 +233,14 @@ export const formatSuccessMessage = (
     );
 };
 
+/**
+ * Formats the final failure summary message.
+ *
+ * @param settings - Effective progress settings.
+ * @param stats - Final lint summary metrics.
+ *
+ * @returns Rendered failure summary.
+ */
 export const formatFailureMessage = (
     settings: NormalizedProgressSettings,
     stats: LintSummaryStats
