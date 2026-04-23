@@ -26,9 +26,8 @@
         "*.cjs",
         "*.d.ts",
         "*.d.cts",
-        "*.d.mts",
-        "eslint.config.mjs",
-        "eslint/**/*.mjs",
+        "*.mjs",
+        "*.js",
         "*.mjs",
         "test/_internal/**/*.d.ts"
     ]
