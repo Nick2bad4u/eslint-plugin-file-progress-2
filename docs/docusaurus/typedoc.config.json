@@ -526,7 +526,6 @@
     "plugin": [
         "./typedoc-plugins/hashToBangLinks.mjs",
         "./typedoc-plugins/prefixDocLinks.mjs",
-        "./typedoc-plugins/escapeMdxMarkdown.mjs",
         "typedoc-plugin-remark",
         "typedoc-plugin-missing-exports",
         "typedoc-plugin-replace-text",

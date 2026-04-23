@@ -209,8 +209,6 @@ export default defineConfig([
         "**/CHANGELOG.md",
         ".remarkrc.mjs",
         "test/fixtures/**",
-        "docs/docusaurus/site-contract.config.d.mts",
-        "docs/docusaurus/site-contract.config.mjs",
     ]),
     gitignore({
         name: "Global - .gitignore Rules",
@@ -608,10 +606,6 @@ export default defineConfig([
             "docs/docusaurus/.docusaurus/**",
             "docs/docusaurus/build/**",
             "docs/docusaurus/static/eslint-inspector/**",
-            "docs/docusaurus/typedoc.local.config.mjs",
-            "docs/docusaurus/typedoc-plugins/**/*.d.mts",
-            "docs/docusaurus/typedoc-plugins/**/*.mjs",
-            "docs/docusaurus/typedoc-plugins/**/*.mts",
         ],
         languageOptions: {
             parser: tseslintParser,
@@ -622,7 +616,13 @@ export default defineConfig([
                 },
                 ecmaVersion: "latest",
                 jsDocParsingMode: "all",
-                projectService: true,
+                projectService: {
+                    allowDefaultProject: [
+                        "docs/docusaurus/typedoc.local.config.mjs",
+                        "docs/docusaurus/typedoc-plugins/*.mjs",
+                        "docs/docusaurus/typedoc-plugins/*.mts",
+                    ],
+                },
                 sourceType: "module",
                 tsconfigRootDir: import.meta.dirname,
                 warnOnUnsupportedTypeScriptVersion: true,
@@ -719,41 +719,6 @@ export default defineConfig([
         settings: {
             ...eslintReactPlugin.configs["strict-type-checked"]?.settings,
         },
-    },
-    {
-        files: [
-            "docs/docusaurus/typedoc.local.config.mjs",
-            "docs/docusaurus/typedoc-plugins/**/*.{d.mts,mjs,mts}",
-        ],
-        languageOptions: {
-            parser: tseslintParser,
-            parserOptions: {
-                ecmaVersion: "latest",
-                jsDocParsingMode: "all",
-                projectService: {
-                    allowDefaultProject: [
-                        "docs/docusaurus/typedoc.local.config.mjs",
-                        "docs/docusaurus/typedoc-plugins/escapeMdxMarkdown.mjs",
-                        "docs/docusaurus/typedoc-plugins/escapeMdxMarkdownCore.mjs",
-                        "docs/docusaurus/typedoc-plugins/hashToBangLinks.mjs",
-                        "docs/docusaurus/typedoc-plugins/hashToBangLinksCore.d.mts",
-                        "docs/docusaurus/typedoc-plugins/hashToBangLinksCore.mjs",
-                        "docs/docusaurus/typedoc-plugins/prefixDocLinks.mjs",
-                        "docs/docusaurus/typedoc-plugins/prefixDocLinksCore.d.mts",
-                        "docs/docusaurus/typedoc-plugins/prefixDocLinksCore.mjs",
-                    ],
-                    defaultProject: path.join(
-                        import.meta.dirname,
-                        "docs/docusaurus/tsconfig.eslint.json"
-                    ),
-                    maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 20,
-                },
-                sourceType: "module",
-                tsconfigRootDir: import.meta.dirname,
-                warnOnUnsupportedTypeScriptVersion: true,
-            },
-        },
-        name: "Docusaurus TypeDoc Tooling Files",
     },
     // #endregion
     // #region 🚢 Local Plugin Import
