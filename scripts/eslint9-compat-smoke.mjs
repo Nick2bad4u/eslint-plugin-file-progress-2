@@ -73,7 +73,7 @@ const parseExpectedEslintMajor = (argv) => {
     const majorValue = Number.parseInt(majorString, 10);
 
     if (Number.isNaN(majorValue)) {
-        throw new Error(
+        throw new TypeError(
             `Invalid ESLint major value in argument: ${matchingArgument}`
         );
     }
