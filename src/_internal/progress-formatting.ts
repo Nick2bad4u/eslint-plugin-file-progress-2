@@ -14,14 +14,14 @@ export interface LintSummaryStats {
 }
 
 const formatPluginPrefix = (settings: NormalizedProgressSettings): string =>
-    `${pc.bold(pc.cyan("eslint-plugin-file-progress-2"))} ${pc.dim(settings.prefixMark)}`;
+    `${pc.bold(pc.cyan("FP2"))} ${pc.dim(settings.prefixMark)}`;
 
 const formatSummaryLabel = (settings: NormalizedProgressSettings): string => {
     if (settings.hidePrefix) {
         return "";
     }
 
-    return `${pc.bold(pc.cyan("eslint-plugin-file-progress-2"))}${pc.dim(":")}`;
+    return `${pc.bold(pc.cyan("FP2"))}${pc.dim(":")}`;
 };
 
 /**

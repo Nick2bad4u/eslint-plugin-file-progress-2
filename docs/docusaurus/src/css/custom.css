@@ -96,6 +96,7 @@
     --sb-preset-all: #8142a4;
     --sb-preset-experimental: #79b7e4;
     --sb-preset-type-guards: #f7a145;
+    --ifm-navbar-shadow: 0 10px 30px -24px rgb(17 24 39 / 35%);
 }
 
 [data-theme="dark"] {
@@ -175,11 +176,14 @@ body {
 }
 
 .navbar {
-    backdrop-filter: blur(14px);
     background: var(--ifm-navbar-background-color);
     border-block-end: 1px solid
         color-mix(in srgb, var(--brand-violet) 18%, transparent);
-    box-shadow: 0 10px 30px -24px rgb(17 24 39 / 35%);
+
+    /* stylelint-disable-next-line docusaurus/no-hardcoded-docusaurus-breakpoint-values -- 997px is the canonical Docusaurus desktop navbar breakpoint; it must match the Infima JS boundary exactly */
+    @media (width >= 997px) {
+        backdrop-filter: blur(14px);
+    }
 }
 
 .footer {

@@ -7,7 +7,6 @@
     },
     "extends": "./tsconfig.json",
     "include": [
-        "typedoc.local.config.mjs",
         "typedoc-plugins/**/*.mjs",
         "typedoc-plugins/**/*.mts",
         "typedoc-plugins/**/*.d.mts",

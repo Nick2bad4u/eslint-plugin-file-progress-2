@@ -204,7 +204,7 @@ describe("progress runtime internals", () => {
                     makeStats()
                 )
             )
-        ).toMatch(/eslint-plugin-file-progress-2:[\s\S]*All good/v);
+        ).toMatch(/FP2:[\s\S]*All good/v);
 
         expect(
             internals.formatSuccessMessage(
