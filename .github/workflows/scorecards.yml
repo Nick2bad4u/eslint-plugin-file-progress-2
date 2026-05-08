@@ -20,6 +20,9 @@ concurrency:
     group: scorecards-${{ github.ref }}
     cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
     analysis:
         name: Scorecard analysis

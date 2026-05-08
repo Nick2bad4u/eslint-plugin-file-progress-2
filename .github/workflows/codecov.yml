@@ -17,6 +17,9 @@ on:
         types:
             - checks_requested
 
+permissions:
+  contents: read
+
 jobs:
     coverage:
         name: Run Coverage And Upload (${{ matrix.label }})

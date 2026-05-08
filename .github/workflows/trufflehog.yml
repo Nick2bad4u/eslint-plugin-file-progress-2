@@ -17,6 +17,9 @@ concurrency:
     group: trufflehog-${{ github.ref }}
     cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
     trufflehog:
         name: Trufflehog scan
