@@ -176,7 +176,7 @@ Generated from the plugin rule metadata and preset registry.
 
 | Rule | Description | Included in presets |
 | --- | --- | --- |
-| [`file-progress/activate`](./docs/rules/activate.md) | Display live per-file lint progress in CLI output. | [`recommended`](./docs/rules/presets/recommended.md), [`recommended-ci`](./docs/rules/presets/recommended-ci.md), [`recommended-detailed`](./docs/rules/presets/recommended-detailed.md), [`recommended-compact`](./docs/rules/presets/recommended-compact.md), [`recommended-summary-only`](./docs/rules/presets/recommended-summary-only.md), [`recommended-tty`](./docs/rules/presets/recommended-tty.md), [`recommended-ci-detailed`](./docs/rules/presets/recommended-ci-detailed.md) |
+| [`file-progress/activate`](./docs/rules/activate.md) | Display live per-file lint progress in CLI output. | [`recommended`](./docs/rules/presets/recommended.md), [`recommended-ci`](./docs/rules/presets/recommended-ci.md), [`recommended-ci-detailed`](./docs/rules/presets/recommended-ci-detailed.md), [`recommended-compact`](./docs/rules/presets/recommended-compact.md), [`recommended-detailed`](./docs/rules/presets/recommended-detailed.md), [`recommended-summary-only`](./docs/rules/presets/recommended-summary-only.md), [`recommended-tty`](./docs/rules/presets/recommended-tty.md) |
 <!-- end generated rules table -->
 
 ## CLI-only usage

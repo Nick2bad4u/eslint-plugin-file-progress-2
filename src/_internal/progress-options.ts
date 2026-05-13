@@ -3,7 +3,6 @@ import type { UnknownArray, UnknownRecord } from "type-fest";
 
 import {
     arrayFirst,
-    arrayIncludes,
     isDefined,
     isInteger,
     keyIn,
@@ -53,12 +52,12 @@ const spinnerStyles = [
     "line",
 ] as const;
 const progressModes = [
-    "file",
     "compact",
+    "file",
     "summary-only",
 ] as const;
 const outputStreams = ["stderr", "stdout"] as const;
-const pathFormats = ["relative", "basename"] as const;
+const pathFormats = ["basename", "relative"] as const;
 
 /**
  * JSON schema describing the public rule options.
@@ -159,17 +158,30 @@ export const defaultSettings: Readonly<NormalizedProgressSettings> =
 const isRecord = (value: unknown): value is UnknownRecord =>
     typeof value === "object" && value !== null;
 
+const isOneOf = <TValue extends string>(
+    values: readonly TValue[],
+    value: string
+): value is TValue => {
+    for (const entry of values) {
+        if (entry === value) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
 const isSpinnerStyle = (value: string): value is SpinnerStyle =>
-    arrayIncludes(spinnerStyles, value as SpinnerStyle);
+    isOneOf(spinnerStyles, value);
 
 const isOutputStream = (value: string): value is OutputStream =>
-    arrayIncludes(outputStreams, value as OutputStream);
+    isOneOf(outputStreams, value);
 
 const isProgressMode = (value: string): value is ProgressMode =>
-    arrayIncludes(progressModes, value as ProgressMode);
+    isOneOf(progressModes, value);
 
 const isProgressPathFormat = (value: string): value is ProgressPathFormat =>
-    arrayIncludes(pathFormats, value as ProgressPathFormat);
+    isOneOf(pathFormats, value);
 
 const getBooleanSetting = (
     rawSettings: Readonly<UnknownRecord>,

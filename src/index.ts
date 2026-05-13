@@ -12,6 +12,7 @@ import type {
     ProgressRuleOptionsTuple,
 } from "./types.js";
 
+/* eslint-disable-next-line import-x/extensions -- JSON import attributes in ESM require an explicit .json path. */
 import packageJson from "../package.json" with { type: "json" };
 import {
     fileProgressPresetCatalog,
@@ -34,6 +35,7 @@ const createCatalogRecord = <
     catalogEntries: readonly TCatalogEntry[],
     getValue: (catalogEntry: TCatalogEntry) => TValue
 ): Record<TName, TValue> => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- The record is populated from `catalogEntries`, whose `name` keys are constrained to `TName`.
     const catalogRecord = {} as Record<TName, TValue>;
 
     for (const catalogEntry of catalogEntries) {

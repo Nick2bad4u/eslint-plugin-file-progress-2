@@ -146,7 +146,11 @@ const { default: builtPlugin } = await import(builtPluginModuleUrl.href);
  */
 
 /**
+ * Resolves GIF renderer availability by probing the configured binary.
+ *
  * @returns {GifRendererAvailability}
+ *
+ * @throws {Error} When probe fails for reasons other than a missing binary.
  */
 const resolveGifRendererAvailability = () => {
     const probeResult = spawnSync(aggBinary, ["--version"], {
@@ -157,7 +161,7 @@ const resolveGifRendererAvailability = () => {
             "pipe",
         ],
     });
-    const probeError = /** @type {NodeJS.ErrnoException | undefined} */ (
+    const probeError = /** @type {(Error & { code?: string }) | undefined} */ (
         probeResult.error
     );
 
@@ -618,12 +622,28 @@ const pushMultilineOutput = (castEvents, text, startTime, lineDelay) => {
 };
 
 /**
+ * @typedef BuildOutputEventsOptions
+ *
+ * @property {boolean} [quiet] - Suppresses live output and renders a
+ *   prompt-only preview.
+ * @property {0 | 1} [summaryExitCode] - Forces summary mode success or failure
+ *   rendering.
+ * @property {number} [summaryDurationMs] - Duration used when formatting
+ *   summary throughput.
+ */
+
+/**
+ * @typedef OptionDemoCatalogEntry
+ *
+ * @property {string} name - Option demo identifier.
+ * @property {Record<string, unknown>} settings - Raw settings passed through
+ *   `normalizeSettings`.
+ * @property {0 | 1} [summaryExitCode] - Optional summary exit code override.
+ */
+
+/**
  * @param {import("../src/_internal/progress-options.js").NormalizedProgressSettings} settings
- * @param {{
- *     quiet?: boolean;
- *     summaryExitCode?: 0 | 1;
- *     summaryDurationMs?: number;
- * }} [options]
+ * @param {BuildOutputEventsOptions} [options]
  *
  * @returns {readonly CastEvent[]}
  */
@@ -1049,11 +1069,7 @@ const collectDemoWorkItems = () => {
 
     const optionWorkItems = optionDemoCatalog.map(
         /**
-         * @param {{
-         *     name: string;
-         *     settings: Record<string, unknown>;
-         *     summaryExitCode?: 0 | 1;
-         * }} optionDemo
+         * @param {OptionDemoCatalogEntry} optionDemo
          */
         (optionDemo) => ({
             castDirectoryPath: optionCastsOutputDirectoryPath,

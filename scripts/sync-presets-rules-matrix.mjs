@@ -1,5 +1,4 @@
 /**
- * @packageDocumentation
  * Synchronize or validate the preset matrix for eslint-plugin-file-progress-2.
  */
 // @ts-check
@@ -76,6 +75,9 @@ const isRecord = (value) => typeof value === "object" && value !== null;
  * @param {string} presetName
  *
  * @returns {string}
+ *
+ * @throws {TypeError} When preset config is missing or does not map to exactly
+ *   one rule.
  */
 const getEnabledRuleName = (plugin, presetName) => {
     const presetConfig = plugin.configs[presetName];
@@ -144,6 +146,8 @@ const createRuleDocsPath = (resolveRuleCatalogEntry, ruleName) =>
  * }} presetCatalogEntry
  *
  * @returns {string}
+ *
+ * @throws {TypeError} When preset metadata and enabled rule diverge.
  */
 const createPresetRow = (
     plugin,
@@ -191,6 +195,8 @@ export const generatePresetMatrixSectionFromPlugin = (plugin, input = {}) => {
  * @param {string} replacement
  *
  * @returns {string}
+ *
+ * @throws {Error} When generated section markers are missing or malformed.
  */
 const replaceMarkedSection = (markdown, replacement) => {
     const startOffset = markdown.indexOf(markerStart);

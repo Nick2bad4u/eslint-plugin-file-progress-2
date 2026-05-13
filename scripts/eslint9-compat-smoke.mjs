@@ -50,6 +50,8 @@ const { default: plugin } = await import(pathToFileURL(builtPluginPath).href);
  * @param {readonly string[]} argv
  *
  * @returns {number | undefined}
+ *
+ * @throws {Error | TypeError} When the expected major argument is malformed.
  */
 const parseExpectedEslintMajor = (argv) => {
     const matchingArgument = argv.find((argument) =>
@@ -83,6 +85,9 @@ const parseExpectedEslintMajor = (argv) => {
 
 /**
  * @param {number | undefined} expectedMajor
+ *
+ * @throws {TypeError | Error} When runtime ESLint version is unavailable,
+ *   malformed, or mismatched.
  */
 const assertEslintMajor = (expectedMajor) => {
     const runtimeVersion = ESLint.version;
@@ -125,6 +130,8 @@ const assertEslintMajor = (expectedMajor) => {
  * @param {string} configName
  *
  * @returns {readonly FlatConfig[]}
+ *
+ * @throws {Error} When a requested plugin config is missing.
  */
 const normalizeConfigArray = (config, configName) => {
     if (config === undefined) {

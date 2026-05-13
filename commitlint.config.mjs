@@ -7,7 +7,7 @@
  * - `🛠️ [fix](lint) Prevent parser crash on empty scope`
  * - `:sparkles: [feat] Add typed rule metadata`
  *
- * Structure: `<gitmoji> [type](scope?)?[:]? <subject>`
+ * Structure: `&lt;gitmoji> [type](scope?)?[:]? &lt;subject>`
  *
  * @type {import("@commitlint/types").UserConfig}
  *
@@ -16,42 +16,20 @@
  * @see {@link https://commitlint.js.org/ | Commitlint Documentation}
  * @see {@link https://www.conventionalcommits.org/ | Conventional Commits Specification}
  */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types -- This config is plain ESM JavaScript; callback signatures are described with JSDoc types. */
 
-/**
- * @param {string} commit
- *
- * @returns {boolean}
- */
-function isDependencyBumpCommit(commit) {
-    return /^build\(deps.*\): bump/v.test(commit);
-}
+/** @type {(commit: string) => boolean} */
+const isDependencyBumpCommit = (commit) =>
+    /^build\(deps.*\): bump/v.test(commit);
 
-/**
- * @param {string} commit
- *
- * @returns {boolean}
- */
-function isMergeCommit(commit) {
-    return commit.includes("Merge");
-}
+/** @type {(commit: string) => boolean} */
+const isMergeCommit = (commit) => commit.includes("Merge");
 
-/**
- * @param {string} commit
- *
- * @returns {boolean}
- */
-function isReleaseCommit(commit) {
-    return commit.startsWith("chore: release ");
-}
+/** @type {(commit: string) => boolean} */
+const isReleaseCommit = (commit) => commit.startsWith("chore: release ");
 
-/**
- * @param {string} commit
- *
- * @returns {boolean}
- */
-function isRevertCommit(commit) {
-    return commit.includes("Revert");
-}
+/** @type {(commit: string) => boolean} */
+const isRevertCommit = (commit) => commit.includes("Revert");
 
 const hybridCommitTypes = [
     "build",
@@ -69,6 +47,22 @@ const hybridCommitTypes = [
 
 const hybridCommitTypesSet = new Set(hybridCommitTypes);
 const gitmojiUnicodePattern = /\p{Extended_Pictographic}/v;
+
+/**
+ * @param {string} value
+ * @param {(character: string) => boolean} predicate
+ *
+ * @returns {boolean}
+ */
+const everyCodePoint = (value, predicate) => {
+    for (const character of value) {
+        if (!predicate(character)) {
+            return false;
+        }
+    }
+
+    return true;
+};
 
 /**
  * @param {string} header
@@ -101,7 +95,7 @@ function isGitmojiShortcodeToken(token) {
         return false;
     }
 
-    return [...body].every((character) => {
+    return everyCodePoint(body, (character) => {
         const isLowercaseLetter = character >= "a" && character <= "z";
         const isNumber = character >= "0" && character <= "9";
 
@@ -143,7 +137,7 @@ function isValidScope(scope) {
         return false;
     }
 
-    return [...scope].every((character) => {
+    return everyCodePoint(scope, (character) => {
         const isLowercaseLetter = character >= "a" && character <= "z";
         const isNumber = character >= "0" && character <= "9";
 
@@ -271,6 +265,32 @@ function validateHybridHeader(header) {
     };
 }
 
+/**
+ * @typedef ParsedCommitResult
+ *
+ * @property {string | null | undefined} header - Parsed commit header text.
+ */
+
+/**
+ * @param {ParsedCommitResult} parsed
+ *
+ * @returns {[boolean, string]}
+ */
+const validateGitmojiToken = (parsed) => {
+    const header = parsed.header?.trim() ?? "";
+
+    if (header.length === 0) {
+        return [false, "commit header must not be empty"];
+    }
+
+    const validationResult = validateHybridHeader(header);
+
+    return [
+        validationResult.valid,
+        `commit header must follow '<gitmoji> [type](scope?) subject' format (${validationResult.reason})`,
+    ];
+};
+
 const commitlintConfig = /** @type {CommitlintConfig} */ ({
     $schema: "https://www.schemastore.org/commitlintrc.json",
 
@@ -300,25 +320,7 @@ const commitlintConfig = /** @type {CommitlintConfig} */ ({
     plugins: [
         {
             rules: {
-                /**
-                 * @param {{ header?: string | null }} parsed
-                 *
-                 * @returns {[boolean, string]}
-                 */
-                "gitmoji-token-valid": (parsed) => {
-                    const header = parsed.header?.trim() ?? "";
-
-                    if (header.length === 0) {
-                        return [false, "commit header must not be empty"];
-                    }
-
-                    const validationResult = validateHybridHeader(header);
-
-                    return [
-                        validationResult.valid,
-                        `commit header must follow '<gitmoji> [type](scope?) subject' format (${validationResult.reason})`,
-                    ];
-                },
+                "gitmoji-token-valid": validateGitmojiToken,
             },
         },
     ],
@@ -479,3 +481,4 @@ const commitlintConfig = /** @type {CommitlintConfig} */ ({
 });
 
 export default commitlintConfig;
+/* eslint-enable @typescript-eslint/explicit-module-boundary-types -- Re-enable after plain JS commitlint config helpers. */

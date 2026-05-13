@@ -1,6 +1,6 @@
 /**
- * @packageDocumentation
- * Synchronize or validate the README rules table for eslint-plugin-file-progress-2.
+ * Synchronize or validate the README rules table for
+ * eslint-plugin-file-progress-2.
  */
 // @ts-check
 
@@ -105,6 +105,8 @@ const collectPresetLinks = (plugin, currentPresetCatalog, ruleName) => {
  * @param {string} ruleName
  *
  * @returns {string}
+ *
+ * @throws {TypeError} When rule metadata is missing a non-empty description.
  */
 const getRuleDescription = (plugin, ruleName) => {
     const ruleModule = plugin.rules[ruleName];
@@ -169,6 +171,8 @@ export const generateReadmeRulesSectionFromPlugin = (plugin, input = {}) => {
  * @param {string} replacement
  *
  * @returns {string}
+ *
+ * @throws {Error} When generated section markers are missing or malformed.
  */
 const replaceMarkedSection = (markdown, replacement) => {
     const startOffset = markdown.indexOf(markerStart);

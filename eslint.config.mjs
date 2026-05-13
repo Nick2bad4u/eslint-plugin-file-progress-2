@@ -1,10 +1,30 @@
-import nick2bad4u from "eslint-config-nick2bad4u";
+import nickTwoBadFourU from "eslint-config-nick2bad4u";
 
-import fileProgress from "./plugin.mjs";
+import plugin from "./plugin.mjs";
+
+/**
+ * @param {unknown} value
+ *
+ * @returns {value is import("eslint").Linter.RulesRecord}
+ */
+const isRulesRecord = (value) => typeof value === "object" && value !== null;
+
+/** @type {import("eslint").Linter.RulesRecord} */
+const recommendedRules = {};
+const recommendedConfigCandidate = /** @type {unknown} */ (
+    plugin.configs?.["recommended"]
+);
+const recommendedRulesCandidate = isRulesRecord(recommendedConfigCandidate)
+    ? recommendedConfigCandidate["rules"]
+    : undefined;
+
+if (isRulesRecord(recommendedRulesCandidate)) {
+    Object.assign(recommendedRules, recommendedRulesCandidate);
+}
 
 /** @type {import("eslint").Linter.Config[]} */
 const config = [
-    ...nick2bad4u.configs.withoutFileProgress2,
+    ...nickTwoBadFourU.configs.withoutFileProgress2,
 
     // Local Plugin Config
     // This lets us use the plugin's rules in this repository without needing to publish the plugin first.
@@ -12,11 +32,10 @@ const config = [
         files: ["src/**/*.{js,mjs,cjs,ts,mts,cts,tsx,jsx}"],
         name: "Local File Progress",
         plugins: {
-            "file-progress": fileProgress,
+            "file-progress": plugin,
         },
         rules: {
-            // @ts-expect-error -- plugin.mjs is typed as generic ESLint.Plugin.
-            ...fileProgress.configs.recommended.rules,
+            ...recommendedRules,
         },
     },
     // Add repository-specific config entries below as needed.

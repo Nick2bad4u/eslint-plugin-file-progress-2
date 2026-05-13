@@ -53,11 +53,11 @@ export const fileProgressRuleCatalog: readonly FileProgressRuleCatalogEntry[] =
 export const fileProgressPresetNames = [
     "recommended",
     "recommended-ci",
-    "recommended-detailed",
+    "recommended-ci-detailed",
     "recommended-compact",
+    "recommended-detailed",
     "recommended-summary-only",
     "recommended-tty",
-    "recommended-ci-detailed",
 ] as const;
 
 /**

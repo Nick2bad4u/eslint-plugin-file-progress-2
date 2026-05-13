@@ -39,7 +39,9 @@ export const toRelativeFilePath = (filename: string, cwd: string): string => {
     }
 
     const isWindowsAbsolutePath =
-        /^[A-Za-z]:[/\\]/u.test(filename) || filename.startsWith("\\");
+        (/^[A-Za-z]:/v.test(filename) &&
+            (filename.charAt(2) === "/" || filename.charAt(2) === "\\")) ||
+        filename.startsWith("\\");
     const isNativeAbsolutePath = path.isAbsolute(filename);
 
     if (!isNativeAbsolutePath && !isWindowsAbsolutePath) {
@@ -73,11 +75,11 @@ const formatPathSegments = (
     pathFormat: NormalizedProgressSettings["pathFormat"]
 ): string => {
     const directoryColorizers = [
-        pc.magenta,
         pc.blue,
-        pc.yellow,
-        pc.green,
         pc.cyan,
+        pc.green,
+        pc.magenta,
+        pc.yellow,
     ] as const;
     const normalizedRelativeFilePath = relativeFilePath.replaceAll("\\", "/");
     const separator = relativeFilePath.includes("\\") ? "\\" : "/";

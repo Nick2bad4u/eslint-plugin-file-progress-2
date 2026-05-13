@@ -84,9 +84,9 @@ const EXTERNAL_PROTOCOLS = [
 ];
 
 /**
- * Truncate safely keeping last `max` codepoints
+ * Truncates a string while preserving the last `max` code points.
  *
- * @param {any} str
+ * @param {string} str
  * @param {number} max
  */
 function truncateEnd(str, max) {
@@ -220,21 +220,29 @@ const getPathCandidates = (
 };
 
 /**
- * Validate a single link and push to issues if broken. Returns true if broken
- * (so caller can optionally fail-fast).
- *
- * @param {any} markdownPath
- * @param {string} link
- * @param {{ file: any; link: any; resolvedPath: string }[]} issues
- * @param {{ has: (arg0: string) => any; add: (arg0: string) => void }} issueSet
- * @param {{
+ * @typedef {{ file: string; link: string; resolvedPath: string }} BrokenLinkIssue
+ */
+
+/**
+ * @typedef {{
  *     totalLinksChecked: number;
  *     emptyLinks: number;
  *     anchorsIgnored: number;
  *     externalLinksIgnored: number;
  *     appRouteLinksIgnored: number;
  *     brokenLinks: number;
- * }} metrics
+ * }} LinkValidationMetrics
+ */
+
+/**
+ * Validate a single link and push to issues if broken. Returns true if broken
+ * (so caller can optionally fail-fast).
+ *
+ * @param {string} markdownPath
+ * @param {string} link
+ * @param {BrokenLinkIssue[]} issues
+ * @param {Set<string>} issueSet
+ * @param {LinkValidationMetrics} metrics
  */
 async function validateLink(markdownPath, link, issues, issueSet, metrics) {
     metrics.totalLinksChecked++;
@@ -279,8 +287,7 @@ async function validateLink(markdownPath, link, issues, issueSet, metrics) {
 }
 
 /**
- * @param {import("node:fs").PathLike
- *     | import("node:fs/promises").FileHandle} markdownPath
+ * @param {string} markdownPath
  * @param {{ file: string; link: string; resolvedPath: string }[]} issues
  * @param {Set<string>} issueSet
  * @param {{
@@ -338,7 +345,7 @@ async function checkFile(markdownPath, issues, issueSet, metrics) {
 }
 
 /**
- * Split array into batches
+ * Splits an array into fixed-size batches.
  *
  * @param {readonly string[]} array
  * @param {number} size
@@ -365,7 +372,7 @@ function batches(array, size) {
  */
 async function main() {
     /**
-     * @type {any[]}
+     * @type {BrokenLinkIssue[]}
      */
     const issues = [];
     const issueSet = new Set();

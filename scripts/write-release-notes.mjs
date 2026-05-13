@@ -28,9 +28,9 @@ const packageJsonPath = path.join(repositoryRoot, "package.json");
 
 /**
  * @typedef {Readonly<{
- *     name?: unknown;
- *     repository?: unknown;
- *     version?: unknown;
+ *     name: unknown | undefined;
+ *     repository: unknown | undefined;
+ *     version: unknown | undefined;
  * }>} PackageJsonShape
  */
 

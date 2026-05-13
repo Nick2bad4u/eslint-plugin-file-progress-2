@@ -1,4 +1,5 @@
 import type { createSpinner, Spinner } from "nanospinner";
+import type { WriteStream } from "node:tty";
 
 import { EventEmitter } from "node:events";
 import { stripVTControlCharacters } from "node:util";
@@ -36,7 +37,7 @@ export interface MockProcess {
     readonly cwd: () => string;
     readonly emitBeforeExit: (exitCode: number) => boolean;
     readonly emitExit: (exitCode: number) => boolean;
-    readonly once: NodeJS.Process["once"];
+    readonly once: typeof process.once;
     readonly stderr: MockWriteStream<2>;
     readonly stdout: MockWriteStream<1>;
 }
@@ -53,8 +54,7 @@ export interface MockSpinnerRecord {
     readonly text: string;
 }
 
-export interface MockWriteStream<Fd extends 1 | 2 = 1 | 2>
-    extends NodeJS.WriteStream {
+export interface MockWriteStream<Fd extends 1 | 2 = 1 | 2> extends WriteStream {
     fd: Fd;
     readonly writes: string[];
 }
@@ -231,7 +231,7 @@ export const createMockProcess = (
         emitBeforeExit: (exitCode: number) =>
             emitter.emit("beforeExit", exitCode),
         emitExit: (exitCode: number) => emitter.emit("exit", exitCode),
-        once: emitter.once.bind(emitter) as NodeJS.Process["once"],
+        once: emitter.once.bind(emitter) as typeof process.once,
         stderr,
         stdout,
     };
