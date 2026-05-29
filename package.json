@@ -73,7 +73,7 @@
         "build:stylelint-inspector:local": "npx stylelint-config-inspector@latest",
         "changelog:generate": "git-cliff --config cliff.toml --output CHANGELOG.md",
         "changelog:preview": "git-cliff --config cliff.toml --unreleased",
-        "changelog:release-notes": "git-cliff --config cliff.toml --latest --strip all",
+        "changelog:release-notes": "git-cliff --config cliff.toml --current --strip all",
         "check": "npm run lint:all && npm run typecheck && npm run test",
         "clean:cache": "node scripts/clean-paths.mjs dist coverage cache .cache .vite .turbo",
         "clean:cache:coverage": "node scripts/clean-paths.mjs coverage .coverage",
