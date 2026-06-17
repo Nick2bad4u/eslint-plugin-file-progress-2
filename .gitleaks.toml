@@ -1,24 +1,4 @@
-# Gitleaks configuration for eslint-plugin-file-progress-2
-# See: https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
-title = "eslint-plugin-file-progress-2 secret detection configuration"
+title = "Nick2bad4u shared Gitleaks configuration"
 
 [extend]
-useDefault = true
-disabledRules = [ "generic-api-key" ]
-
-[[allowlists]]
-description = "Ignore generated coverage and docs build output"
-paths = [
- '''^coverage/.*$''',
-'''^docs/docusaurus/build/.*$''',
-]
-
-[[allowlists]]
-description = "Allow obvious placeholder secrets in documentation"
-paths = [
- '''^README\.md$''',
-'''^SECURITY\.md$''',
-'''^docs/.*\.(md|mdx)$'''
-]
-regexTarget = "match"
-regexes = [ '''(?i)(example|placeholder|sample|demo|fake|mock|ghp_example|xoxb-123|sk-proj-123)''' ]
+path = "node_modules/gitleaks-config-nick2bad4u/gitleaks.toml"
