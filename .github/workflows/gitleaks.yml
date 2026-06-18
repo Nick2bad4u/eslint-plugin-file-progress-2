@@ -36,6 +36,10 @@ jobs:
               with:
                   fetch-depth: 0
 
+            - name: "Install scanner configuration"
+              run: "npm ci --ignore-scripts --no-audit --fund=false"
+              shell: "bash"
+
             - name: "Run Gitleaks"
               uses: "gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e" # v3.0.0
               env:
