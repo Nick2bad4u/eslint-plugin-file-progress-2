@@ -49,7 +49,7 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Checkout"
-              uses: "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" # v6.0.3
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   fetch-depth: 2
 
@@ -75,10 +75,12 @@ jobs:
                   VITEST_HANGING_PROCESS_REPORTER: "true"
 
             - name: "Verify coverage artifact"
-              run: 'python -c "from pathlib import Path; assert Path(''coverage/lcov.info'').is_file(), ''coverage/lcov.info was not generated''"'
+              run: |
+                  python -c "from pathlib import Path; assert Path('coverage/lcov.info').is_file(), 'coverage/lcov.info was not generated'"
 
             - name: "Verify JUnit artifact"
-              run: 'python -c "from pathlib import Path; assert Path(''test-report.junit.xml'').is_file(), ''test-report.junit.xml was not generated''"'
+              run: |
+                  python -c "from pathlib import Path; assert Path('test-report.junit.xml').is_file(), 'test-report.junit.xml was not generated'"
 
             - name: "Upload test results to Codecov"
               if: "${{ !cancelled() }}"

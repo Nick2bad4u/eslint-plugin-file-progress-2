@@ -80,7 +80,7 @@ jobs:
                   echo "branch=$branch" >> "$GITHUB_OUTPUT"
 
             - name: "Checkout repository"
-              uses: "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" # v6.0.3
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   fetch-depth: 0
                   fetch-tags: true
@@ -95,8 +95,22 @@ jobs:
                   cache: "npm"
                   cache-dependency-path: "package-lock.json"
 
+            - name: "Setup Go for native lint tools"
+              uses: "actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c" # v6.4.0
+              with:
+                  go-version: "stable"
+
             - name: "Install dependencies"
               run: "npm ci --force"
+
+            - name: "Install native lint tools"
+              run: |
+                  set -euo pipefail
+                  sudo apt-get update
+                  sudo apt-get install --no-install-recommends --yes yamllint
+                  go install github.com/rhysd/actionlint/cmd/actionlint@latest
+                  go install github.com/zricethezav/gitleaks/v8@latest
+                  echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
 
             - name: "Build package"
               run: "npm run build"
