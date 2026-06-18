@@ -138,7 +138,7 @@
         "lint:fix": "npx -y cross-env NODE_OPTIONS=--max_old_space_size=16384 npx -y eslint --cache --cache-strategy content --cache-location .cache/.eslintcache --fix",
         "lint:fix:quiet": "npx -y cross-env ESLINT_PROGRESS=off NODE_OPTIONS=--max_old_space_size=16384 npx -y eslint --cache --cache-strategy content --cache-location .cache/.eslintcache --fix && echo \"Eslint fix done!\"",
         "lint:gitleaks": "gitleaks dir --config .gitleaks.toml .",
-        "lint:grype": "grype . -c .grype.yaml --name eslint-plugin-file-progress-2",
+        "lint:grype": "grype . --name eslint-plugin-file-progress-2",
         "lint:knip": "npm run knip",
         "lint:knip:exports": "npm run knip -- --include exports,nsExports,classMembers,types,nsTypes,enumMembers,duplicates",
         "lint:knip:unused:exports": "npm run knip -- --dependencies --exports",

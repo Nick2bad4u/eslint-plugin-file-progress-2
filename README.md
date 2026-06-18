@@ -1,15 +1,15 @@
 # eslint-plugin-file-progress-2
 
-[![npm license.](https://flat.badgen.net/npm/license/eslint-plugin-file-progress-2?color=purple)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/blob/main/LICENSE) [![npm total downloads.](https://flat.badgen.net/npm/dt/eslint-plugin-file-progress-2?color=pink)](https://www.npmjs.com/package/eslint-plugin-file-progress-2) [![latest GitHub release.](https://flat.badgen.net/github/release/Nick2bad4u/eslint-plugin-file-progress-2?color=cyan)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/releases) [![GitHub stars.](https://flat.badgen.net/github/stars/Nick2bad4u/eslint-plugin-file-progress-2?color=yellow)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/stargazers) [![GitHub forks.](https://flat.badgen.net/github/forks/Nick2bad4u/eslint-plugin-file-progress-2?color=green)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/forks) [![GitHub open issues.](https://flat.badgen.net/github/open-issues/Nick2bad4u/eslint-plugin-file-progress-2?color=red)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/issues) [![codecov.](https://flat.badgen.net/codecov/github/Nick2bad4u/eslint-plugin-file-progress-2?color=blue)](https://codecov.io/gh/Nick2bad4u/eslint-plugin-file-progress-2)
+[![NPM license.](https://flat.badgen.net/npm/license/eslint-plugin-file-progress-2?color=purple)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/blob/main/LICENSE) [![NPM total downloads.](https://flat.badgen.net/npm/dt/eslint-plugin-file-progress-2?color=pink)](https://www.npmjs.com/package/eslint-plugin-file-progress-2) [![Latest GitHub release.](https://flat.badgen.net/github/release/Nick2bad4u/eslint-plugin-file-progress-2?color=cyan)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/releases) [![GitHub stars.](https://flat.badgen.net/github/stars/Nick2bad4u/eslint-plugin-file-progress-2?color=yellow)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/stargazers) [![GitHub forks.](https://flat.badgen.net/github/forks/Nick2bad4u/eslint-plugin-file-progress-2?color=orange)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/forks) [![GitHub open issues.](https://flat.badgen.net/github/open-issues/Nick2bad4u/eslint-plugin-file-progress-2?color=red)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/issues) [![Codecov.](https://flat.badgen.net/codecov/github/Nick2bad4u/eslint-plugin-file-progress-2?color=blue)](https://codecov.io/gh/Nick2bad4u/eslint-plugin-file-progress-2) [![Repo Checks.](https://flat.badgen.net/github/checks/nick2bad4u/eslint-plugin-file-progress-2?color=green)](https://github.com/Nick2bad4u/eslint-plugin-file-progress-2/actions)
 
 > ESLint plugin that improves CLI progress output without changing lint semantics.
 
-> Fork note: Originally created by [@sibiraj-s](https://github.com/sibiraj-s) in [`eslint-plugin-file-progress`](https://github.com/sibiraj-s/eslint-plugin-file-progress). Huge thanks for the original plugin.
+> [!NOTE]
+> Originally created by [@sibiraj-s](https://github.com/sibiraj-s) in [`eslint-plugin-file-progress`](https://github.com/sibiraj-s/eslint-plugin-file-progress). Huge thanks for the original plugin.
 
 ## Demo
 
-- Who likes a silent console ¯\\_(ツ)_/¯
-- But who doesn't like a little feedback while waiting for a long lint to finish?
+- "Who likes a silent console ¯\\_(ツ)_/¯" - [@sibiraj-s](https://github.com/sibiraj-s), But who doesn't like a little feedback while waiting for a long lint to finish?
   - _(Especially when it shows which file is being linted right now!)_
 
 <div align="center">
@@ -23,7 +23,7 @@
 
 - This page shows the default recommended preset options:
   - [✅ `recommended` preset page](./docs/rules/presets/recommended.md)
-- But there are alot of ways to customize the output, and this page has a demo of every single rule option in action:
+- But there are a lot of ways to customize the output, and this page has a demo of every single rule option in action:
   - [⭐ `activate` rule page](./docs/rules/activate.md#rule-options)
 
 ## Installation
@@ -95,7 +95,7 @@ export default [
 
 ### Rule Options
 
-- For the full option interface, defaults, example usage gifs, and option-by-option behavior explanation:
+- For the full option interface, defaults, example usage GIFs, and option-by-option behavior explanation:
   - [⭐ `activate` Rule Page](./docs/rules/activate.md#rule-options)
 
 ## Presets
