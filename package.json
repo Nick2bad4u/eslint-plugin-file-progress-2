@@ -150,10 +150,10 @@
         "lint:package:strict": "npm run lint:node-version-files && npm run lint:package-sort && npm run lint:package-check && npm run lint:packagelintrc && echo \"Package.json lint done!\"",
         "lint:package-check": "npx -y publint && attw --pack .",
         "lint:package-check:strict": "npx -y publint && attw --pack . --profile strict",
-        "lint:package-json": "npmPkgJsonLint . --config .npmpackagejsonlintrc.json",
+        "lint:package-json": "npmPkgJsonLint . --configFile .npmpackagejsonlintrc.json",
         "lint:package-sort": "npx -y sort-package-json \"./package.json\" \"./docs/docusaurus/package.json\"",
         "lint:package-sort-check": "npx -y sort-package-json --check \"./package.json\" \"./docs/docusaurus/package.json\"",
-        "lint:packagelintrc": "npx -y .npmpackagejsonlintrc.json . --config .npmpackagejsonlintrc.json",
+        "lint:packagelintrc": "npx -y npm-package-json-lint . --configFile .npmpackagejsonlintrc.json",
         "lint:prettier": "npx -y prettier . --log-level warn --cache --cache-location=.cache/.prettier-cache --cache-strategy=content --check",
         "lint:prettier:fix": "npx -y prettier . --log-level warn --cache --cache-location=.cache/.prettier-cache --cache-strategy=content --write",
         "lint:publint": "npx -y publint",
@@ -296,7 +296,7 @@
         "yamllint-js": "^0.2.4"
     },
     "peerDependencies": {
-        "eslint": "^9.0.0 || ^10.5.0",
+        "eslint": "^9.0.0 || ^10.3.0",
         "typescript": "^5.0.0 || ^6.0.2"
     },
     "packageManager": "npm@11.17.0",

@@ -18,6 +18,8 @@ const builtPluginModuleUrl = pathToFileURL(
 ).href;
 const markerStart = "<!-- begin generated rules table -->";
 const markerEnd = "<!-- end generated rules table -->";
+const emojiPresentationPattern = /\p{Emoji_Presentation}/u;
+const zeroWidthPattern = /[\u200D\uFE0E\uFE0F]/u;
 
 // eslint-disable-next-line no-unsanitized/method -- Controlled repository-local file URL; no user input reaches import().
 const { fileProgressPresetCatalog, fileProgressRuleCatalog } = await import(
@@ -48,6 +50,63 @@ const detectLineEnding = (markdown) =>
  */
 const normalizeLineEndings = (markdown, lineEnding) =>
     markdown.replaceAll(/\r?\n/gv, lineEnding);
+
+/**
+ * @param {string} value
+ *
+ * @returns {number}
+ */
+const getDisplayWidth = (value) =>
+    [...value].reduce((width, character) => {
+        if (zeroWidthPattern.test(character)) {
+            return width;
+        }
+
+        return width + (emojiPresentationPattern.test(character) ? 2 : 1);
+    }, 0);
+
+/**
+ * @param {string} value
+ * @param {number} targetWidth
+ *
+ * @returns {string}
+ */
+const padDisplayEnd = (value, targetWidth) =>
+    `${value}${" ".repeat(Math.max(targetWidth - getDisplayWidth(value), 0))}`;
+
+/**
+ * @param {readonly (readonly string[])[]} rows
+ *
+ * @returns {string}
+ */
+const createMarkdownTable = (rows) => {
+    const columnWidths = rows[0]?.map((_, columnIndex) =>
+        Math.max(
+            ...rows.map((row) => getDisplayWidth(row[columnIndex] ?? "")),
+            3
+        )
+    );
+
+    if (columnWidths === undefined) {
+        return "";
+    }
+
+    const formatRow = (row) =>
+        `| ${row
+            .map((cell, columnIndex) =>
+                padDisplayEnd(
+                    cell,
+                    columnWidths[columnIndex] ?? getDisplayWidth(cell)
+                )
+            )
+            .join(" | ")} |`;
+
+    return [
+        formatRow(rows[0] ?? []),
+        formatRow(columnWidths.map((columnWidth) => "-".repeat(columnWidth))),
+        ...rows.slice(1).map(formatRow),
+    ].join("\n");
+};
 
 /**
  * @param {unknown} value
@@ -137,10 +196,13 @@ const getRuleDescription = (plugin, ruleName) => {
  * @param {typeof presetCatalog} currentPresetCatalog
  * @param {{ docsPath: string; name: string }} ruleCatalogEntry
  *
- * @returns {string}
+ * @returns {readonly [string, string, string]}
  */
-const createRuleRow = (plugin, currentPresetCatalog, ruleCatalogEntry) =>
-    `| [\`file-progress/${ruleCatalogEntry.name}\`](${ruleCatalogEntry.docsPath}) | ${getRuleDescription(plugin, ruleCatalogEntry.name)} | ${collectPresetLinks(plugin, currentPresetCatalog, ruleCatalogEntry.name)} |`;
+const createRuleRow = (plugin, currentPresetCatalog, ruleCatalogEntry) => [
+    `[\`file-progress/${ruleCatalogEntry.name}\`](${ruleCatalogEntry.docsPath})`,
+    getRuleDescription(plugin, ruleCatalogEntry.name),
+    collectPresetLinks(plugin, currentPresetCatalog, ruleCatalogEntry.name),
+];
 
 /**
  * @param {ReadmeRulesPluginLike} plugin
@@ -158,11 +220,16 @@ export const generateReadmeRulesSectionFromPlugin = (plugin, input = {}) => {
     return [
         "Generated from the plugin rule metadata and preset registry.",
         "",
-        "| Rule | Description | Included in presets |",
-        "| --- | --- | --- |",
-        ...resolvedRuleCatalog.map((ruleCatalogEntry) =>
-            createRuleRow(plugin, resolvedPresetCatalog, ruleCatalogEntry)
-        ),
+        createMarkdownTable([
+            [
+                "Rule",
+                "Description",
+                "Included in presets",
+            ],
+            ...resolvedRuleCatalog.map((ruleCatalogEntry) =>
+                createRuleRow(plugin, resolvedPresetCatalog, ruleCatalogEntry)
+            ),
+        ]),
     ].join("\n");
 };
 
@@ -186,7 +253,7 @@ const replaceMarkedSection = (markdown, replacement) => {
 
     const lineEnding = detectLineEnding(markdown);
     const replacementBlock = normalizeLineEndings(
-        `${markerStart}\n${replacement}\n${markerEnd}`,
+        `${markerStart}\n\n${replacement}\n\n${markerEnd}`,
         lineEnding
     );
 

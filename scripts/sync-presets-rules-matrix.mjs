@@ -16,6 +16,8 @@ const builtPluginModuleUrl = pathToFileURL(
 ).href;
 const markerStart = "<!-- begin generated preset matrix -->";
 const markerEnd = "<!-- end generated preset matrix -->";
+const emojiPresentationPattern = /\p{Emoji_Presentation}/u;
+const zeroWidthPattern = /[\u200D\uFE0E\uFE0F]/u;
 const presetsIndexPath = resolve(
     scriptDirectoryPath,
     "../docs/rules/presets/index.md"
@@ -56,6 +58,63 @@ const detectLineEnding = (markdown) =>
  */
 const normalizeLineEndings = (markdown, lineEnding) =>
     markdown.replaceAll(/\r?\n/gv, lineEnding);
+
+/**
+ * @param {string} value
+ *
+ * @returns {number}
+ */
+const getDisplayWidth = (value) =>
+    [...value].reduce((width, character) => {
+        if (zeroWidthPattern.test(character)) {
+            return width;
+        }
+
+        return width + (emojiPresentationPattern.test(character) ? 2 : 1);
+    }, 0);
+
+/**
+ * @param {string} value
+ * @param {number} targetWidth
+ *
+ * @returns {string}
+ */
+const padDisplayEnd = (value, targetWidth) =>
+    `${value}${" ".repeat(Math.max(targetWidth - getDisplayWidth(value), 0))}`;
+
+/**
+ * @param {readonly (readonly string[])[]} rows
+ *
+ * @returns {string}
+ */
+const createMarkdownTable = (rows) => {
+    const columnWidths = rows[0]?.map((_, columnIndex) =>
+        Math.max(
+            ...rows.map((row) => getDisplayWidth(row[columnIndex] ?? "")),
+            3
+        )
+    );
+
+    if (columnWidths === undefined) {
+        return "";
+    }
+
+    const formatRow = (row) =>
+        `| ${row
+            .map((cell, columnIndex) =>
+                padDisplayEnd(
+                    cell,
+                    columnWidths[columnIndex] ?? getDisplayWidth(cell)
+                )
+            )
+            .join(" | ")} |`;
+
+    return [
+        formatRow(rows[0] ?? []),
+        formatRow(columnWidths.map((columnWidth) => "-".repeat(columnWidth))),
+        ...rows.slice(1).map(formatRow),
+    ].join("\n");
+};
 
 /**
  * @param {unknown} value
@@ -145,7 +204,7 @@ const createRuleDocsPath = (resolveRuleCatalogEntry, ruleName) =>
  *     ruleName: string;
  * }} presetCatalogEntry
  *
- * @returns {string}
+ * @returns {readonly [string, string, string, string]}
  *
  * @throws {TypeError} When preset metadata and enabled rule diverge.
  */
@@ -162,7 +221,12 @@ const createPresetRow = (
         );
     }
 
-    return `| [${createPresetDocsLabel(presetCatalogEntry)}](${createPresetDocsPath(presetCatalogEntry.docsPath)}) | [\`file-progress/${enabledRuleName}\`](${createRuleDocsPath(resolveRuleCatalogEntry, enabledRuleName)}) | ${presetCatalogEntry.optionSummary} | ${presetCatalogEntry.purpose} |`;
+    return [
+        `[${createPresetDocsLabel(presetCatalogEntry)}](${createPresetDocsPath(presetCatalogEntry.docsPath)})`,
+        `[\`file-progress/${enabledRuleName}\`](${createRuleDocsPath(resolveRuleCatalogEntry, enabledRuleName)})`,
+        presetCatalogEntry.optionSummary,
+        presetCatalogEntry.purpose,
+    ];
 };
 
 /**
@@ -182,11 +246,21 @@ export const generatePresetMatrixSectionFromPlugin = (plugin, input = {}) => {
     return [
         "Generated from the preset registry.",
         "",
-        "| Preset | Rule | Key options | Intended use |",
-        "| --- | --- | --- | --- |",
-        ...resolvedPresetCatalog.map((presetCatalogEntry) =>
-            createPresetRow(plugin, resolveRuleCatalogEntry, presetCatalogEntry)
-        ),
+        createMarkdownTable([
+            [
+                "Preset",
+                "Rule",
+                "Key options",
+                "Intended use",
+            ],
+            ...resolvedPresetCatalog.map((presetCatalogEntry) =>
+                createPresetRow(
+                    plugin,
+                    resolveRuleCatalogEntry,
+                    presetCatalogEntry
+                )
+            ),
+        ]),
     ].join("\n");
 };
 
@@ -210,7 +284,7 @@ const replaceMarkedSection = (markdown, replacement) => {
 
     const lineEnding = detectLineEnding(markdown);
     const replacementBlock = normalizeLineEndings(
-        `${markerStart}\n${replacement}\n${markerEnd}`,
+        `${markerStart}\n\n${replacement}\n\n${markerEnd}`,
         lineEnding
     );
 
