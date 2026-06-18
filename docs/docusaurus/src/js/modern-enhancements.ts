@@ -601,8 +601,10 @@ function shouldProcessRuntimeSidebarLink(
     return true;
 }
 
-initializeEnhancements();
-Object.assign(globalThis, { initializeAdvancedFeatures });
+if ("document" in globalThis && "MutationObserver" in globalThis) {
+    initializeEnhancements();
+    Object.assign(globalThis, { initializeAdvancedFeatures });
+}
 
 export { initializeAdvancedFeatures, initializeEnhancements };
 export default initializeEnhancements;
