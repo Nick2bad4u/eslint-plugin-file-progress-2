@@ -11,7 +11,7 @@
         "typedoc-plugins/**/*.mts",
         "typedoc-plugins/**/*.d.mts",
         "typedoc-plugins/escapeMdxMarkdownCore.mjs",
-        "typedoc-plugins/hashToBangLinksCore.mjs",
-        "typedoc-plugins/prefixDocLinksCore.mjs"
+        "typedoc-plugins/hash-to-bang-links-core.mjs",
+        "typedoc-plugins/prefix-doc-links-core.mjs"
     ]
 }

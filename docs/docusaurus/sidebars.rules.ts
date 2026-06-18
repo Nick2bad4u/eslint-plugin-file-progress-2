@@ -3,7 +3,7 @@ import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
 import {
     fileProgressPresetCatalog,
     fileProgressRuleCatalog,
-} from "../../src/_internal/plugin-catalog.js";
+} from "../../src/_internal/plugin-catalog";
 
 const sidebars = {
     rules: [
@@ -22,12 +22,6 @@ const sidebars = {
         {
             className: "sb-cat-presets",
             collapsed: true,
-            type: "category",
-            label: "Presets",
-            link: {
-                type: "doc",
-                id: "presets/index",
-            },
             items: fileProgressPresetCatalog.map(
                 ({ docsId, sidebarClassName, sidebarLabel }) => ({
                     className: sidebarClassName,
@@ -36,24 +30,30 @@ const sidebars = {
                     type: "doc" as const,
                 })
             ),
+            label: "Presets",
+            link: {
+                id: "presets/index",
+                type: "doc",
+            },
+            type: "category",
         },
         {
             className: "sb-cat-rules",
             collapsed: true,
-            type: "category",
-            label: "Rules",
-            link: {
-                type: "generated-index",
-                title: "Rule Reference",
-                slug: "/",
-                description:
-                    "Documentation for the CLI progress rules shipped by eslint-plugin-file-progress-2.",
-            },
             items: fileProgressRuleCatalog.map(({ docsId, sidebarLabel }) => ({
                 id: docsId,
                 label: sidebarLabel,
                 type: "doc" as const,
             })),
+            label: "Rules",
+            link: {
+                description:
+                    "Documentation for the CLI progress rules shipped by eslint-plugin-file-progress-2.",
+                slug: "/",
+                title: "Rule Reference",
+                type: "generated-index",
+            },
+            type: "category",
         },
     ],
 } satisfies SidebarsConfig;

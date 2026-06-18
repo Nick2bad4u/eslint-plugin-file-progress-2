@@ -105,7 +105,7 @@ export const createMockSpinnerFactory = (): {
         options?: Readonly<SpinnerCreateOptions>
     ): Spinner => {
         const events: MockSpinnerEvent[] = [];
-        let spinning = false;
+        let isSpinning = false;
 
         const spinner: Spinner = {
             clear() {
@@ -113,7 +113,7 @@ export const createMockSpinnerFactory = (): {
                 return spinner;
             },
             error(payload) {
-                spinning = false;
+                isSpinning = false;
                 events.push(recordEvent("error", payload));
                 return spinner;
             },
@@ -121,9 +121,7 @@ export const createMockSpinnerFactory = (): {
                 events.push(recordEvent("info", payload));
                 return spinner;
             },
-            isSpinning() {
-                return spinning;
-            },
+            isSpinning: () => isSpinning,
             loop() {
                 events.push(recordEvent("loop"));
                 return spinner;
@@ -133,27 +131,27 @@ export const createMockSpinnerFactory = (): {
                 return spinner;
             },
             reset() {
-                spinning = false;
+                isSpinning = false;
                 events.push(recordEvent("reset"));
                 return spinner;
             },
             spin() {
-                spinning = true;
+                isSpinning = true;
                 events.push(recordEvent("spin"));
                 return spinner;
             },
             start(payload) {
-                spinning = true;
+                isSpinning = true;
                 events.push(recordEvent("start", payload));
                 return spinner;
             },
             stop(payload) {
-                spinning = false;
+                isSpinning = false;
                 events.push(recordEvent("stop", payload));
                 return spinner;
             },
             success(payload) {
-                spinning = false;
+                isSpinning = false;
                 events.push(recordEvent("success", payload));
                 return spinner;
             },

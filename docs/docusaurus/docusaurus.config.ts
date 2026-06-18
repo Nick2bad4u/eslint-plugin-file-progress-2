@@ -1,16 +1,15 @@
-import { themes as prismThemes } from "prism-react-renderer";
-
 import type { Options as DocsPluginOptions } from "@docusaurus/plugin-content-docs";
 import type * as Preset from "@docusaurus/preset-classic";
 import type { Config, PluginModule } from "@docusaurus/types";
 
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
+import { themes as prismThemes } from "prism-react-renderer";
 
 import {
     fileProgressPresetCatalog,
     fileProgressRuleCatalog,
-} from "../../src/_internal/plugin-catalog.js";
+} from "../../src/_internal/plugin-catalog";
 
 /** GitHub organization used for edit links and project metadata. */
 const organizationName = "Nick2bad4u";
@@ -19,24 +18,33 @@ const projectName = "eslint-plugin-file-progress-2";
 /** Public origin for the published documentation site. */
 const siteOrigin = "https://nick2bad4u.github.io";
 /** Route base path where docs site is deployed (GitHub Pages project path). */
-const baseUrl = process.env["DOCUSAURUS_BASE_URL"] ?? `/${projectName}/`;
+const getEnvironmentVariable = (name: string): string | undefined =>
+    process.env[name];
+
+const baseUrl =
+    getEnvironmentVariable("DOCUSAURUS_BASE_URL") ?? `/${projectName}/`;
 /** Canonical public site URL including the GitHub Pages project path. */
 const siteUrl = `${siteOrigin}${baseUrl}`;
 /** Canonical deployed docs root URL used for absolute project tool links. */
 const deployedDocsRootUrl = `https://nick2bad4u.github.io${baseUrl}`;
 /** Opt-in flag for experimental Docusaurus performance features. */
 const enableExperimentalFaster =
-    process.env["DOCUSAURUS_ENABLE_EXPERIMENTAL"] === "true";
+    getEnvironmentVariable("DOCUSAURUS_ENABLE_EXPERIMENTAL") === "true";
 /** Global site description used for SEO and social cards. */
 const siteDescription =
     "CLI-first documentation for eslint-plugin-file-progress-2, including setup guides, preset docs, rule reference, API pages, and maintainer notes.";
 /** Social preview image path relative to the static directory. */
 const socialCardImagePath = "img/logo.png";
 /** Absolute social preview image URL. */
-const socialCardImageUrl = new URL(socialCardImagePath, siteUrl).toString();
+const socialCardImageUrlObject = new URL(socialCardImagePath, siteUrl);
+const socialCardImageUrl = socialCardImageUrlObject.href;
 /** Client module path for runtime DOM enhancement bootstrap script. */
+const modernEnhancementsClientModuleUrl = new URL(
+    "src/js/modern-enhancements.ts",
+    import.meta.url
+);
 const modernEnhancementsClientModule = fileURLToPath(
-    new URL("src/js/modernEnhancements.ts", import.meta.url)
+    modernEnhancementsClientModuleUrl
 );
 /** PWA theme-color meta value for Chromium-based browsers. */
 const pwaThemeColor = "#6f63eb";
@@ -44,12 +52,15 @@ const pwaThemeColor = "#6f63eb";
 const pwaTileColor = "#6f63eb";
 /** Safari pinned-tab mask icon color. */
 const pwaMaskIconColor = "#8142a4";
+const copyrightYearFormatter = new Intl.DateTimeFormat("en", {
+    year: "numeric",
+});
 const footerCopyright =
-    `© ${new Date().getFullYear()} ` +
+    `© ${copyrightYearFormatter.format(Date.now())} ` +
     '<a href="https://github.com/Nick2bad4u/" target="_blank" rel="noopener noreferrer">Nick2bad4u</a> 💻 Built with ' +
     '<a href="https://docusaurus.io/" target="_blank" rel="noopener noreferrer">🦖 Docusaurus</a>.';
 
-const removeHeadAttrFlagKey = [
+const legacyHeadAttributeFlagKey = [
     "remove",
     "Le",
     "gacyPostBuildHeadAttribute",
@@ -65,6 +76,21 @@ const resolveOptionalModule = (moduleSpecifier: string): string | undefined => {
     } catch {
         return undefined;
     }
+};
+
+const hasWarningMessageProperty = (
+    warning: unknown
+): warning is Readonly<{ message: unknown }> =>
+    typeof warning === "object" && warning !== null && "message" in warning;
+
+const getWarningMessage = (warning: unknown): string | undefined => {
+    if (!hasWarningMessageProperty(warning)) {
+        return undefined;
+    }
+
+    const { message } = warning;
+
+    return typeof message === "string" ? message : undefined;
 };
 
 const vscodeCssLanguageServiceEsmEntry = resolveOptionalModule(
@@ -85,69 +111,57 @@ const vscodeLanguageServerTypesEsmEntry = resolveOptionalModule(
  * packages are actually installed in the current workspace.
  */
 const suppressKnownWebpackWarningsPlugin: PluginModule = () => ({
-    configureWebpack() {
-        return {
-            ignoreWarnings: [
-                (warning: unknown) => {
-                    const warningRecord = warning as
-                        | Readonly<Record<string, unknown>>
-                        | undefined;
-                    const warningMessage = warningRecord?.["message"];
+    configureWebpack: () => ({
+        ignoreWarnings: [
+            (warning: unknown) => {
+                const warningMessage = getWarningMessage(warning);
 
-                    return (
-                        typeof warningMessage === "string" &&
-                        warningMessage.includes(
-                            "Critical dependency: require function is used in a way in which dependencies cannot be statically extracted"
-                        )
-                    );
-                },
-            ],
-            resolve: {
-                alias: {
-                    ...(vscodeCssLanguageServiceEsmEntry === undefined
-                        ? {}
-                        : {
-                              "vscode-css-languageservice$":
-                                  vscodeCssLanguageServiceEsmEntry,
-                          }),
-                    ...(vscodeLanguageServerTypesEsmEntry === undefined
-                        ? {}
-                        : {
-                              "vscode-languageserver-types$":
-                                  vscodeLanguageServerTypesEsmEntry,
-                              "vscode-languageserver-types/lib/umd/main.js$":
-                                  vscodeLanguageServerTypesEsmEntry,
-                          }),
-                },
+                return (
+                    warningMessage?.includes(
+                        "Critical dependency: require function is used in a way in which dependencies cannot be statically extracted"
+                    ) === true
+                );
             },
-        };
-    },
+        ],
+        resolve: {
+            alias: {
+                ...(vscodeCssLanguageServiceEsmEntry !== undefined && {
+                    "vscode-css-languageservice$":
+                        vscodeCssLanguageServiceEsmEntry,
+                }),
+                ...(vscodeLanguageServerTypesEsmEntry !== undefined && {
+                    "vscode-languageserver-types$":
+                        vscodeLanguageServerTypesEsmEntry,
+                    "vscode-languageserver-types/lib/umd/main.js$":
+                        vscodeLanguageServerTypesEsmEntry,
+                }),
+            },
+        },
+    }),
     name: "suppress-known-webpack-warnings",
 });
 
 /** Docusaurus future flags, including optional experimental fast path. */
 const futureConfig = {
-    ...(enableExperimentalFaster
-        ? {
-              faster: {
-                  mdxCrossCompilerCache: true,
-                  rspackBundler: true,
-                  rspackPersistentCache: true,
-                  ssgWorkerThreads: true,
-              },
-          }
-        : {}),
+    ...(enableExperimentalFaster && {
+        faster: {
+            mdxCrossCompilerCache: true,
+            rspackBundler: true,
+            rspackPersistentCache: true,
+            ssgWorkerThreads: true,
+        },
+    }),
     v4: {
-        [removeHeadAttrFlagKey]: true,
+        fasterByDefault: true,
+        [legacyHeadAttributeFlagKey]: true,
+        mdx1CompatDisabledByDefault: true,
+        removeLegacyPostBuildHeadAttribute: true,
+        siteStorageNamespacing: true,
         // NOTE: Enabling cascade layers currently breaks our production CSS output
         // (CssMinimizer parsing errors -> large chunks of CSS dropped), which
         // makes many Infima (--ifm-*) variables undefined across the site.
         // Re-enable only after verifying the build output CSS is valid.
         useCssCascadeLayers: false,
-        siteStorageNamespacing: true,
-        fasterByDefault: true,
-        removeLegacyPostBuildHeadAttribute: true,
-        mdx1CompatDisabledByDefault: true,
     },
 } satisfies Config["future"];
 
@@ -158,10 +172,6 @@ const config = {
     deploymentBranch: "gh-pages",
     favicon: "img/favicon.svg",
     future: futureConfig,
-    storage: {
-        namespace: true,
-        type: "localStorage",
-    },
     headTags: [
         // Preconnect to GitHub for faster resource loading
         {
@@ -290,6 +300,10 @@ const config = {
             "classic",
             {
                 blog: false,
+                debug:
+                    getEnvironmentVariable(
+                        "DOCUSAURUS_PRESET_CLASSIC_DEBUG"
+                    ) === "true",
                 docs: {
                     breadcrumbs: true,
                     editUrl: `https://github.com/${organizationName}/${projectName}/blob/master/docs/docusaurus/`,
@@ -325,8 +339,6 @@ const config = {
                     showLastUpdateAuthor: true,
                     showLastUpdateTime: true,
                 },
-                debug:
-                    process.env["DOCUSAURUS_PRESET_CLASSIC_DEBUG"] === "true",
                 sitemap: {
                     filename: "sitemap.xml",
                     ignorePatterns: ["/tests/**"],
@@ -360,6 +372,10 @@ const config = {
         ],
     ],
     projectName,
+    storage: {
+        namespace: true,
+        type: "localStorage",
+    },
     tagline:
         "Flat Config-ready progress output and final summaries for ESLint CLI runs.",
     themeConfig: {
@@ -396,19 +412,19 @@ const config = {
                     items: [
                         {
                             href: `https://github.com/${organizationName}/${projectName}/releases`,
-                            label: "\ueb09 Releases",
+                            label: "\u{EB09} Releases",
                         },
                         {
                             href: `https://github.com/${organizationName}/${projectName}`,
-                            label: "\uea84 Repository",
+                            label: "\u{EA84} Repository",
                         },
                         {
                             href: `${deployedDocsRootUrl}eslint-inspector/`,
-                            label: "\ue7d2 ESLint Inspector",
+                            label: "\u{E7D2} ESLint Inspector",
                         },
                         {
                             href: `${deployedDocsRootUrl}stylelint-inspector/`,
-                            label: "\ue7d2 Stylelint Inspector",
+                            label: "\u{E7D2} Stylelint Inspector",
                         },
                     ],
                     title: "📁 Project",
@@ -417,19 +433,19 @@ const config = {
                     items: [
                         {
                             href: "https://eslint.org/docs/latest/use/configure/configuration-files-new",
-                            label: "\uf0ad Flat Config docs",
+                            label: "\u{F0AD} Flat Config docs",
                         },
                         {
                             href: "https://eslint.org/docs/latest/use/command-line-interface",
-                            label: "\uf120 ESLint CLI docs",
+                            label: "\u{F120} ESLint CLI docs",
                         },
                         {
                             href: `https://github.com/sibiraj-s/eslint-plugin-file-progress`,
-                            label: "\uea84 Original upstream plugin",
+                            label: "\u{EA84} Original upstream plugin",
                         },
                         {
                             href: `https://www.npmjs.com/package/${projectName}`,
-                            label: "\ue616 NPM Package",
+                            label: "\u{E616} NPM Package",
                         },
                     ],
                     title: "⚙️ Support",
@@ -437,10 +453,10 @@ const config = {
             ],
             logo: {
                 alt: "eslint-plugin-file-progress-2 logo",
+                height: 60,
                 href: `https://github.com/${organizationName}/${projectName}`,
                 src: "img/logo.svg",
                 width: 60,
-                height: 60,
             },
             style: "dark",
         },
@@ -461,7 +477,6 @@ const config = {
             },
         ],
         navbar: {
-            style: "dark",
             hideOnScroll: true,
             items: [
                 {
@@ -539,7 +554,7 @@ const config = {
                             to: "/docs/developer/api",
                         },
                     ],
-                    label: "\udb80\ude19 Dev",
+                    label: "\u{F0219} Dev",
                     position: "right",
                     to: "/docs/developer",
                     type: "dropdown",
@@ -549,18 +564,18 @@ const config = {
                     items: [
                         {
                             href: `https://github.com/${organizationName}/${projectName}`,
-                            label: "• \ue709 GitHub",
+                            label: "• \u{E709} GitHub",
                         },
                         {
                             href: `https://www.npmjs.com/package/${projectName}`,
-                            label: "• \ue616 NPM",
+                            label: "• \u{E616} NPM",
                         },
                         {
                             href: `https://github.com/${organizationName}/${projectName}/releases`,
-                            label: "• \ueb09 Releases",
+                            label: "• \u{EB09} Releases",
                         },
                     ],
-                    label: "\ue65b GitHub",
+                    label: "\u{E65B} GitHub",
                     position: "right",
                     type: "dropdown",
                 },
@@ -572,6 +587,7 @@ const config = {
                 src: "img/logo.svg",
                 width: 48,
             },
+            style: "dark",
             title: projectName,
         },
         prism: {

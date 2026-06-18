@@ -1,16 +1,18 @@
+import type { JSX } from "react";
+
 import Link from "@docusaurus/Link";
 
-import styles from "./GitHubStats.module.css";
+import styles from "./git-hub-stats.module.css";
 
-type GitHubStatsProps = {
+interface GitHubStatsProps {
     readonly className?: string;
-};
+}
 
-type LiveBadge = {
+interface LiveBadge {
     readonly alt: string;
     readonly href: string;
     readonly src: string;
-};
+}
 
 const liveBadges = [
     {
@@ -57,7 +59,9 @@ const liveBadges = [
  *
  * @returns Badge strip with links to package/repository metadata.
  */
-export default function GitHubStats({ className = "" }: GitHubStatsProps) {
+export default function GitHubStats({
+    className = "",
+}: GitHubStatsProps): JSX.Element {
     const liveBadgeListClassName = styles["liveBadgeList"] ?? "";
     const liveBadgeListItemClassName = styles["liveBadgeListItem"] ?? "";
     const liveBadgeAnchorClassName = styles["liveBadgeAnchor"] ?? "";
@@ -69,19 +73,19 @@ export default function GitHubStats({ className = "" }: GitHubStatsProps) {
     return (
         <ul className={badgeListClassName}>
             {liveBadges.map((badge) => (
-                <li key={badge.src} className={liveBadgeListItemClassName}>
+                <li className={liveBadgeListItemClassName} key={badge.src}>
                     <Link
                         className={liveBadgeAnchorClassName}
                         href={badge.href}
-                        target="_blank"
                         rel="noopener noreferrer"
+                        target="_blank"
                     >
                         <img
                             alt={badge.alt}
                             className={liveBadgeImageClassName}
-                            src={badge.src}
-                            loading="lazy"
                             decoding="async"
+                            loading="lazy"
+                            src={badge.src}
                         />
                     </Link>
                 </li>

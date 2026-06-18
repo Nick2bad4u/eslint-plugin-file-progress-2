@@ -1,4 +1,4 @@
-import path from "node:path";
+import * as path from "node:path";
 import pc from "picocolors";
 import { arrayAt, arrayJoin, isEmpty, stringSplit } from "ts-extras";
 
@@ -49,14 +49,11 @@ export const toRelativeFilePath = (filename: string, cwd: string): string => {
     }
 
     const effectiveCwd = cwd || process.cwd();
-    const relativePath = isWindowsAbsolutePath
-        ? path.win32.relative(effectiveCwd, filename)
-        : path.relative(effectiveCwd, filename);
+    const pathFormatter = isWindowsAbsolutePath ? path.win32 : path;
+    const relativePath = pathFormatter.relative(effectiveCwd, filename);
 
     if (relativePath.length === 0) {
-        return isWindowsAbsolutePath
-            ? path.win32.basename(filename)
-            : path.basename(filename);
+        return pathFormatter.basename(filename);
     }
 
     return relativePath;

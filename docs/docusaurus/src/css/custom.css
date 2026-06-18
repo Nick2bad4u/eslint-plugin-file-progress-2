@@ -213,6 +213,7 @@ body {
     background-color: rgb(129 140 248 / 20%);
 }
 
+/* stylelint-disable-next-line css-performance-budget/no-giant-selector-lists -- Docusaurus generated sidebar classes share the same top-level category treatment. */
 .sb-doc-overview > .menu__link,
 .sb-doc-getting-started > .menu__link,
 .sb-cat-developer > .menu__link,
@@ -279,6 +280,7 @@ body {
     border-inline-start-color: var(--sb-accent-rules);
 }
 
+/* stylelint-disable-next-line css-performance-budget/no-giant-selector-lists -- Docusaurus generated sidebar classes share the same flex alignment treatment. */
 .sb-cat-developer > .menu__link,
 .sb-cat-developer-adr > .menu__list-item-collapsible .menu__link,
 .sb-cat-presets > .menu__list-item-collapsible .menu__link,
@@ -295,6 +297,7 @@ body {
     gap: 0.4rem;
 }
 
+/* stylelint-disable-next-line css-performance-budget/no-giant-selector-lists -- Docusaurus generated sidebar classes share the same generated label badge treatment. */
 .sb-cat-developer > .menu__link::before,
 .sb-cat-developer-adr > .menu__list-item-collapsible .menu__link::before,
 .sb-cat-presets > .menu__list-item-collapsible .menu__link::before,
@@ -541,6 +544,7 @@ body {
     border-inline-start-color: #10b981;
 }
 
+/* stylelint-disable-next-line css-performance-budget/no-giant-selector-lists -- TypeDoc sidebar links across generated depths need the same neutral child-link treatment. */
 .sb-cat-api-overview .theme-doc-sidebar-item-link-level-2 > .menu__link,
 .sb-cat-api-overview .menu__list .menu__link,
 .sb-cat-developer-adr .theme-doc-sidebar-item-link-level-2 > .menu__link,
@@ -609,6 +613,7 @@ body {
 }
 
 /* Runtime API labels are often long; optimize readability over truncation. */
+/* stylelint-disable-next-line css-performance-budget/no-giant-selector-lists -- Runtime API links and generated category depths share the same wrapping behavior. */
 .sb-cat-api-runtime .theme-doc-sidebar-item-link-level-2 > .menu__link,
 .sb-cat-api-runtime .theme-doc-sidebar-item-link-level-3 > .menu__link,
 .sb-cat-api-runtime .theme-doc-sidebar-item-link-level-4 > .menu__link,

@@ -1,43 +1,43 @@
 # yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
-name: Git Leaks Scan
+name: "Git Leaks Scan"
 
-run-name: ${{ format('Gitleaks scan for {0}', github.ref_name) }}
+run-name: "${{ format('Gitleaks scan for {0}', github.ref_name) }}"
 
 on:
     pull_request:
         branches: ["master"]
-        types: [opened, synchronize, reopened, ready_for_review]
+        types: ["opened", "synchronize", "reopened", "ready_for_review"]
     merge_group:
-        types: [checks_requested]
+        types: ["checks_requested"]
     push:
     workflow_dispatch:
     schedule:
         - cron: "12 4 * * *"
 
 concurrency:
-    group: gitleaks-${{ github.ref }}
+    group: "gitleaks-${{ github.ref }}"
     cancel-in-progress: true
 
 jobs:
     scan:
-        name: Gitleaks scan
-        runs-on: ubuntu-latest
+        name: "Gitleaks scan"
+        runs-on: "ubuntu-latest"
         timeout-minutes: 15
         permissions:
-            contents: read
+            contents: "read"
         steps:
-            - name: Harden runner
-              uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+            - name: "Harden runner"
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
               with:
-                  egress-policy: audit
+                  egress-policy: "audit"
 
-            - name: Checkout repository
-              uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+            - name: "Checkout repository"
+              uses: "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" # v6.0.3
               with:
                   fetch-depth: 0
 
-            - name: Run Gitleaks
-              uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+            - name: "Run Gitleaks"
+              uses: "gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e" # v3.0.0
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  GITLEAKS_CONFIG: .gitleaks.toml
+                  GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+                  GITLEAKS_CONFIG: ".gitleaks.toml"

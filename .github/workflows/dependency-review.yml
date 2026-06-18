@@ -26,36 +26,36 @@
 
 # yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
 name: "Dependency Review"
-run-name: Dependency Review • ${{ github.ref_name }} @${{ github.actor }}
+run-name: "Dependency Review • ${{ github.ref_name }} @${{ github.actor }}"
 
 on:
     pull_request:
     merge_group:
         types:
-            - checks_requested
+            - "checks_requested"
 
 permissions:
-    contents: read
+    contents: "read"
 
 concurrency:
-    group: dependency-review-${{ github.ref }}
+    group: "dependency-review-${{ github.ref }}"
     cancel-in-progress: true
 
 jobs:
     dependency-review:
-        name: Dependency Review
-        runs-on: ubuntu-latest
+        name: "Dependency Review"
+        runs-on: "ubuntu-latest"
         timeout-minutes: 20
         steps:
-            - name: Harden Runner
-              uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
               with:
-                  egress-policy: audit
+                  egress-policy: "audit"
 
             - name: "Checkout Repository"
-              uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+              uses: "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" # v6.0.3
 
             - name: "Dependency Review"
-              uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+              uses: "actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294" # v5.0.0
               with:
-                  fail-on-severity: moderate
+                  fail-on-severity: "moderate"

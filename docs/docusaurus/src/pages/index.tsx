@@ -1,29 +1,31 @@
+import type { JSX } from "react";
+
 import Head from "@docusaurus/Head";
 import Link from "@docusaurus/Link";
 import useBaseUrl from "@docusaurus/useBaseUrl";
-import Layout from "@theme/Layout";
 import Heading from "@theme/Heading";
-import GitHubStats from "../components/GitHubStats";
+import Layout from "@theme/Layout";
 
+import GitHubStats from "../components/git-hub-stats";
 import styles from "./index.module.css";
 
-type HeroBadge = {
+interface HeroBadge {
     readonly description: string;
     readonly icon: string;
     readonly label: string;
-};
+}
 
-type HeroStat = {
+interface HeroStat {
     readonly description: string;
     readonly headline: string;
-};
+}
 
-type HomeCard = {
+interface HomeCard {
     readonly description: string;
     readonly icon: string;
     readonly title: string;
     readonly to: string;
-};
+}
 
 /**
  * Hero badges Note: These icons are from the "Nerd Font Symbols" font.
@@ -34,18 +36,18 @@ const heroBadges = [
     {
         description:
             "Drop-in config for ESLint v9+ and modern Flat Config projects.",
-        icon: "\uf013",
+        icon: "\u{F013}",
         label: "Flat Config native",
     },
     {
         description: "Hide noisy spinner output automatically when CI=true.",
-        icon: "\uf0e7",
+        icon: "\u{F0E7}",
         label: "CI-aware preset",
     },
     {
         description:
             "Optional end-of-run duration, file count, and throughput summary.",
-        icon: "\uf0ad",
+        icon: "\u{F0AD}",
         label: "Detailed success summary",
     },
 ] as const satisfies readonly HeroBadge[];
@@ -59,17 +61,17 @@ const heroStats = [
     {
         description:
             "A single purpose-built rule focused on CLI lint progress output.",
-        headline: "\uf0ca 1 Rule",
+        headline: "\u{F0CA} 1 Rule",
     },
     {
         description:
             "Recommended, CI-friendly, and detailed-summary presets ready to use.",
-        headline: "\ue690 3 Presets",
+        headline: "\u{E690} 3 Presets",
     },
     {
         description:
             "Shows active file progress and a cleaner final summary for lint runs.",
-        headline: "\udb80\udc68 CLI-first Progress UX",
+        headline: "\u{F0068} CLI-first Progress UX",
     },
 ] as const satisfies readonly HeroStat[];
 
@@ -78,10 +80,10 @@ const heroStats = [
  *
  * @see https://www.nerdfonts.com/cheat-sheet for available icons in the "Nerd Font Symbols" font
  */
-const overviewButtonIcon = "\udb81\udf1d";
-const comparePresetsButtonIcon = "\udb85\udc92";
-const heroKickerIcon = "\uf0ad";
-const heroKickerIcon2 = "\uf135";
+const overviewButtonIcon = "\u{F071D}";
+const comparePresetsButtonIcon = "\u{F1492}";
+const heroKickerIcon = "\u{F0AD}";
+const heroKickerIcon2 = "\u{F135}";
 const homepageDescription =
     "Explore eslint-plugin-file-progress-2 documentation, presets, rule reference, and maintainer guides for CLI progress output during ESLint runs.";
 const homepageKeywords =
@@ -113,24 +115,24 @@ const homepageSocialImageUrl =
  */
 const homeCards = [
     {
-        icon: "\uf135",
-        title: "Get Started",
         description:
             "Install the plugin, enable a preset, and start showing progress during ESLint CLI runs.",
+        icon: "\u{F135}",
+        title: "Get Started",
         to: "/docs/rules/getting-started",
     },
     {
-        icon: "\ue690",
-        title: "Presets",
         description:
             "Choose between the default preset, CI-safe output, and detailed end-of-run summaries.",
+        icon: "\u{E690}",
+        title: "Presets",
         to: "/docs/rules/presets",
     },
     {
-        icon: "\uf02d",
-        title: "Rule Reference",
         description:
             "Review the activate rule, settings surface, and usage patterns for CLI-only progress output.",
+        icon: "\u{F02D}",
+        title: "Rule Reference",
         to: "/docs/rules",
     },
 ] as const satisfies readonly HomeCard[];
@@ -140,13 +142,13 @@ const homeCards = [
  *
  * @returns Landing page content for eslint-plugin-file-progress-2 docs.
  */
-export default function Home() {
+export default function Home(): JSX.Element {
     const logoSrc = useBaseUrl("/img/logo.svg");
 
     return (
         <Layout
-            title="CLI-first ESLint progress output"
             description={homepageDescription}
+            title="CLI-first ESLint progress output"
         >
             <Head>
                 <meta content={homepageKeywords} name="keywords" />
@@ -174,8 +176,8 @@ export default function Home() {
                                 <Link
                                     className={`${styles.heroInlineLink} ${styles.heroInlineLinkSpinner}`}
                                     href="https://github.com/usmanyunusov/nanospinner"
-                                    target="_blank"
                                     rel="noopener noreferrer"
+                                    target="_blank"
                                 >
                                     nanospinner
                                 </Link>{" "}
@@ -183,8 +185,8 @@ export default function Home() {
                                 <Link
                                     className={`${styles.heroInlineLink} ${styles.heroInlineLinkTsExtras}`}
                                     href="https://github.com/alexeyraspopov/picocolors"
-                                    target="_blank"
                                     rel="noopener noreferrer"
+                                    target="_blank"
                                 >
                                     picocolors
                                 </Link>
@@ -193,8 +195,8 @@ export default function Home() {
                             <div className={styles.heroBadgeRow}>
                                 {heroBadges.map((badge) => (
                                     <article
-                                        key={badge.label}
                                         className={styles.heroBadge}
+                                        key={badge.label}
                                     >
                                         <p className={styles.heroBadgeLabel}>
                                             <span
@@ -250,8 +252,8 @@ export default function Home() {
                     <div className={styles.heroStats}>
                         {heroStats.map((stat) => (
                             <article
-                                key={stat.headline}
                                 className={styles.heroStatCard}
+                                key={stat.headline}
                             >
                                 <p className={styles.heroStatHeading}>
                                     {stat.headline}
@@ -269,7 +271,7 @@ export default function Home() {
                 <section className="container">
                     <div className={styles.cardGrid}>
                         {homeCards.map((card) => (
-                            <article key={card.title} className={styles.card}>
+                            <article className={styles.card} key={card.title}>
                                 <div className={styles.cardHeader}>
                                     <p className={styles.cardIcon}>
                                         {card.icon}

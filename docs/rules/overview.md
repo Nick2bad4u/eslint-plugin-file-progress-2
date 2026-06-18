@@ -25,21 +25,21 @@ The primary API is now rule options:
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
-  {
-    plugins: {
-      "file-progress": progress,
-    },
-    rules: {
-      "file-progress/activate": [
-        "warn",
-        {
-          outputStream: "stderr",
-          throttleMs: 100,
-          ttyOnly: true,
-        },
-      ],
-    },
+ {
+  plugins: {
+   "file-progress": progress,
   },
+  rules: {
+   "file-progress/activate": [
+    "warn",
+    {
+     outputStream: "stderr",
+     throttleMs: 100,
+     ttyOnly: true,
+    },
+   ],
+  },
+ },
 ];
 ```
 

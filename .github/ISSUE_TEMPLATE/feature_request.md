@@ -3,8 +3,8 @@ name: Feature request
 about: Suggest a new feature or improvement for eslint-plugin-file-progress-2
 title: "Feature: "
 labels:
-    - enhancement
-    - triage
+ - enhancement
+ - triage
 assignees: []
 ---
 

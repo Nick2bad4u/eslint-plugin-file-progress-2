@@ -10,7 +10,7 @@
 
 - Who likes a silent console ¯\\_(ツ)_/¯
 - But who doesn't like a little feedback while waiting for a long lint to finish?
-    -  *(Especially when it shows which file is being linted right now!)*
+  - _(Especially when it shows which file is being linted right now!)_
 
 <div align="center">
   <p>Live per-file progress output from the `recommended` preset.</p>
@@ -22,9 +22,9 @@
 </div>
 
 - This page shows the default recommended preset options:
-    -  [✅ `recommended` preset page](./docs/rules/presets/recommended.md)
+  - [✅ `recommended` preset page](./docs/rules/presets/recommended.md)
 - But there are alot of ways to customize the output, and this page has a demo of every single rule option in action:
-    -  [⭐ `activate` rule page](./docs/rules/activate.md#rule-options)
+  - [⭐ `activate` rule page](./docs/rules/activate.md#rule-options)
 
 ## Installation
 
@@ -51,18 +51,18 @@ Need the `recommended` baseline with small behavior tweaks (for example
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
-  progress.configs.recommended,
-  {
-    rules: {
-      "file-progress/activate": [
-        "warn",
-        {
-          fileNameOnNewLine: true,
-          throttleMs: 120,
-        },
-      ],
+ progress.configs.recommended,
+ {
+  rules: {
+   "file-progress/activate": [
+    "warn",
+    {
+     fileNameOnNewLine: true,
+     throttleMs: 120,
     },
+   ],
   },
+ },
 ];
 ```
 
@@ -75,28 +75,28 @@ Modern ESLint usage should configure progress behavior as rule options:
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
-  {
-    plugins: {
-      "file-progress": progress,
-    },
-    rules: {
-      "file-progress/activate": [
-        "warn",
-        {
-          outputStream: "stderr",
-          throttleMs: 100,
-          ttyOnly: true,
-        },
-      ],
-    },
+ {
+  plugins: {
+   "file-progress": progress,
   },
+  rules: {
+   "file-progress/activate": [
+    "warn",
+    {
+     outputStream: "stderr",
+     throttleMs: 100,
+     ttyOnly: true,
+    },
+   ],
+  },
+ },
 ];
 ```
 
 ### Rule Options
 
 - For the full option interface, defaults, example usage gifs, and option-by-option behavior explanation:
-    - [⭐ `activate` Rule Page](./docs/rules/activate.md#rule-options)
+  - [⭐ `activate` Rule Page](./docs/rules/activate.md#rule-options)
 
 ## Presets
 
@@ -191,10 +191,10 @@ Or expose that through a package script:
 
 ```json
 {
-  "scripts": {
-    "lint": "eslint .",
-    "lint:progress": "eslint . --plugin file-progress --rule \"file-progress/activate: warn\""
-  }
+ "scripts": {
+  "lint": "eslint .",
+  "lint:progress": "eslint . --plugin file-progress --rule \"file-progress/activate: warn\""
+ }
 }
 ```
 

@@ -59,6 +59,7 @@ interface ProgressControllerState {
     lintedFileCount: number;
     lintStartedAt: number;
     spinner: Spinner;
+    summaryNeedsLeadingLineBreak: boolean;
 }
 
 type SpinnerCreateOptions = NonNullable<Parameters<typeof createSpinner>[1]>;
@@ -260,6 +261,7 @@ export const createProgressController = (
         lintedFileCount: 0,
         lintStartedAt: 0,
         spinner: createManagedSpinner(defaultSettings),
+        summaryNeedsLeadingLineBreak: false,
     });
 
     let state = createInitialState();
@@ -281,6 +283,15 @@ export const createProgressController = (
         state.spinner = createManagedSpinner(settings);
     };
 
+    const settleLiveOutputLine = (): void => {
+        if (!state.spinner.isSpinning()) {
+            return;
+        }
+
+        state.spinner.stop({ update: false });
+        state.summaryNeedsLeadingLineBreak = true;
+    };
+
     const renderLiveOutput = (
         context: Readonly<Rule.RuleContext>,
         settings: Readonly<NormalizedProgressSettings>,
@@ -294,6 +305,7 @@ export const createProgressController = (
             }
 
             state.spinner.spin();
+            settleLiveOutputLine();
             return;
         }
 
@@ -305,6 +317,7 @@ export const createProgressController = (
             renderAt - state.lastRenderAt < settings.throttleMs
         ) {
             state.spinner.spin();
+            settleLiveOutputLine();
             return;
         }
 
@@ -318,6 +331,7 @@ export const createProgressController = (
         state.initialLiveReportDone = true;
         state.lastRenderAt = renderAt;
         state.spinner.spin();
+        settleLiveOutputLine();
     };
 
     const resolveSettings = (
@@ -378,6 +392,15 @@ export const createProgressController = (
         ensureSpinner(settings);
 
         const summaryStats = createSummaryStats(exitCode);
+        const summaryStream = resolveWriteStream(
+            processLike,
+            settings.outputStream
+        );
+
+        if (state.summaryNeedsLeadingLineBreak) {
+            summaryStream.write("\n");
+            state.summaryNeedsLeadingLineBreak = false;
+        }
 
         if (exitCode === 0) {
             state.spinner.success({

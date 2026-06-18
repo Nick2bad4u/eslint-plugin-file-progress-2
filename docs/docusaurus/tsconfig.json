@@ -1,6 +1,8 @@
 {
     "$schema": "https://www.schemastore.org/tsconfig.json",
     "compilerOptions": {
+        "allowJs": true,
+        "checkJs": true,
         "ignoreDeprecations": "6.0",
         "isolatedDeclarations": false,
         "module": "ESNext",
@@ -8,6 +10,7 @@
         "noEmit": true,
         "skipLibCheck": true,
         "strict": true,
+        "target": "ES2024",
         "types": [
             "node"
         ]
@@ -25,6 +28,9 @@
         "docusaurus.config.ts",
         "sidebars.ts",
         "sidebars.rules.ts",
-        "src/**/*"
+        "src/**/*",
+        "typedoc-plugins/**/*.d.mts",
+        "typedoc-plugins/**/*.mjs",
+        "typedoc-plugins/**/*.mts"
     ]
 }

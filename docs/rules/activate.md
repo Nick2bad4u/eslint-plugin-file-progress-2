@@ -26,15 +26,15 @@ This rule exists to make those runs easier to monitor without changing lint sema
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
-  {
-    plugins: {
-      "file-progress": progress,
-    },
-    rules: {
-      // No live progress will be shown.
-      "file-progress/activate": "off",
-    },
+ {
+  plugins: {
+   "file-progress": progress,
   },
+  rules: {
+   // No live progress will be shown.
+   "file-progress/activate": "off",
+  },
+ },
 ];
 ```
 
@@ -44,21 +44,21 @@ export default [
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
-  {
-    plugins: {
-      "file-progress": progress,
-    },
-    rules: {
-      "file-progress/activate": [
-        "warn",
-        {
-          outputStream: "stderr",
-          throttleMs: 100,
-          ttyOnly: true,
-        },
-      ],
-    },
+ {
+  plugins: {
+   "file-progress": progress,
   },
+  rules: {
+   "file-progress/activate": [
+    "warn",
+    {
+     outputStream: "stderr",
+     throttleMs: 100,
+     ttyOnly: true,
+    },
+   ],
+  },
+ },
 ];
 ```
 
@@ -73,27 +73,27 @@ This rule accepts one optional options object:
 
 ```ts
 interface ProgressRuleOptions {
-  detailedSuccess?: boolean;
-  failureMark?: string;
-  fileNameOnNewLine?: boolean;
-  hide?: boolean;
-  /**
-   * @deprecated Prefer `pathFormat: "basename"`.
-   */
-  hideDirectoryNames?: boolean;
-  hideFileName?: boolean;
-  hidePrefix?: boolean;
-  mode?: "file" | "compact" | "summary-only";
-  minFilesBeforeShow?: number;
-  outputStream?: "stderr" | "stdout";
-  pathFormat?: "relative" | "basename";
-  prefixMark?: string;
-  showSummaryWhenHidden?: boolean;
-  spinnerStyle?: "arc" | "bounce" | "clock" | "dots" | "line";
-  successMark?: string;
-  successMessage?: string;
-  throttleMs?: number;
-  ttyOnly?: boolean;
+ detailedSuccess?: boolean;
+ failureMark?: string;
+ fileNameOnNewLine?: boolean;
+ hide?: boolean;
+ /**
+  * @deprecated Prefer `pathFormat: "basename"`.
+  */
+ hideDirectoryNames?: boolean;
+ hideFileName?: boolean;
+ hidePrefix?: boolean;
+ mode?: "file" | "compact" | "summary-only";
+ minFilesBeforeShow?: number;
+ outputStream?: "stderr" | "stdout";
+ pathFormat?: "relative" | "basename";
+ prefixMark?: string;
+ showSummaryWhenHidden?: boolean;
+ spinnerStyle?: "arc" | "bounce" | "clock" | "dots" | "line";
+ successMark?: string;
+ successMessage?: string;
+ throttleMs?: number;
+ ttyOnly?: boolean;
 }
 ```
 
@@ -241,6 +241,10 @@ omitted, `activate` stays in its normal per-file live mode.
 - Use `stderr` when you want to keep `stdout` cleaner for piping or
   machine-readable output. Use `stdout` only when you explicitly want progress
   mixed into standard output.
+- Live progress frames are settled before formatter output can reuse the same
+  terminal line. This keeps third-party formatters readable, but it means file
+  mode can leave completed progress lines instead of behaving like a purely
+  in-place spinner.
 
 #### `pathFormat`
 
@@ -363,19 +367,19 @@ omitted, `activate` stays in its normal per-file live mode.
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
-  {
-    plugins: {
-      "file-progress": progress,
-    },
-    rules: {
-      "file-progress/activate": [
-        "warn",
-        {
-          pathFormat: "basename",
-        },
-      ],
-    },
+ {
+  plugins: {
+   "file-progress": progress,
   },
+  rules: {
+   "file-progress/activate": [
+    "warn",
+    {
+     pathFormat: "basename",
+    },
+   ],
+  },
+ },
 ];
 ```
 
@@ -385,20 +389,20 @@ export default [
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
-  {
-    plugins: {
-      "file-progress": progress,
-    },
-    rules: {
-      "file-progress/activate": [
-        "warn",
-        {
-          hide: true,
-          showSummaryWhenHidden: true,
-        },
-      ],
-    },
+ {
+  plugins: {
+   "file-progress": progress,
   },
+  rules: {
+   "file-progress/activate": [
+    "warn",
+    {
+     hide: true,
+     showSummaryWhenHidden: true,
+    },
+   ],
+  },
+ },
 ];
 ```
 
@@ -408,21 +412,21 @@ export default [
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
-  {
-    plugins: {
-      "file-progress": progress,
-    },
-    rules: {
-      "file-progress/activate": [
-        "warn",
-        {
-          outputStream: "stderr",
-          showSummaryWhenHidden: true,
-          ttyOnly: true,
-        },
-      ],
-    },
+ {
+  plugins: {
+   "file-progress": progress,
   },
+  rules: {
+   "file-progress/activate": [
+    "warn",
+    {
+     outputStream: "stderr",
+     showSummaryWhenHidden: true,
+     ttyOnly: true,
+    },
+   ],
+  },
+ },
 ];
 ```
 
@@ -432,20 +436,20 @@ export default [
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
-  {
-    plugins: {
-      "file-progress": progress,
-    },
-    rules: {
-      "file-progress/activate": [
-        "warn",
-        {
-          hideFileName: true,
-          prefixMark: "→",
-        },
-      ],
-    },
+ {
+  plugins: {
+   "file-progress": progress,
   },
+  rules: {
+   "file-progress/activate": [
+    "warn",
+    {
+     hideFileName: true,
+     prefixMark: "→",
+    },
+   ],
+  },
+ },
 ];
 ```
 
@@ -455,22 +459,22 @@ export default [
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
-  {
-    plugins: {
-      "file-progress": progress,
-    },
-    rules: {
-      "file-progress/activate": [
-        "warn",
-        {
-          detailedSuccess: true,
-          outputStream: "stderr",
-          throttleMs: 100,
-          ttyOnly: true,
-        },
-      ],
-    },
+ {
+  plugins: {
+   "file-progress": progress,
   },
+  rules: {
+   "file-progress/activate": [
+    "warn",
+    {
+     detailedSuccess: true,
+     outputStream: "stderr",
+     throttleMs: 100,
+     ttyOnly: true,
+    },
+   ],
+  },
+ },
 ];
 ```
 

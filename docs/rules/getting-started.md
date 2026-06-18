@@ -20,21 +20,21 @@ export default [progress.configs.recommended];
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
-  {
-    plugins: {
-      "file-progress": progress,
-    },
-    rules: {
-      "file-progress/activate": [
-        "warn",
-        {
-          outputStream: "stderr",
-          throttleMs: 100,
-          ttyOnly: true,
-        },
-      ],
-    },
+ {
+  plugins: {
+   "file-progress": progress,
   },
+  rules: {
+   "file-progress/activate": [
+    "warn",
+    {
+     outputStream: "stderr",
+     throttleMs: 100,
+     ttyOnly: true,
+    },
+   ],
+  },
+ },
 ];
 ```
 

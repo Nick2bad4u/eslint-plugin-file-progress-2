@@ -1,6 +1,6 @@
 /* eslint-disable canonical/filename-no-index -- This package intentionally uses src/index.ts as its public entrypoint. */
 import type { Linter } from "eslint";
-import type { Except } from "type-fest";
+import type { ArrayValues, Except } from "type-fest";
 
 import { isDefined } from "ts-extras";
 
@@ -20,7 +20,8 @@ import {
 } from "./_internal/plugin-catalog.js";
 import progressRule from "./rules/progress.js";
 
-const isCi = globalThis.process.env["CI"] === "true";
+// eslint-disable-next-line n/no-process-env -- CI-aware presets must derive their default from the current process environment.
+const isCi = process.env["CI"] === "true";
 
 const createRuleEntry = (
     options?: Readonly<ProgressRuleOptions>
@@ -103,7 +104,7 @@ const presetOptionsByName: Readonly<
 
 const configs: FileProgressPlugin["configs"] = createCatalogRecord<
     FileProgressConfigName,
-    (typeof fileProgressPresetCatalog)[number],
+    ArrayValues<typeof fileProgressPresetCatalog>,
     Linter.Config
 >(fileProgressPresetCatalog, ({ name, ruleName }) =>
     createPresetConfig(name, ruleName, presetOptionsByName[name])

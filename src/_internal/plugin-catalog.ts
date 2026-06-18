@@ -1,3 +1,5 @@
+import type { ArrayValues } from "type-fest";
+
 const docsBaseUrl =
     "https://nick2bad4u.github.io/eslint-plugin-file-progress-2/docs/rules";
 
@@ -13,7 +15,7 @@ export interface FileProgressRuleCatalogEntry {
     readonly docsId: string;
     readonly docsPath: string;
     readonly docsUrl: string;
-    readonly name: (typeof fileProgressRuleNames)[number];
+    readonly name: ArrayValues<typeof fileProgressRuleNames>;
     readonly navbarLabel: string;
     readonly sidebarLabel: string;
 }
@@ -21,7 +23,7 @@ export interface FileProgressRuleCatalogEntry {
 /**
  * Union of all public rule names.
  */
-export type FileProgressRuleName = (typeof fileProgressRuleNames)[number];
+export type FileProgressRuleName = ArrayValues<typeof fileProgressRuleNames>;
 
 /**
  * Lookup table of rule metadata keyed by public rule name.
@@ -63,7 +65,9 @@ export const fileProgressPresetNames = [
 /**
  * Union of all supported preset names.
  */
-export type FileProgressConfigName = (typeof fileProgressPresetNames)[number];
+export type FileProgressConfigName = ArrayValues<
+    typeof fileProgressPresetNames
+>;
 
 /**
  * Metadata describing a preset doc page and related navigation labels.
@@ -72,7 +76,7 @@ export interface FileProgressPresetCatalogEntry {
     readonly docsBadge: string;
     readonly docsId: string;
     readonly docsPath: string;
-    readonly name: (typeof fileProgressPresetNames)[number];
+    readonly name: ArrayValues<typeof fileProgressPresetNames>;
     readonly navbarLabel: string;
     readonly optionSummary: string;
     readonly purpose: string;

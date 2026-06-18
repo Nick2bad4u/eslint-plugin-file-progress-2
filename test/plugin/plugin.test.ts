@@ -33,24 +33,33 @@ describe("plugin public contract", () => {
 
         expect(plugin.meta.name).toBe("eslint-plugin-file-progress-2");
         expect(plugin.meta.namespace).toBe("file-progress");
-        expect(plugin.rules.activate).toBeDefined();
         expect(Object.keys(plugin.rules)).toStrictEqual(["activate"]);
+        expect(plugin.rules.activate.meta.docs.description).toBe(
+            "Display live per-file lint progress in CLI output."
+        );
+        expect(Object.keys(plugin.rules)).not.toContain("compact");
         expect(
             Object.hasOwn(plugin.rules as Record<string, unknown>, "compact")
-        ).toBeFalsy();
+        ).toBe(false);
         expect(
             Object.hasOwn(
                 plugin.rules as Record<string, unknown>,
                 "summary-only"
             )
-        ).toBeFalsy();
-        expect(plugin.configs.recommended).toBeDefined();
-        expect(plugin.configs["recommended-ci"]).toBeDefined();
-        expect(plugin.configs["recommended-ci-detailed"]).toBeDefined();
-        expect(plugin.configs["recommended-compact"]).toBeDefined();
-        expect(plugin.configs["recommended-detailed"]).toBeDefined();
-        expect(plugin.configs["recommended-summary-only"]).toBeDefined();
-        expect(plugin.configs["recommended-tty"]).toBeDefined();
+        ).toBe(false);
+        expect(
+            Object.keys(plugin.configs).toSorted((left, right) =>
+                left.localeCompare(right)
+            )
+        ).toStrictEqual([
+            "recommended",
+            "recommended-ci",
+            "recommended-ci-detailed",
+            "recommended-compact",
+            "recommended-detailed",
+            "recommended-summary-only",
+            "recommended-tty",
+        ]);
         expect(plugin.configs.recommended.rules).toStrictEqual({
             "file-progress/activate": "warn",
         });

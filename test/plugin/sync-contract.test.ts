@@ -49,13 +49,14 @@ describe("sync contracts", () => {
     it("catalog entries resolve to existing docs and plugin registrations", async () => {
         expect.hasAssertions();
 
+        expect(fileProgressRuleCatalog).not.toHaveLength(0);
+
         for (const ruleCatalogEntry of fileProgressRuleCatalog) {
             await access(
                 path.resolve(repositoryRootPath, ruleCatalogEntry.docsPath),
                 fsConstants.F_OK
             );
 
-            expect(plugin.rules[ruleCatalogEntry.name]).toBeDefined();
             expect(plugin.rules[ruleCatalogEntry.name].meta.docs.url).toBe(
                 ruleCatalogEntry.docsUrl
             );
@@ -67,8 +68,12 @@ describe("sync contracts", () => {
                 fsConstants.F_OK
             );
 
-            expect(plugin.configs[presetCatalogEntry.name]).toBeDefined();
-            expect(presetCatalogEntry.ruleName in plugin.rules).toBeTruthy();
+            expect(plugin.configs[presetCatalogEntry.name].name).toBe(
+                `file-progress/${presetCatalogEntry.name}`
+            );
+            expect(
+                Object.hasOwn(plugin.rules, presetCatalogEntry.ruleName)
+            ).toBe(true);
         }
     });
 

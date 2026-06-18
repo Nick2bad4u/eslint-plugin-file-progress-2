@@ -1,5 +1,8 @@
 // @ts-check
-const processEnvironment = globalThis.process.env;
+/// <reference types="node" />
+
+/** @type {Readonly<NodeJS.ProcessEnv>} */
+const processEnvironment = process.env;
 const isCI = (processEnvironment["CI"] ?? "").toLowerCase() === "true";
 
 /** @type {import("@stryker-mutator/api/core").PartialStrykerOptions} */

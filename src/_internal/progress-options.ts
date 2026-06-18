@@ -183,7 +183,7 @@ const isProgressMode = (value: string): value is ProgressMode =>
 const isProgressPathFormat = (value: string): value is ProgressPathFormat =>
     isOneOf(pathFormats, value);
 
-const getBooleanSetting = (
+const isBooleanSettingEnabled = (
     rawSettings: Readonly<UnknownRecord>,
     settingKey: ProgressSettingKey
 ): boolean =>
@@ -378,15 +378,15 @@ export const normalizeSettings = (raw: unknown): NormalizedProgressSettings => {
     );
 
     return {
-        detailedSuccess: getBooleanSetting(raw, "detailedSuccess"),
+        detailedSuccess: isBooleanSettingEnabled(raw, "detailedSuccess"),
         failureMark: resolveMark(
             getStringSetting(raw, "failureMark"),
             defaultSettings.failureMark
         ),
-        fileNameOnNewLine: getBooleanSetting(raw, "fileNameOnNewLine"),
-        hide: getBooleanSetting(raw, "hide"),
-        hideFileName: getBooleanSetting(raw, "hideFileName"),
-        hidePrefix: getBooleanSetting(raw, "hidePrefix"),
+        fileNameOnNewLine: isBooleanSettingEnabled(raw, "fileNameOnNewLine"),
+        hide: isBooleanSettingEnabled(raw, "hide"),
+        hideFileName: isBooleanSettingEnabled(raw, "hideFileName"),
+        hidePrefix: isBooleanSettingEnabled(raw, "hidePrefix"),
         minFilesBeforeShow:
             getNonNegativeIntegerSetting(raw, "minFilesBeforeShow") ??
             defaultSettings.minFilesBeforeShow,
@@ -404,7 +404,10 @@ export const normalizeSettings = (raw: unknown): NormalizedProgressSettings => {
             getStringSetting(raw, "prefixMark"),
             defaultSettings.prefixMark
         ),
-        showSummaryWhenHidden: getBooleanSetting(raw, "showSummaryWhenHidden"),
+        showSummaryWhenHidden: isBooleanSettingEnabled(
+            raw,
+            "showSummaryWhenHidden"
+        ),
         spinnerStyle: resolveSpinnerStyle(
             getStringSetting(raw, "spinnerStyle")
         ),
@@ -416,6 +419,6 @@ export const normalizeSettings = (raw: unknown): NormalizedProgressSettings => {
         throttleMs:
             getNonNegativeIntegerSetting(raw, "throttleMs") ??
             defaultSettings.throttleMs,
-        ttyOnly: getBooleanSetting(raw, "ttyOnly"),
+        ttyOnly: isBooleanSettingEnabled(raw, "ttyOnly"),
     };
 };

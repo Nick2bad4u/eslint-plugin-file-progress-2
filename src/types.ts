@@ -32,7 +32,7 @@ export interface FileProgressPlugin extends Except<
 /**
  * Strongly typed metadata shape for file-progress rule modules.
  */
-export type FileProgressRuleMetaData = Except<
+export type FileProgressRuleMetadata = Except<
     NonNullable<Rule.RuleModule["meta"]>,
     "docs" | "messages" | "schema"
 > & {
@@ -46,7 +46,7 @@ export type FileProgressRuleMetaData = Except<
  */
 export type FileProgressRuleModule = Except<Rule.RuleModule, "meta"> & {
     defaultOptions: ProgressRuleOptionsTuple;
-    meta: FileProgressRuleMetaData;
+    meta: FileProgressRuleMetadata;
 };
 
 /**

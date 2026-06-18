@@ -27,19 +27,19 @@ the preset and layer a rule override after it.
 import progress from "eslint-plugin-file-progress-2";
 
 export default [
-  progress.configs.recommended,
-  {
-    rules: {
-      "file-progress/activate": [
-        "warn",
-        {
-          fileNameOnNewLine: true,
-          pathFormat: "basename",
-          throttleMs: 120,
-        },
-      ],
+ progress.configs.recommended,
+ {
+  rules: {
+   "file-progress/activate": [
+    "warn",
+    {
+     fileNameOnNewLine: true,
+     pathFormat: "basename",
+     throttleMs: 120,
     },
+   ],
   },
+ },
 ];
 ```
 

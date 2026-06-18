@@ -126,7 +126,7 @@ describe("progress runtime internals", () => {
                 input: {
                     mode: "not-a-mode",
                     outputStream: "invalid-stream",
-                    prefixMark: "   ",
+                    prefixMark: " ".repeat(3),
                     successMessage: 42,
                 },
             },
@@ -369,7 +369,7 @@ describe("progress runtime internals", () => {
         });
 
         expect(customRule.defaultOptions).toStrictEqual([{}]);
-        expect(customRule.meta.docs.recommended).toBeFalsy();
+        expect(customRule.meta.docs.recommended).toBe(false);
         expect(customRule.meta.messages.status).toBe("Custom progress rule.");
         expect(customRule.create(makeContext())).toStrictEqual({});
     });
@@ -542,6 +542,55 @@ describe("progress runtime internals", () => {
         ).toHaveLength(2);
     });
 
+    it("controller settles each live progress frame onto a completed line", () => {
+        expect.hasAssertions();
+
+        const { created, spinnerFactory } = createMockSpinnerFactory();
+        const controller = internals.createProgressController({
+            process: createMockProcess(),
+            spinnerFactory,
+        });
+        const spinnerRecord = getLatestSpinnerRecord({ created });
+
+        controller.handleLintFile({
+            context: makeContext(undefined, undefined, "src/runtime-line.ts"),
+            liveMode: "file",
+        });
+
+        const eventMethods = spinnerRecord.events.map((event) => event.method);
+
+        expect(eventMethods).toContain("spin");
+        expect(eventMethods.at(-1)).toBe("stop");
+        expect(spinnerRecord.spinner.isSpinning()).toBe(false);
+    });
+
+    it("controller separates the final summary after formatter output", () => {
+        expect.hasAssertions();
+
+        const stderr = createMockWriteStream({
+            fd: 2,
+            isTTY: true,
+        });
+        const mockProcess = createMockProcess({
+            stderr,
+        });
+        const { spinnerFactory } = createMockSpinnerFactory();
+        const controller = internals.createProgressController({
+            process: mockProcess,
+            spinnerFactory,
+        });
+
+        controller.handleLintFile({
+            context: makeContext(undefined, undefined, "src/runtime-line.ts"),
+            liveMode: "file",
+        });
+        stderr.write("formatter output without newline");
+        controller.handleExit(2);
+
+        expect(stderr.writes).toContain("formatter output without newline");
+        expect(stderr.writes.at(-1)).toBe("\n");
+    });
+
     it("controller shows the final summary when live output is hidden", () => {
         expect.hasAssertions();
 
@@ -563,10 +612,10 @@ describe("progress runtime internals", () => {
 
         expect(
             spinnerRecord.events.some((event) => event.method === "update")
-        ).toBeFalsy();
+        ).toBe(false);
         expect(
             spinnerRecord.events.some((event) => event.method === "success")
-        ).toBeTruthy();
+        ).toBe(true);
     });
 
     it("controller skips the final summary when output stays hidden", () => {
@@ -589,10 +638,10 @@ describe("progress runtime internals", () => {
 
         expect(
             spinnerRecord.events.some((event) => event.method === "success")
-        ).toBeFalsy();
+        ).toBe(false);
         expect(
             spinnerRecord.events.some((event) => event.method === "error")
-        ).toBeFalsy();
+        ).toBe(false);
     });
 
     it("controller stops an active spinner when summary output is suppressed", () => {
@@ -629,10 +678,10 @@ describe("progress runtime internals", () => {
 
         expect(
             spinnerRecord.events.some((event) => event.method === "stop")
-        ).toBeTruthy();
+        ).toBe(true);
         expect(
             spinnerRecord.events.some((event) => event.method === "success")
-        ).toBeFalsy();
+        ).toBe(false);
     });
 
     it("controller summary-only mode suppresses live output but still reports success", () => {
@@ -660,10 +709,10 @@ describe("progress runtime internals", () => {
 
         expect(
             spinnerRecord.events.some((event) => event.method === "update")
-        ).toBeFalsy();
+        ).toBe(false);
         expect(
             spinnerRecord.events.some((event) => event.method === "success")
-        ).toBeTruthy();
+        ).toBe(true);
     });
 
     it("controller mode compact switches activate to generic live output", () => {
@@ -716,12 +765,12 @@ describe("progress runtime internals", () => {
         expect(spinnerRecord.options?.stream).toBe(stdout);
         expect(
             updateTexts.some((text) => text.includes("linting project files"))
-        ).toBeTruthy();
+        ).toBe(true);
         expect(
             updateTexts.some((text) =>
                 text.includes("src/runtime-shared-rule.ts")
             )
-        ).toBeFalsy();
+        ).toBe(false);
     });
 
     it("controller emits an error summary for non-zero exit codes", () => {
@@ -742,7 +791,7 @@ describe("progress runtime internals", () => {
 
         expect(
             spinnerRecord.events.some((event) => event.method === "error")
-        ).toBeTruthy();
+        ).toBe(true);
     });
 
     it("controller honors hidePrefix in success and failure summaries", () => {
@@ -769,9 +818,10 @@ describe("progress runtime internals", () => {
             (event) => event.method === "success"
         );
 
-        expect(successEvent).toBeDefined();
-        expect(successEvent?.payload).toMatchObject({
-            mark: "",
+        expect(successEvent).toMatchObject({
+            payload: {
+                mark: "",
+            },
         });
 
         const errorFactory = createMockSpinnerFactory();
@@ -795,9 +845,10 @@ describe("progress runtime internals", () => {
             (event) => event.method === "error"
         );
 
-        expect(errorEvent).toBeDefined();
-        expect(errorEvent?.payload).toMatchObject({
-            mark: "",
+        expect(errorEvent).toMatchObject({
+            payload: {
+                mark: "",
+            },
         });
     });
 
@@ -827,7 +878,7 @@ describe("progress runtime internals", () => {
 
         expect(
             spinnerRecord.events.some((event) => event.method === "success")
-        ).toBeFalsy();
+        ).toBe(false);
 
         controller.handleExit(0);
 
@@ -835,9 +886,10 @@ describe("progress runtime internals", () => {
             (event) => event.method === "success"
         );
 
-        expect(successEvent).toBeDefined();
-        expect(successEvent?.payload).toMatchObject({
-            text: expect.stringContaining("0ms"),
+        expect(successEvent).toMatchObject({
+            payload: {
+                text: expect.stringContaining("0ms"),
+            },
         });
     });
 
@@ -874,9 +926,9 @@ describe("progress runtime internals", () => {
 
         expect(
             spinnerRecord.events.some((event) => event.method === "stop")
-        ).toBeTruthy();
+        ).toBe(true);
         expect(controller.getState().lintedFileCount).toBe(0);
-        expect(controller.getState().initialLiveReportDone).toBeFalsy();
+        expect(controller.getState().initialLiveReportDone).toBe(false);
     });
 
     it("controller reset does not stop a spinner that never started", () => {
@@ -893,7 +945,7 @@ describe("progress runtime internals", () => {
 
         expect(
             spinnerRecord.events.some((event) => event.method === "stop")
-        ).toBeFalsy();
+        ).toBe(false);
     });
 
     it("controller reuses the spinner when style and stream do not change", () => {
@@ -967,7 +1019,7 @@ describe("progress runtime internals", () => {
         expect(created.length).toBeGreaterThan(1);
         expect(
             firstSpinnerRecord.events.some((event) => event.method === "stop")
-        ).toBeTruthy();
+        ).toBe(true);
     });
 
     it("controller exit handler can be exercised through the process exit event", () => {
@@ -993,7 +1045,7 @@ describe("progress runtime internals", () => {
 
         expect(
             spinnerRecord.events.some((event) => event.method === "success")
-        ).toBeTruthy();
+        ).toBe(true);
     });
 
     it("controller finalizes on beforeExit and does not double-report on exit", () => {
@@ -1062,6 +1114,6 @@ describe("progress runtime internals", () => {
         expect(spinnerRecord.options?.stream).toBe(stdout);
         expect(
             spinnerRecord.events.some((event) => event.method === "success")
-        ).toBeTruthy();
+        ).toBe(true);
     });
 });

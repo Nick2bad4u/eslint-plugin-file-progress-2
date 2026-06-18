@@ -11,58 +11,58 @@
 ### Patch Changes
 
 - 03a7f39: Prepare the next release with recent fixes to CI, linting, and packaging workflow.
-    1. Dual export map in package.json
-    - Switched package entrypoints to dual mode:
-        - `"main": "./dist/index.cjs"`
-        - `"module": "./dist/index.js"`
-    - Updated conditional exports:
-        - `import.types` → index.d.ts
-        - `import.default` → index.js
-        - `require.types` → index.d.cts
-        - `require.default` → index.cjs
-    - Set top-level `"types": "./dist/index.d.cts"` for CJS fallback typing compatibility.
-    2. Build pipeline updated
-    - `build` now runs:
-        - TS ESM build
-        - then CJS/type bridge generation script
-    - Script:
-        - `"build": "npm run clean && tsc -p tsconfig.build.json && node write-cjs-entry.mjs"`
-    3. Added CJS generator script
-    - New file: write-cjs-entry.mjs
-    - It:
-        - builds index.cjs via `esbuild` (bundled CJS artifact),
-        - appends CJS interop footer so `require("eslint-plugin-file-progress-2")` returns the plugin object directly,
-        - writes index.d.cts with `export = plugin`.
-    4. Added strict package-check scripts
-    - Added:
-        - `"lint:package-check": "publint && attw --pack ."`
-        - `"lint:package-check:strict": "publint && attw --pack . --profile strict --config-path .attw.json"`
-        - `"lint:package:strict": "npm run lint:package-check:strict"`
-    5. Dependencies updated
-    - Added dev deps:
-        - `@arethetypeswrong/cli`
-        - `esbuild`
-    - package-lock.json updated accordingly.
-    6. README updated
-    - Added explicit **CommonJS usage** snippet (`eslint.config.cjs` + `require(...)`).
+  1. Dual export map in package.json
+  - Switched package entrypoints to dual mode:
+    - `"main": "./dist/index.cjs"`
+    - `"module": "./dist/index.js"`
+  - Updated conditional exports:
+    - `import.types` → index.d.ts
+    - `import.default` → index.js
+    - `require.types` → index.d.cts
+    - `require.default` → index.cjs
+  - Set top-level `"types": "./dist/index.d.cts"` for CJS fallback typing compatibility.
+  2. Build pipeline updated
+  - `build` now runs:
+    - TS ESM build
+    - then CJS/type bridge generation script
+  - Script:
+    - `"build": "npm run clean && tsc -p tsconfig.build.json && node write-cjs-entry.mjs"`
+  3. Added CJS generator script
+  - New file: write-cjs-entry.mjs
+  - It:
+    - builds index.cjs via `esbuild` (bundled CJS artifact),
+    - appends CJS interop footer so `require("eslint-plugin-file-progress-2")` returns the plugin object directly,
+    - writes index.d.cts with `export = plugin`.
+  4. Added strict package-check scripts
+  - Added:
+    - `"lint:package-check": "publint && attw --pack ."`
+    - `"lint:package-check:strict": "publint && attw --pack . --profile strict --config-path .attw.json"`
+    - `"lint:package:strict": "npm run lint:package-check:strict"`
+  5. Dependencies updated
+  - Added dev deps:
+    - `@arethetypeswrong/cli`
+    - `esbuild`
+  - package-lock.json updated accordingly.
+  6. README updated
+  - Added explicit **CommonJS usage** snippet (`eslint.config.cjs` + `require(...)`).
 
 ## 3.4.2
 
 ### Patch Changes
 
 - 905f12b: Publish a patch release with additional output controls and documentation updates.
-    - Added `settings.progress.hidePrefix` to remove plugin prefix text from progress and summary output.
-    - Added `settings.progress.hideDirectoryNames` to show only filenames (hide directory path segments).
-    - Ensured `hidePrefix` and `hideDirectoryNames` compose correctly with existing settings, including `fileNameOnNewLine`.
-    - Refreshed README settings documentation with the new configuration options.
+  - Added `settings.progress.hidePrefix` to remove plugin prefix text from progress and summary output.
+  - Added `settings.progress.hideDirectoryNames` to show only filenames (hide directory path segments).
+  - Ensured `hidePrefix` and `hideDirectoryNames` compose correctly with existing settings, including `fileNameOnNewLine`.
+  - Refreshed README settings documentation with the new configuration options.
 
 ## 3.4.1
 
 ### Patch Changes
 
 - 6d3135a: # Highlights
-    - Update README with correct GIF image
-    - Add `.changeset` to `.prettierignore` to prevent Prettier from reformatting changeset markdown files
+  - Update README with correct GIF image
+  - Add `.changeset` to `.prettierignore` to prevent Prettier from reformatting changeset markdown files
 
 ## 3.4.0
 
@@ -70,22 +70,22 @@
 
 - ec2e352: Add additional progress output customization and richer end-of-run summaries.
 
-    ### Highlights
-    - add `prefixMark` to customize the prefix symbol independently from success/failure marks
-    - improve final summary formatting (`plugin: status`) with configurable marks
-    - add detailed summary throughput metric (`files/s`)
-    - simplify detailed summary problem wording and improve path readability
-    - add `recommended-detailed` preset to enable detailed end-of-run stats by default
-    - show `Problems: detected` on failures instead of a placeholder count
+  ### Highlights
+  - add `prefixMark` to customize the prefix symbol independently from success/failure marks
+  - improve final summary formatting (`plugin: status`) with configurable marks
+  - add detailed summary throughput metric (`files/s`)
+  - simplify detailed summary problem wording and improve path readability
+  - add `recommended-detailed` preset to enable detailed end-of-run stats by default
+  - show `Problems: detected` on failures instead of a placeholder count
 
 ### Patch Changes
 
 - d5528f2: Adds new screenshots and demo section to the README, and adds a new preset with detailed end-of-run stats.
 
-    ### Highlights
-    - Added new screenshots to the README, showcasing the progress bar and detailed summary message.
-    - Created a new preset configuration that includes a detailed summary message at the end of the ESLint
-      run, showing the total number of files processed, errors, warnings, and the time taken.
+  ### Highlights
+  - Added new screenshots to the README, showcasing the progress bar and detailed summary message.
+  - Created a new preset configuration that includes a detailed summary message at the end of the ESLint
+    run, showing the total number of files processed, errors, warnings, and the time taken.
 
 ## 3.3.0
 
@@ -93,12 +93,12 @@
 
 - 2774d79: Add additional progress output customization and richer end-of-run summaries.
 
-    ### Highlights
-    - add `prefixMark` to customize the prefix symbol independently from success/failure marks
-    - improve final summary formatting (`plugin: status`) with configurable marks
-    - add detailed summary throughput metric (`files/s`)
-    - simplify detailed summary problem wording and improve path readability
-    - add `recommended-detailed` preset to enable detailed end-of-run stats by default
+  ### Highlights
+  - add `prefixMark` to customize the prefix symbol independently from success/failure marks
+  - improve final summary formatting (`plugin: status`) with configurable marks
+  - add detailed summary throughput metric (`files/s`)
+  - simplify detailed summary problem wording and improve path readability
+  - add `recommended-detailed` preset to enable detailed end-of-run stats by default
 
 ## 3.1.0
 
@@ -106,12 +106,12 @@
 
 - 888f24b: Modernize the plugin with full TypeScript source/build pipeline, improve ESLint v10 support, and strengthen lint/test/release workflows.
 
-    ### Highlights
-    - migrate source, types, and tests to TypeScript
-    - publish built artifacts from `dist/` with generated declarations
-    - update linting to use `@typescript-eslint/eslint-plugin` flat type-checked configuration
-    - expand tests for TypeScript integration and cross-platform path handling
-    - improve CI/release workflows to run full validation (`lint`, `typecheck`, `test`, `build`, `format:check`) before publish
+  ### Highlights
+  - migrate source, types, and tests to TypeScript
+  - publish built artifacts from `dist/` with generated declarations
+  - update linting to use `@typescript-eslint/eslint-plugin` flat type-checked configuration
+  - expand tests for TypeScript integration and cross-platform path handling
+  - improve CI/release workflows to run full validation (`lint`, `typecheck`, `test`, `build`, `format:check`) before publish
 
 ## 3.0.2
 

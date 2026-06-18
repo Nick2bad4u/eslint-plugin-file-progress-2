@@ -64,13 +64,17 @@ interface CreateProgressRuleOptions {
     readonly url: string;
 }
 
-let sharedProgressController: null | ProgressController = null;
+const sharedProgressControllerRef: {
+    current: null | ProgressController;
+} = {
+    current: null,
+};
 
 const getSharedProgressController = (): ProgressController => {
     const progressController =
-        sharedProgressController ?? createProgressController();
+        sharedProgressControllerRef.current ?? createProgressController();
 
-    sharedProgressController = progressController;
+    sharedProgressControllerRef.current = progressController;
 
     return progressController;
 };
