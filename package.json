@@ -174,7 +174,7 @@
         "prepublishOnly": "npm run release:check",
         "publint": "npx publint",
         "release:check": "npm run release:verify",
-        "release:verify": "npx cross-env NODE_OPTIONS= npm run build && npx cross-env NODE_OPTIONS= npm run lint && npx cross-env NODE_OPTIONS= npm run typecheck && npx cross-env NODE_OPTIONS= VITEST_TYPECHECK=false npm run test && npx cross-env NODE_OPTIONS= npm run sync:docs && npx cross-env NODE_OPTIONS= npm run docs:check-links && npx cross-env NODE_OPTIONS= npm run docs:demos:presets:check && npx cross-env NODE_OPTIONS= npm run docs:demos:options:check && npx cross-env NODE_OPTIONS= npm pack --dry-run",
+        "release:verify": "npx cross-env NODE_OPTIONS= npm run build && npx cross-env NODE_OPTIONS= npm run docs:api && npx cross-env NODE_OPTIONS= npm run lint && npx cross-env NODE_OPTIONS= npm run typecheck && npx cross-env NODE_OPTIONS= VITEST_TYPECHECK=false npm run test && npx cross-env NODE_OPTIONS= npm run sync:docs && npx cross-env NODE_OPTIONS= npm run docs:check-links && npx cross-env NODE_OPTIONS= npm run docs:demos:presets:check && npx cross-env NODE_OPTIONS= npm run docs:demos:options:check && npx cross-env NODE_OPTIONS= npm pack --dry-run",
         "remark:fix": "remark --rc-path .remarkrc.mjs --silently-ignore --ignore-path .remarkignore --frail --quiet --output -- \"*.{md,mdx}\" \"docs/**/*.{md,mdx}\"",
         "remark:test-config": "remark --rc-path .remarkrc.mjs --silently-ignore --ignore-path .remarkignore --frail \"README.md\"",
         "sync:docs": "npm run sync:readme-rules-table && npm run sync:presets-rules-matrix",
