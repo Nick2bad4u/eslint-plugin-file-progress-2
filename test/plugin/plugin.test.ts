@@ -66,23 +66,19 @@ describe("plugin public contract", () => {
 
         const recommendedCiRuleEntry = (
             plugin.configs["recommended-ci"].rules as
-                | Record<string, unknown>
-                | undefined
+                Record<string, unknown> | undefined
         )?.["file-progress/activate"];
         const recommendedCiDetailedRuleEntry = (
             plugin.configs["recommended-ci-detailed"].rules as
-                | Record<string, unknown>
-                | undefined
+                Record<string, unknown> | undefined
         )?.["file-progress/activate"];
         const recommendedCompactRuleEntry = (
             plugin.configs["recommended-compact"].rules as
-                | Record<string, unknown>
-                | undefined
+                Record<string, unknown> | undefined
         )?.["file-progress/activate"];
         const recommendedSummaryOnlyRuleEntry = (
             plugin.configs["recommended-summary-only"].rules as
-                | Record<string, unknown>
-                | undefined
+                Record<string, unknown> | undefined
         )?.["file-progress/activate"];
 
         expect(recommendedCompactRuleEntry).toStrictEqual([
