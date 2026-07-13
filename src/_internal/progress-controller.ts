@@ -38,9 +38,18 @@ export interface ProgressController {
 /**
  * Internal live-rendering mode used by the progress controller.
  */
-export type ProgressLiveMode = "file" | "generic" | "summary-only";
+export type ProgressLiveMode =
+    | "file"
+    | "generic"
+    | "summary-only";
 
-type ProcessLike = Pick<typeof process, "cwd" | "once" | "stderr" | "stdout">;
+type ProcessLike = Pick<
+    typeof process,
+    | "cwd"
+    | "once"
+    | "stderr"
+    | "stdout"
+>;
 
 interface ProgressControllerDependencies {
     readonly now?: () => number;

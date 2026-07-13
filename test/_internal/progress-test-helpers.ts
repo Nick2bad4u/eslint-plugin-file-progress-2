@@ -192,7 +192,14 @@ export const createMockSpinnerFactory = (): {
 
 export const createMockWriteStream = <Fd extends 1 | 2 = 1>(
     overrides: Readonly<
-        Partial<Pick<MockWriteStream<Fd>, "columns" | "fd" | "isTTY">>
+        Partial<
+            Pick<
+                MockWriteStream<Fd>,
+                | "columns"
+                | "fd"
+                | "isTTY"
+            >
+        >
     > = {}
 ): MockWriteStream<Fd> => {
     const writes: string[] = [];

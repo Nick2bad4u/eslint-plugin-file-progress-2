@@ -16,7 +16,9 @@ export type FileProgressConfigName = CatalogFileProgressConfigName;
  */
 export interface FileProgressPlugin extends Except<
     ESLint.Plugin,
-    "configs" | "meta" | "rules"
+    | "configs"
+    | "meta"
+    | "rules"
 > {
     configs: Readonly<Record<FileProgressConfigName, Linter.Config>>;
     meta: NonNullable<ESLint.Plugin["meta"]> & {
@@ -34,7 +36,9 @@ export interface FileProgressPlugin extends Except<
  */
 export type FileProgressRuleMetadata = Except<
     NonNullable<Rule.RuleModule["meta"]>,
-    "docs" | "messages" | "schema"
+    | "docs"
+    | "messages"
+    | "schema"
 > & {
     docs: ProgressRuleDocs;
     messages: Readonly<Record<ProgressRuleMessageIds, string>>;
@@ -62,7 +66,10 @@ export type OutputStream = "stderr" | "stdout";
 /**
  * Live progress display mode.
  */
-export type ProgressMode = "compact" | "file" | "summary-only";
+export type ProgressMode =
+    | "compact"
+    | "file"
+    | "summary-only";
 
 /**
  * Path rendering mode used for file progress lines.
@@ -117,7 +124,12 @@ export interface ProgressSettings {
 /**
  * Supported spinner styles for live progress output.
  */
-export type SpinnerStyle = "arc" | "bounce" | "clock" | "dots" | "line";
+export type SpinnerStyle =
+    | "arc"
+    | "bounce"
+    | "clock"
+    | "dots"
+    | "line";
 
 type ProgressRuleDocs = Readonly<{
     description: string;

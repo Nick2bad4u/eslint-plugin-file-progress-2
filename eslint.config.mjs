@@ -52,6 +52,7 @@ const config = [
             "@typescript-eslint/prefer-readonly-parameter-types": "off",
             "unicorn/dom-node-dataset": "off",
             "unicorn/no-top-level-side-effects": "off",
+            "unicorn/prefer-observer-apis": "off",
         },
     },
     {
@@ -81,6 +82,14 @@ const config = [
         name: "RuleTester global setup",
         rules: {
             "unicorn/no-top-level-side-effects": "off",
+        },
+    },
+    {
+        files: ["docs/docusaurus/site-docs/developer/index.md"],
+        name: "Generated API Link Validation Boundary",
+        rules: {
+            // The dedicated Remark gate runs after TypeDoc generates this target.
+            "remark/remark": "off",
         },
     },
 
