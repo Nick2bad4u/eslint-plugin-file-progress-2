@@ -78,7 +78,7 @@ configuration:
                 - ".eslint*"
                 - ".prettier*"
                 - ".github/labeler.yml"
-                - "ActionLintConfig.yaml"
+                - ".github/actionlint.yaml"
                 - "cliff.toml"
                 - "knip.config.ts"
                 - "tsconfig*.json"
