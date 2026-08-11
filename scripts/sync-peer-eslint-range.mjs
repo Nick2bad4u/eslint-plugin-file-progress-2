@@ -10,7 +10,7 @@
  */
 
 import { readFile, writeFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 /**
  * The file path to the package.json file, resolved from the current module's
@@ -70,31 +70,53 @@ const readPackageJson = async () => {
 };
 
 /**
- * Resolve a floor range from an existing peer range when possible. Falls back
- * to repository baseline.
+ * Extract the major version from a caret range.
  *
- * @type {(existingPeerRange: unknown) => string}
+ * @param {string} range
+ *
+ * @returns {number | undefined}
+ */
+const getCaretMajor = (range) => {
+    const match = /^\^(\d+)\./u.exec(range);
+    const majorText = match?.[1];
+
+    return majorText === undefined ? undefined : Number.parseInt(majorText, 10);
+};
+
+/**
+ * Preserve existing supported floors while adding a range for a new ESLint
+ * major when necessary.
  *
  * @param {unknown} existingPeerRange
+ * @param {string} devDependencyEslintRange
  *
  * @returns {string}
  */
-const resolvePeerFloorRange = (existingPeerRange) => {
-    if (typeof existingPeerRange !== "string") {
-        return minimumSupportedEslintRange;
+export const resolvePeerEslintRange = (
+    existingPeerRange,
+    devDependencyEslintRange
+) => {
+    const existingRanges =
+        typeof existingPeerRange === "string"
+            ? existingPeerRange
+                  .split("||")
+                  .map((part) => part.trim())
+                  .filter((part) => part.length > 0)
+            : [];
+    const supportedRanges =
+        existingRanges.length > 0
+            ? existingRanges
+            : [minimumSupportedEslintRange];
+    const devMajor = getCaretMajor(devDependencyEslintRange);
+
+    if (
+        devMajor === undefined ||
+        supportedRanges.some((range) => getCaretMajor(range) === devMajor)
+    ) {
+        return supportedRanges.join(" || ");
     }
 
-    /** @type {string[]} */
-    const [floorCandidate] = existingPeerRange
-        .split("||")
-        .map((part) => part.trim());
-
-    if (!floorCandidate) {
-        return minimumSupportedEslintRange;
-    }
-
-    /** @type {string} */
-    return floorCandidate;
+    return [...supportedRanges, devDependencyEslintRange].join(" || ");
 };
 
 /**
@@ -140,9 +162,10 @@ const main = async () => {
     }
 
     /** @type {string} */
-    const peerFloorRange = resolvePeerFloorRange(peerDependencies["eslint"]);
-    /** @type {string} */
-    const nextPeerEslintRange = `${peerFloorRange} || ${devDependencyEslintRange}`;
+    const nextPeerEslintRange = resolvePeerEslintRange(
+        peerDependencies["eslint"],
+        devDependencyEslintRange
+    );
 
     /** @type {string} */
     if (peerDependencies["eslint"] === nextPeerEslintRange) {
@@ -196,11 +219,17 @@ const main = async () => {
  * @see resolvePeerFloorRange
  * @see main
  */
-try {
-    await main();
-} catch (error) {
-    /** @type {Error} */
-    console.error("Failed to synchronize peerDependencies.eslint:", error);
-    /** @type {number} */
-    process.exitCode = 1;
+const isMainModule =
+    process.argv[1] !== undefined &&
+    pathToFileURL(process.argv[1]).href === import.meta.url;
+
+if (isMainModule) {
+    try {
+        await main();
+    } catch (error) {
+        /** @type {Error} */
+        console.error("Failed to synchronize peerDependencies.eslint:", error);
+        /** @type {number} */
+        process.exitCode = 1;
+    }
 }

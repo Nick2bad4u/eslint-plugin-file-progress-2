@@ -78,24 +78,28 @@ const collectAddedMenuLinks = (record: MutationRecord): HTMLAnchorElement[] => {
 function applySidebarLabelTokenColoring(): CleanupFunction {
     const mutations: SidebarLabelMutation[] = [];
 
+    const processLink = (link: HTMLAnchorElement): void => {
+        if (isSidebarLinkTokenized(link)) {
+            return;
+        }
+
+        const linkLabel = link.textContent?.trim();
+
+        if (!linkLabel) {
+            return;
+        }
+
+        const shouldSkipNumberedRuleProcessing =
+            shouldProcessRuntimeSidebarLink(link, linkLabel, mutations);
+
+        if (!shouldSkipNumberedRuleProcessing) {
+            processNumberedRuleSidebarLink(link, linkLabel, mutations);
+        }
+    };
+
     const processLinks = (sidebarLinks: readonly HTMLAnchorElement[]): void => {
         for (const link of sidebarLinks) {
-            if (isSidebarLinkTokenized(link)) {
-                continue;
-            }
-
-            const linkLabel = link.textContent?.trim();
-
-            if (!linkLabel) {
-                continue;
-            }
-
-            const shouldSkipNumberedRuleProcessing =
-                shouldProcessRuntimeSidebarLink(link, linkLabel, mutations);
-
-            if (!shouldSkipNumberedRuleProcessing) {
-                processNumberedRuleSidebarLink(link, linkLabel, mutations);
-            }
+            processLink(link);
         }
     };
 

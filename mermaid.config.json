@@ -1,9 +1,15 @@
 {
     "altFontFamily": "CodeNewRoman Nerd Font Mono, MesloLGS Nerd Font, SauceCodePro NFM, ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
     "architecture": {
+        "edgeElasticity": 0.45,
         "fontSize": 16,
         "iconSize": 80,
+        "idealEdgeLengthMultiplier": 1.5,
+        "nodeSeparation": 75,
+        "numIter": 2500,
         "padding": 40,
+        "randomize": false,
+        "seed": 1,
         "useMaxWidth": true
     },
     "arrowMarkerAbsolute": false,
@@ -158,6 +164,11 @@
         "minEntityWidth": 100,
         "stroke": "gray",
         "titleTopMargin": 25,
+        "useMaxWidth": true
+    },
+    "eventmodeling": {
+        "padding": 30,
+        "rowHeight": 32,
         "useMaxWidth": true
     },
     "flowchart": {
@@ -458,6 +469,17 @@
         "useMaxWidth": true,
         "width": 150
     },
+    "treeView": {
+        "defaultIconPack": "",
+        "extensionIcons": {},
+        "filenameIcons": {},
+        "lineThickness": 1,
+        "paddingX": 5,
+        "paddingY": 5,
+        "rowIndent": 10,
+        "showIcons": false,
+        "useMaxWidth": true
+    },
     "venn": {
         "height": 450,
         "padding": 8,
@@ -479,6 +501,7 @@
             "axisLineWidth": 2,
             "labelFontSize": 14,
             "labelPadding": 5,
+            "labelRotation": 0,
             "showAxisLine": true,
             "showLabel": true,
             "showTick": true,
@@ -492,6 +515,7 @@
             "axisLineWidth": 2,
             "labelFontSize": 14,
             "labelPadding": 5,
+            "labelRotation": 0,
             "showAxisLine": true,
             "showLabel": true,
             "showTick": true,

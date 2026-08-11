@@ -77,9 +77,8 @@ const createPresetConfig = (
 });
 
 const presetOptionsByName: Readonly<
-    Record<FileProgressConfigName, ProgressRuleOptions | undefined>
+    Partial<Record<FileProgressConfigName, ProgressRuleOptions>>
 > = {
-    recommended: undefined,
     "recommended-ci": {
         hide: isCi,
     },

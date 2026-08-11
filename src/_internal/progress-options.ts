@@ -143,6 +143,7 @@ export const defaultSettings: Readonly<NormalizedProgressSettings> =
         hideFileName: false,
         hidePrefix: false,
         minFilesBeforeShow: 0,
+        // eslint-disable-next-line sonarjs/no-undefined-assignment -- No mode is the normalized default until a caller selects one.
         mode: undefined,
         outputStream: "stderr",
         pathFormat: "relative",

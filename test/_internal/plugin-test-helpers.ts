@@ -11,9 +11,5 @@ export const getPluginRule = (
 ): CompatibleRuleModule => {
     const ruleModule = plugin.rules[ruleName];
 
-    if (ruleModule === undefined) {
-        throw new Error(`Missing plugin rule: ${ruleName}`);
-    }
-
     return ruleModule as unknown as CompatibleRuleModule;
 };
