@@ -36,8 +36,9 @@ _config.yml
 # Ignore Sonar properties (not compatible with prettier-ini parser)
 sonar-project.properties
 
-# covered by remark lint / remark
+# Covered by dedicated formatters
 .gitleaks.toml
 .taplo.toml
 cliff.toml
 lychee.toml
+tombi.toml

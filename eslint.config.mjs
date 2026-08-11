@@ -27,6 +27,14 @@ const config = [
     ...nickTwoBadFourU.configs.withoutFileProgress2,
 
     {
+        name: "Repository secret scanning policy",
+        rules: {
+            // GitHub secret scanning and push protection are enabled.
+            // No path exclusions or custom patterns are justified here.
+            "repo-compliance/require-secret-scanning-config": "off",
+        },
+    },
+    {
         files: [
             "docs/docusaurus/docusaurus.config.ts",
             "docs/docusaurus/sidebars.rules.ts",
