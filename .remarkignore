@@ -786,6 +786,7 @@ coverage/
 *.pdf
 
 # Temporary files
+temp/
 **/*~
 **/*.tmp
 **/*.swp

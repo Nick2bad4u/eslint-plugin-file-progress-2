@@ -827,8 +827,8 @@ docs/docusaurus/stylelintcache
 node_modules/
 node_modules_backup/
 
-# NPM
-.npmrc
+# The repository npm policy is tracked. Never add credentials to this file.
+!.npmrc
 
 # OhMyPosh
 !.vscode/OhMyPosh-Atomic-Custom.json

@@ -39,6 +39,7 @@ describe("progress runtime internals", () => {
         }[] = [
             {
                 expected: makeSettings(),
+                // eslint-disable-next-line sonarjs/no-undefined-assignment -- Explicit undefined is the input boundary under test here.
                 input: undefined,
             },
             {
@@ -164,6 +165,7 @@ describe("progress runtime internals", () => {
                 successMark: "Γ£à",
             },
             {
+                // eslint-disable-next-line sonarjs/no-undefined-assignment -- Explicit undefined must not erase the deprecated setting.
                 successMark: undefined,
             }
         );
