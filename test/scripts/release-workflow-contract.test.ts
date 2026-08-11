@@ -42,7 +42,7 @@ describe("release workflow integrity contract", () => {
     });
 
     it("requires registry gitHead and tarball parity", async () => {
-        expect.assertions(7);
+        expect.assertions(9);
 
         const workflow = await readReleaseWorkflow();
 
@@ -54,6 +54,12 @@ describe("release workflow integrity contract", () => {
             'if ! cmp --silent "$expected_archive" "$published_archive"; then'
         );
         expect(workflow).toContain("for attempt in $(seq 1 12); do");
+        expect(workflow).toContain(
+            "node scripts/resolve-npm-view-manifest-field.mjs version"
+        );
+        expect(workflow).toContain(
+            "node scripts/resolve-npm-view-manifest-field.mjs gitHead"
+        );
         expect(workflow).toContain(
             'if npm pack "$package_spec" --json --pack-destination "$published_directory" > "$published_pack_output"; then'
         );

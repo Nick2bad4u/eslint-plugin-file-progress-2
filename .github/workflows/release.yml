@@ -359,9 +359,10 @@ jobs:
 
                   for attempt in $(seq 1 12); do
                     if registry_manifest=$(npm view "$package_spec" --json --prefer-online 2>/dev/null); then
-                      registry_version=$(node -e 'const fs = require("node:fs"); const manifest = JSON.parse(fs.readFileSync(0, "utf8")); process.stdout.write(manifest.version ?? "");' <<< "$registry_manifest")
-                      if [ "$registry_version" = "$VERSION" ]; then
-                        break
+                      if registry_version=$(node scripts/resolve-npm-view-manifest-field.mjs version <<< "$registry_manifest" 2>/dev/null); then
+                        if [ "$registry_version" = "$VERSION" ]; then
+                          break
+                        fi
                       fi
                     fi
 
@@ -375,7 +376,7 @@ jobs:
                     exit 1
                   fi
 
-                  registry_git_head=$(node -e 'const fs = require("node:fs"); const manifest = JSON.parse(fs.readFileSync(0, "utf8")); process.stdout.write(manifest.gitHead ?? "");' <<< "$registry_manifest")
+                  registry_git_head=$(node scripts/resolve-npm-view-manifest-field.mjs gitHead <<< "$registry_manifest")
                   if [ "$registry_git_head" != "$expected_git_head" ]; then
                     echo "npm gitHead ${registry_git_head:-<missing>} does not match release commit ${expected_git_head}." >&2
                     exit 1
