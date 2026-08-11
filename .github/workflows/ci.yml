@@ -173,8 +173,30 @@ jobs:
             - name: "Build package"
               run: "npm run build"
 
-            - name: "Install ESLint 9 runtime for compatibility smoke checks"
-              run: "npm install --no-save --package-lock=false eslint@${{ matrix.eslint-version }} @eslint/js@${{ matrix.eslint-js-version }}"
+            - name: "Pack compatibility candidate"
+              id: "pack_candidate"
+              run: |
+                  pack_json_path="${RUNNER_TEMP}/npm-pack.json"
+                  npm pack --json --pack-destination "${RUNNER_TEMP}" > "${pack_json_path}"
+                  pack_filename="$(node scripts/resolve-npm-pack-filename.mjs < "${pack_json_path}")"
+                  echo "package_path=${RUNNER_TEMP}/${pack_filename}" >> "${GITHUB_OUTPUT}"
 
-            - name: "Run ESLint 9 compatibility smoke checks"
-              run: "npm run lint:compat:eslint9 -- --expect-eslint-major=9"
+            - name: "Install ESLint 9 compatibility consumer"
+              env:
+                  CANDIDATE_PACKAGE_PATH: "${{ steps.pack_candidate.outputs.package_path }}"
+                  ESLINT_JS_VERSION: "${{ matrix.eslint-js-version }}"
+                  ESLINT_VERSION: "${{ matrix.eslint-version }}"
+              run: |
+                  consumer_directory="$(mktemp -d "${RUNNER_TEMP}/eslint9-consumer.XXXXXX")"
+                  mkdir -p "${consumer_directory}/scripts"
+                  cp scripts/eslint9-compat-smoke.mjs "${consumer_directory}/scripts/"
+                  cd "${consumer_directory}"
+                  npm init --yes
+                  npm install --package-lock=false \
+                      "${CANDIDATE_PACKAGE_PATH}" \
+                      "@eslint/js@${ESLINT_JS_VERSION}" \
+                      "eslint@${ESLINT_VERSION}" \
+                      "typescript@^6.0.2"
+                  node scripts/eslint9-compat-smoke.mjs \
+                      --expect-eslint-major=9 \
+                      --use-installed-package

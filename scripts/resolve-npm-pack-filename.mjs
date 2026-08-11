@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -59,25 +59,13 @@ const isMainModule =
     path.resolve(process.argv[1]) === scriptPath;
 
 if (isMainModule) {
-    const packOutputPath = process.argv[2];
-
-    if (packOutputPath === undefined) {
+    try {
+        const jsonText = readFileSync(0, "utf8");
+        console.log(parseNpmPackFilename(jsonText));
+    } catch {
         console.error(
-            "Usage: node scripts/resolve-npm-pack-filename.mjs <npm-pack-json-file>"
+            "Unable to resolve the npm pack filename from standard input."
         );
         process.exitCode = 1;
-    } else {
-        try {
-            const jsonText = await readFile(
-                path.resolve(packOutputPath),
-                "utf8"
-            );
-            console.log(parseNpmPackFilename(jsonText));
-        } catch (error) {
-            const message =
-                error instanceof Error ? error.message : String(error);
-            console.error(`Unable to resolve npm pack filename: ${message}`);
-            process.exitCode = 1;
-        }
     }
 }

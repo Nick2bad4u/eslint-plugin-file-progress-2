@@ -292,7 +292,7 @@ jobs:
                   mkdir -p "$asset_directory" "$extracted_directory"
                   npm pack --json --pack-destination "$asset_directory" > "$pack_output"
 
-                  filename=$(node scripts/resolve-npm-pack-filename.mjs "$pack_output")
+                  filename=$(node scripts/resolve-npm-pack-filename.mjs < "$pack_output")
                   archive_base="${filename%.tgz}"
                   zip_filename="${archive_base}.zip"
 

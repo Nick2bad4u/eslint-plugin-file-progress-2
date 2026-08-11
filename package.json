@@ -322,6 +322,7 @@
         "@swc/core@1.15.47": true,
         "core-js": false,
         "esbuild@0.28.2": true,
+        "fsevents@2.3.3": true,
         "unrs-resolver@1.12.2": true
     },
     "readme": "README.md"
