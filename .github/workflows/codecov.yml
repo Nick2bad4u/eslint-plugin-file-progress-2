@@ -57,10 +57,9 @@ jobs:
               uses: "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020" # v7.0.0
               with:
                   node-version-file: ".node-version"
-                  cache: "npm"
-                  cache-dependency-path: "package-lock.json"
 
             - name: "Setup npm"
+              working-directory: "${{ runner.temp }}"
               run: "npm install --global npm@12.0.2"
 
             - name: "Install dependencies"
@@ -86,7 +85,7 @@ jobs:
                   python -c "from pathlib import Path; assert Path('test-report.junit.xml').is_file(), 'test-report.junit.xml was not generated'"
 
             - name: "Upload test results to Codecov"
-              if: "${{ !cancelled() }}"
+              if: "${{ !cancelled() && hashFiles('test-report.junit.xml') != '' }}"
               uses: "codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f" # v7.0.0
               with:
                   token: "${{ secrets.CODECOV_TOKEN }}"
@@ -100,6 +99,7 @@ jobs:
                   verbose: true
 
             - name: "Upload coverage to Codecov"
+              if: "${{ !cancelled() && hashFiles('coverage/lcov.info') != '' }}"
               uses: "codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f" # v7.0.0
               with:
                   token: "${{ secrets.CODECOV_TOKEN }}"
