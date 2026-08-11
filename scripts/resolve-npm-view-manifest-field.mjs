@@ -11,18 +11,11 @@ const isRecord = (value) =>
     value !== null && typeof value === "object" && !Array.isArray(value);
 
 /**
- * Resolve a string field from the single manifest emitted by `npm view
- * <exact-version> --json`.
- *
- * Npm can emit either a manifest object or a one-element manifest array for an
- * exact version, including while a newly published version is propagating.
- *
  * @param {unknown} viewOutput
- * @param {string} field
  *
- * @returns {string}
+ * @returns {unknown}
  */
-export const resolveNpmViewManifestField = (viewOutput, field) => {
+const resolveSingleNpmViewManifest = (viewOutput) => {
     const manifests = Array.isArray(viewOutput) ? viewOutput : [viewOutput];
 
     if (manifests.length !== 1) {
@@ -31,8 +24,46 @@ export const resolveNpmViewManifestField = (viewOutput, field) => {
         );
     }
 
-    const [manifest] = manifests;
-    const value = isRecord(manifest) ? manifest[field] : undefined;
+    return manifests[0];
+};
+
+/**
+ * @param {unknown} manifest
+ * @param {"gitHead" | "version"} field
+ *
+ * @returns {unknown}
+ */
+const resolveSupportedManifestField = (manifest, field) => {
+    if (!isRecord(manifest)) {
+        return undefined;
+    }
+
+    if (field === "gitHead") {
+        return manifest.gitHead;
+    }
+
+    if (field === "version") {
+        return manifest.version;
+    }
+
+    throw new Error(`Unsupported npm view manifest field: ${field}`);
+};
+
+/**
+ * Resolve a string field from the single manifest emitted by `npm view
+ * <exact-version> --json`.
+ *
+ * Npm can emit either a manifest object or a one-element manifest array for an
+ * exact version, including while a newly published version is propagating.
+ *
+ * @param {unknown} viewOutput
+ * @param {"gitHead" | "version"} field
+ *
+ * @returns {string}
+ */
+export const resolveNpmViewManifestField = (viewOutput, field) => {
+    const manifest = resolveSingleNpmViewManifest(viewOutput);
+    const value = resolveSupportedManifestField(manifest, field);
 
     if (typeof value !== "string" || value.trim().length === 0) {
         throw new Error(
@@ -45,7 +76,7 @@ export const resolveNpmViewManifestField = (viewOutput, field) => {
 
 /**
  * @param {string} jsonText
- * @param {string} field
+ * @param {"gitHead" | "version"} field
  *
  * @returns {string}
  */
@@ -60,8 +91,8 @@ const isMainModule =
 if (isMainModule) {
     try {
         const field = process.argv[2];
-        if (field === undefined || field.trim().length === 0) {
-            throw new Error("A manifest field name is required.");
+        if (field !== "gitHead" && field !== "version") {
+            throw new Error(`Unsupported npm view manifest field: ${field}`);
         }
 
         const jsonText = readFileSync(0, "utf8");

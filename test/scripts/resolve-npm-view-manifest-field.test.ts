@@ -36,6 +36,18 @@ describe(resolveNpmViewManifestField, () => {
         );
     });
 
+    it("rejects unsupported fields", () => {
+        expect.assertions(1);
+
+        expect(() =>
+            resolveNpmViewManifestField(
+                { version: "5.1.8" },
+                // @ts-expect-error -- Runtime input can bypass the declaration contract.
+                "dist"
+            )
+        ).toThrow("Unsupported npm view manifest field: dist");
+    });
+
     it.each([
         [[], 0],
         [[{ version: "5.1.8" }, { version: "5.1.9" }], 2],
