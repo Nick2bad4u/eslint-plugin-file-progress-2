@@ -40,7 +40,9 @@ The workflow will:
 5. commit and tag `chore: release vX.Y.Z`
 6. atomically push the branch commit and annotated tag
 7. prepare matching `.tgz` and `.zip` release assets
-8. publish the repository directory to npm with provenance
+8. publish the already-verified repository directory to npm with provenance,
+   suppressing lifecycle scripts so a transient second validation cannot strand
+   the atomically pushed release commit and tag
 9. require npm `gitHead` to match the release commit and the registry tarball
    to be byte-identical to the prepared `.tgz`
 10. create the matching GitHub release
@@ -68,5 +70,6 @@ The same script is used by the workflow before the GitHub release is created.
 - npm provenance identifies the verified dispatch source SHA, while npm
   `gitHead` identifies the workflow-created release commit.
 - The GitHub `.tgz` is the same tarball that registry verification downloads
-  after publication; a byte mismatch blocks GitHub Release creation.
+  with bounded retries after publication; a byte mismatch blocks GitHub Release
+  creation.
 - The plugin metadata version is read from `package.json`, so the published package and exported metadata stay in sync.

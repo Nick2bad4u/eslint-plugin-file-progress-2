@@ -29,20 +29,20 @@ describe("release workflow integrity contract", () => {
         );
     });
 
-    it("publishes atomically from the repository directory", async () => {
+    it("publishes atomically from the verified repository directory", async () => {
         expect.assertions(3);
 
         const workflow = await readReleaseWorkflow();
 
         expect(workflow).toContain("git push --atomic origin");
         expect(workflow).toContain(
-            'run: "npm publish . --access public --provenance"'
+            'run: "npm publish . --access public --provenance --ignore-scripts"'
         );
         expect(workflow).not.toContain("npm publish temp/release-assets/");
     });
 
     it("requires registry gitHead and tarball parity", async () => {
-        expect.assertions(4);
+        expect.assertions(7);
 
         const workflow = await readReleaseWorkflow();
 
@@ -52,6 +52,13 @@ describe("release workflow integrity contract", () => {
         );
         expect(workflow).toContain(
             'if ! cmp --silent "$expected_archive" "$published_archive"; then'
+        );
+        expect(workflow).toContain("for attempt in $(seq 1 12); do");
+        expect(workflow).toContain(
+            'if npm pack "$package_spec" --json --pack-destination "$published_directory" > "$published_pack_output"; then'
+        );
+        expect(workflow).toContain(
+            'if [ "$package_downloaded" != "true" ]; then'
         );
         expect(workflow).toContain(
             // eslint-disable-next-line no-template-curly-in-string -- The literal GitHub expression is the workflow contract under test.

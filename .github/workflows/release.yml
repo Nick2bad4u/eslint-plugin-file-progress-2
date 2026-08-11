@@ -337,7 +337,10 @@ jobs:
                   } >> "$GITHUB_OUTPUT"
 
             - name: "Publish to npm"
-              run: "npm publish . --access public --provenance"
+              # release:check already passed before the atomic branch/tag push. Re-running
+              # prepublishOnly here could strand a pushed release commit after a transient
+              # validation failure, so publish the verified directory without lifecycle scripts.
+              run: "npm publish . --access public --provenance --ignore-scripts"
               env:
                   NODE_AUTH_TOKEN: "${{ secrets.NPM_TOKEN }}"
 
@@ -381,7 +384,23 @@ jobs:
                   published_directory="temp/published-package"
                   published_pack_output="temp/published-npm-pack.json"
                   mkdir -p "$published_directory"
-                  npm pack "$package_spec" --json --pack-destination "$published_directory" > "$published_pack_output"
+
+                  package_downloaded=false
+                  for attempt in $(seq 1 12); do
+                    if npm pack "$package_spec" --json --pack-destination "$published_directory" > "$published_pack_output"; then
+                      package_downloaded=true
+                      break
+                    fi
+
+                    echo "Waiting for ${package_spec} registry tarball (attempt ${attempt}/12)..."
+                    sleep 5
+                  done
+
+                  if [ "$package_downloaded" != "true" ]; then
+                    echo "Unable to download ${package_spec} from npm after bounded retries." >&2
+                    exit 1
+                  fi
+
                   published_filename=$(node scripts/resolve-npm-pack-filename.mjs < "$published_pack_output")
 
                   expected_archive="temp/release-assets/${EXPECTED_FILENAME}"
