@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import * as path from "node:path";
 import process from "node:process";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -37,12 +36,6 @@ const scriptsDirectoryPath = fileURLToPath(new URL(".", import.meta.url));
 const repositoryRootPath = path.resolve(scriptsDirectoryPath, "..");
 const builtPluginPath = path.resolve(repositoryRootPath, "dist/index.js");
 const useInstalledPackage = process.argv.includes("--use-installed-package");
-
-if (!useInstalledPackage && !existsSync(builtPluginPath)) {
-    throw new Error(
-        `Missing built plugin entry at ${builtPluginPath}. Run "npm run build" before executing this smoke test.`
-    );
-}
 
 const { default: plugin } = useInstalledPackage
     ? await import("eslint-plugin-file-progress-2")
