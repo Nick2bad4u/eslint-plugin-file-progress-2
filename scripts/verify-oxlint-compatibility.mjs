@@ -52,6 +52,11 @@ const normalizeOutput = (output) =>
     output
         .replaceAll("\r\n", "\n")
         .replaceAll("\r", "\n")
+        .replace(/^Found \d+ warnings? and \d+ errors?\.$/gmv, "")
+        .replace(
+            /^Finished in [^\n]+ on \d+ files? with \d+ rules? using \d+ threads?\.$/gmv,
+            ""
+        )
         .replace(/Duration: [^\n]+/gv, "Duration: <dynamic>")
         .replace(/Throughput: [^\n]+/gv, "Throughput: <dynamic>")
         .replaceAll("\\", "/")
@@ -107,6 +112,16 @@ const main = async () => {
     const ruleNames = Object.keys(plugin.rules);
     const configNames = Object.keys(plugin.configs);
 
+    assert.equal(
+        normalizeOutput(
+            [
+                "Found 0 warnings and 0 errors.",
+                "Finished in 88ms on 1 file with 97 rules using 4 threads.",
+                "• FP2: ✔ Lint complete.",
+            ].join("\n")
+        ),
+        "• FP2: ✔ Lint complete."
+    );
     assert.deepEqual(ruleNames, ["activate"]);
     assert.deepEqual(configNames, expectedConfigNames);
 
@@ -165,7 +180,6 @@ const main = async () => {
         );
         const oxlintOutput = normalizeOutput(
             runCli(oxlintCliPath, [
-                "--silent",
                 "--config",
                 oxlintConfigPath,
                 fixturePath,
