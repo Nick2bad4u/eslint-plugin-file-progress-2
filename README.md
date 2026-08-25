@@ -4,6 +4,8 @@
 
 > ESLint plugin that improves CLI progress output without changing lint semantics.
 
+> **Oxlint:** Compatible through [JavaScript plugins](https://oxc.rs/docs/guide/usage/linter/js-plugins.html) (verified with Oxlint 1.80.0); the `file-progress/activate` rule and all seven preset option shapes produce the same normalized progress output as ESLint.
+
 > [!NOTE]
 > Originally created by [@sibiraj-s](https://github.com/sibiraj-s) in [`eslint-plugin-file-progress`](https://github.com/sibiraj-s/eslint-plugin-file-progress). Huge thanks for the original plugin.
 
