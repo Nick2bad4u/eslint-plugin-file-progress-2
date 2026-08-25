@@ -165,6 +165,7 @@ const main = async () => {
         );
         const oxlintOutput = normalizeOutput(
             runCli(oxlintCliPath, [
+                "--silent",
                 "--config",
                 oxlintConfigPath,
                 fixturePath,
